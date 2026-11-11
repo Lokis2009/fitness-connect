@@ -1,0 +1,19 @@
+/tmp
+/out-tsc
+
+/node_modules
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+/.pnp
+.pnp.js
+
+.vscode/*
+# Nx
+.nx/cache
+.nx/workspace-data
+.angular
+dist
+coverage
+vitest.config.*.timestamp*
+.vitest
