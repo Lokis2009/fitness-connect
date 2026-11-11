@@ -9,6 +9,9 @@ yarn-error.log*
 .pnp.js
 
 .vscode/*
+.idea/
+.claude/settings.local.json
+
 # Nx
 .nx/cache
 .nx/workspace-data
