@@ -1,4 +1,4 @@
-import type { INestApplication } from '@nestjs/common';
+import { Logger, type INestApplication } from '@nestjs/common';
 import { TOKEN_VERIFIER } from '@fitness-connect/common';
 import { DevAuthController } from '@fitness-connect/identity';
 import { call, integrationEnv, mintToken, startApp } from '../testing/test-app';
@@ -9,6 +9,8 @@ describe('dev authentication is development only', () => {
     let url: string;
 
     beforeAll(async () => {
+      // Production mode turns Nest's logger on; keep the test output quiet.
+      Logger.overrideLogger(false);
       // Production has no dev secret: validateEnv rejects one.
       const env = await integrationEnv({
         NODE_ENV: 'production',

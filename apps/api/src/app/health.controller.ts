@@ -7,6 +7,6 @@ export class HealthController {
   @Public()
   @Get()
   health(): components['schemas']['HealthStatus'] {
-    throw new Error('not implemented');
+    return { status: 'ok' };
   }
 }
