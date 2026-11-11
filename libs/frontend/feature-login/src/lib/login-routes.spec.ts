@@ -4,7 +4,11 @@ import { type Route, provideRouter } from '@angular/router';
 import { RouterTestingHarness } from '@angular/router/testing';
 import { AuthService, DevAuthService } from '@fitness-connect/auth';
 import { DevLoginPage } from './dev-login-page';
-import { LOGIN_CONFIG_DATA_KEY, type LoginConfig, injectLoginConfig } from './login-config';
+import {
+  LOGIN_CONFIG_DATA_KEY,
+  type LoginConfig,
+  injectLoginConfig,
+} from './login-config';
 import { LoginPage } from './login-page';
 import { loginRoutes } from './login-routes';
 
@@ -31,7 +35,10 @@ describe('loginRoutes', () => {
 
   describe('in development mode', () => {
     it('returns the login and dev-login routes, in that order', () => {
-      expect(loginRoutes(config).map((r) => r.path)).toEqual(['login', 'dev-login']);
+      expect(loginRoutes(config).map((r) => r.path)).toEqual([
+        'login',
+        'dev-login',
+      ]);
     });
 
     it('carries the config in the data of both routes', () => {
@@ -70,7 +77,14 @@ describe('loginRoutes', () => {
       TestBed.configureTestingModule({
         providers: [
           provideRouter(loginRoutes(config)),
-          { provide: AuthService, useValue: { user: signal(null), isAuthenticated: computed(() => false), signIn: vi.fn() } },
+          {
+            provide: AuthService,
+            useValue: {
+              user: signal(null),
+              isAuthenticated: computed(() => false),
+              signIn: vi.fn(),
+            },
+          },
         ],
       });
       const harness = await RouterTestingHarness.create();
@@ -78,12 +92,18 @@ describe('loginRoutes', () => {
       const page = await harness.navigateByUrl('/login', LoginPage);
 
       expect(page).toBeInstanceOf(LoginPage);
-      expect((harness.routeNativeElement as HTMLElement).querySelector('h1')?.textContent).toContain('Admin sign in');
+      expect(
+        (harness.routeNativeElement as HTMLElement).querySelector('h1')
+          ?.textContent,
+      ).toContain('Admin sign in');
     });
 
     it('renders the dev login page in development mode', async () => {
       TestBed.configureTestingModule({
-        providers: [provideRouter(loginRoutes(config)), { provide: DevAuthService, useValue: { login: vi.fn() } }],
+        providers: [
+          provideRouter(loginRoutes(config)),
+          { provide: DevAuthService, useValue: { login: vi.fn() } },
+        ],
       });
       const harness = await RouterTestingHarness.create();
 
@@ -94,10 +114,14 @@ describe('loginRoutes', () => {
 
     it('has no dev-login route outside development mode', async () => {
       vi.mocked(isDevMode).mockReturnValue(false);
-      TestBed.configureTestingModule({ providers: [provideRouter(loginRoutes(config))] });
+      TestBed.configureTestingModule({
+        providers: [provideRouter(loginRoutes(config))],
+      });
       const harness = await RouterTestingHarness.create();
 
-      await expect(harness.navigateByUrl('/dev-login')).rejects.toThrow(/Cannot match any routes/);
+      await expect(harness.navigateByUrl('/dev-login')).rejects.toThrow(
+        /Cannot match any routes/,
+      );
     });
   });
 });
@@ -110,18 +134,32 @@ describe('injectLoginConfig', () => {
 
   it('returns the config of the current route', async () => {
     TestBed.configureTestingModule({
-      providers: [provideRouter([{ path: 'p', component: Probe, data: { [LOGIN_CONFIG_DATA_KEY]: config } }])],
+      providers: [
+        provideRouter([
+          {
+            path: 'p',
+            component: Probe,
+            data: { [LOGIN_CONFIG_DATA_KEY]: config },
+          },
+        ]),
+      ],
     });
 
-    const probe = await (await RouterTestingHarness.create()).navigateByUrl('/p', Probe);
+    const probe = await (
+      await RouterTestingHarness.create()
+    ).navigateByUrl('/p', Probe);
 
     expect(probe.config).toBe(config);
   });
 
   it('explains the problem when the route has no config', async () => {
-    TestBed.configureTestingModule({ providers: [provideRouter([{ path: 'p', component: Probe }])] });
+    TestBed.configureTestingModule({
+      providers: [provideRouter([{ path: 'p', component: Probe }])],
+    });
     const harness = await RouterTestingHarness.create();
 
-    await expect(harness.navigateByUrl('/p', Probe)).rejects.toThrow(/loginRoutes/);
+    await expect(harness.navigateByUrl('/p', Probe)).rejects.toThrow(
+      /loginRoutes/,
+    );
   });
 });

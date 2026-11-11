@@ -1,3 +1,5 @@
+import { inject } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
 import type { Role } from '@fitness-connect/auth';
 
 /** Per-app settings for the login pages, passed to `loginRoutes` and carried in route `data`. */
@@ -21,5 +23,12 @@ export const LOGIN_CONFIG_DATA_KEY = 'loginConfig';
  * @throws Error when the route has no config, which means it was not created by `loginRoutes`.
  */
 export function injectLoginConfig(): LoginConfig {
-  throw new Error('not implemented');
+  const config = inject(ActivatedRoute).snapshot.data[LOGIN_CONFIG_DATA_KEY] as
+    LoginConfig | undefined;
+  if (!config) {
+    throw new Error(
+      `The login pages need a LoginConfig in the route data: create the routes with loginRoutes(config).`,
+    );
+  }
+  return config;
 }

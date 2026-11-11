@@ -2,7 +2,11 @@ import { Component } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { Router, provideRouter } from '@angular/router';
 import { RouterTestingHarness } from '@angular/router/testing';
-import { DevAuthService, InvalidCredentialsError, WrongRoleError } from '@fitness-connect/auth';
+import {
+  DevAuthService,
+  InvalidCredentialsError,
+  WrongRoleError,
+} from '@fitness-connect/auth';
 import type { Role, User } from '@fitness-connect/data-access';
 import { DevLoginPage } from './dev-login-page';
 import { LOGIN_CONFIG_DATA_KEY, type LoginConfig } from './login-config';
@@ -10,10 +14,19 @@ import { LOGIN_CONFIG_DATA_KEY, type LoginConfig } from './login-config';
 @Component({ template: 'home' })
 class HomeStub {}
 
-const config: LoginConfig = { title: 'Trainer sign in', expectedRole: 'trainer', homePath: '/home' };
+const config: LoginConfig = {
+  title: 'Trainer sign in',
+  expectedRole: 'trainer',
+  homePath: '/home',
+};
 
 function userWithRole(role: Role): User {
-  return { id: '6f1c1d4e-7a52-4a39-9d52-1f3c2f6f5a10', email: `${role}@example.com`, displayName: role, role };
+  return {
+    id: '6f1c1d4e-7a52-4a39-9d52-1f3c2f6f5a10',
+    email: `${role}@example.com`,
+    displayName: role,
+    role,
+  };
 }
 
 describe('DevLoginPage', () => {
@@ -23,7 +36,11 @@ describe('DevLoginPage', () => {
     TestBed.configureTestingModule({
       providers: [
         provideRouter([
-          { path: 'dev-login', component: DevLoginPage, data: { [LOGIN_CONFIG_DATA_KEY]: config } },
+          {
+            path: 'dev-login',
+            component: DevLoginPage,
+            data: { [LOGIN_CONFIG_DATA_KEY]: config },
+          },
           { path: 'home', component: HomeStub },
           { path: 'ok', component: HomeStub },
         ]),
@@ -35,11 +52,20 @@ describe('DevLoginPage', () => {
     const root = harness.routeNativeElement as HTMLElement;
     const whenStable = () => harness.fixture.whenStable();
 
-    const emailInput = () => root.querySelector('input[type="email"]') as HTMLInputElement;
-    const passwordInput = () => root.querySelector('input[autocomplete="current-password"]') as HTMLInputElement;
-    const submitButton = () => root.querySelector('button[type="submit"]') as HTMLButtonElement;
-    const alert = () => root.querySelector('[role="alert"]') as HTMLElement | null;
-    const errorTexts = () => Array.from(root.querySelectorAll('[data-fc-error]')).map((e) => e.textContent?.trim());
+    const emailInput = () =>
+      root.querySelector('input[type="email"]') as HTMLInputElement;
+    const passwordInput = () =>
+      root.querySelector(
+        'input[autocomplete="current-password"]',
+      ) as HTMLInputElement;
+    const submitButton = () =>
+      root.querySelector('button[type="submit"]') as HTMLButtonElement;
+    const alert = () =>
+      root.querySelector('[role="alert"]') as HTMLElement | null;
+    const errorTexts = () =>
+      Array.from(root.querySelectorAll('[data-fc-error]')).map((e) =>
+        e.textContent?.trim(),
+      );
 
     async function type(input: HTMLInputElement, text: string) {
       input.value = text;
@@ -85,9 +111,13 @@ describe('DevLoginPage', () => {
       const { root, emailInput, passwordInput, submitButton } = await setup();
 
       const labelFor = (text: string) =>
-        Array.from(root.querySelectorAll('label')).find((l) => l.textContent?.trim() === text);
+        Array.from(root.querySelectorAll('label')).find(
+          (l) => l.textContent?.trim() === text,
+        );
       expect(labelFor('Email')?.getAttribute('for')).toBe(emailInput().id);
-      expect(labelFor('Password')?.getAttribute('for')).toBe(passwordInput().id);
+      expect(labelFor('Password')?.getAttribute('for')).toBe(
+        passwordInput().id,
+      );
       expect(submitButton().textContent?.trim()).toBe('Sign in');
     });
 
@@ -95,7 +125,9 @@ describe('DevLoginPage', () => {
       const { root } = await setup();
 
       expect(root.textContent).toContain('Development only');
-      expect(root.querySelector('h1')?.textContent).toContain('Trainer sign in');
+      expect(root.querySelector('h1')?.textContent).toContain(
+        'Trainer sign in',
+      );
     });
 
     it('shows no field errors before the user touched anything', async () => {
@@ -110,7 +142,10 @@ describe('DevLoginPage', () => {
 
       await submit();
 
-      expect(errorTexts()).toEqual(['Email is required', 'Password is required']);
+      expect(errorTexts()).toEqual([
+        'Email is required',
+        'Password is required',
+      ]);
       expect(login).not.toHaveBeenCalled();
     });
 
@@ -143,11 +178,14 @@ describe('DevLoginPage', () => {
       expect(errorTexts()).toEqual([]);
     });
 
-    it('marks an invalid field with aria-invalid', async () => {
-      const { emailInput, submit } = await setup();
+    it('links the error to the field and marks a filled-in invalid field with aria-invalid', async () => {
+      const { emailInput, type, submit, root } = await setup();
 
+      await type(emailInput(), 'not-an-email');
       await submit();
 
+      const error = root.querySelector('[data-fc-error]') as HTMLElement;
+      expect(emailInput().getAttribute('aria-describedby')).toBe(error.id);
       expect(emailInput().getAttribute('aria-invalid')).toBe('true');
     });
   });
@@ -160,13 +198,19 @@ describe('DevLoginPage', () => {
       await fillIn('trainer@example.com', 'secret');
       await submit();
 
-      expect(login).toHaveBeenCalledExactlyOnceWith('trainer@example.com', 'secret', 'trainer');
+      expect(login).toHaveBeenCalledExactlyOnceWith(
+        'trainer@example.com',
+        'secret',
+        'trainer',
+      );
       expect(router.url).toBe('/home');
     });
 
     it('goes to a safe returnUrl after signing in', async () => {
       login.mockResolvedValue(userWithRole('trainer'));
-      const { fillIn, submit, router } = await setup('/dev-login?returnUrl=%2Fok');
+      const { fillIn, submit, router } = await setup(
+        '/dev-login?returnUrl=%2Fok',
+      );
 
       await fillIn();
       await submit();
@@ -174,15 +218,20 @@ describe('DevLoginPage', () => {
       expect(router.url).toBe('/ok');
     });
 
-    it.each(['//evil.com', 'https://evil.com'])('ignores the unsafe returnUrl %s', async (unsafe) => {
-      login.mockResolvedValue(userWithRole('trainer'));
-      const { fillIn, submit, router } = await setup(`/dev-login?returnUrl=${encodeURIComponent(unsafe)}`);
+    it.each(['//evil.com', 'https://evil.com'])(
+      'ignores the unsafe returnUrl %s',
+      async (unsafe) => {
+        login.mockResolvedValue(userWithRole('trainer'));
+        const { fillIn, submit, router } = await setup(
+          `/dev-login?returnUrl=${encodeURIComponent(unsafe)}`,
+        );
 
-      await fillIn();
-      await submit();
+        await fillIn();
+        await submit();
 
-      expect(router.url).toBe('/home');
-    });
+        expect(router.url).toBe('/home');
+      },
+    );
 
     it('also submits when the form is submitted without a click (Enter in a field)', async () => {
       login.mockResolvedValue(userWithRole('trainer'));
@@ -219,9 +268,11 @@ describe('DevLoginPage', () => {
       expect(submitButton().getAttribute('aria-busy')).toBe('true');
       expect(submitButton().disabled).toBe(true);
 
-      pending.resolve(userWithRole('trainer'));
+      pending.reject(new Error('boom'));
+      await pending.promise.catch(() => undefined);
       await whenStable();
       expect(submitButton().getAttribute('aria-busy')).toBeNull();
+      expect(submitButton().disabled).toBe(false);
     });
 
     it('does not send a second request while one is in flight', async () => {
@@ -242,7 +293,9 @@ describe('DevLoginPage', () => {
     });
 
     it('can submit again after a failure', async () => {
-      login.mockRejectedValueOnce(new InvalidCredentialsError()).mockResolvedValueOnce(userWithRole('trainer'));
+      login
+        .mockRejectedValueOnce(new InvalidCredentialsError())
+        .mockResolvedValueOnce(userWithRole('trainer'));
       const { fillIn, submit, router, alert } = await setup();
       await fillIn();
 
@@ -274,7 +327,9 @@ describe('DevLoginPage', () => {
 
       await submit();
 
-      expect(alert()?.textContent?.trim()).toBe('This account cannot sign in to the trainer app');
+      expect(alert()?.textContent?.trim()).toBe(
+        'This account cannot sign in to the trainer app',
+      );
     });
 
     it('shows a generic message for anything else', async () => {
@@ -284,13 +339,17 @@ describe('DevLoginPage', () => {
 
       await submit();
 
-      expect(alert()?.textContent?.trim()).toBe('Something went wrong. Please try again.');
+      expect(alert()?.textContent?.trim()).toBe(
+        'Something went wrong. Please try again.',
+      );
       expect(alert()?.textContent).not.toContain('network down');
     });
 
     it('removes the previous error when submitting again', async () => {
       const pending = new Promise<User>(() => undefined);
-      login.mockRejectedValueOnce(new InvalidCredentialsError()).mockReturnValueOnce(pending);
+      login
+        .mockRejectedValueOnce(new InvalidCredentialsError())
+        .mockReturnValueOnce(pending);
       const { fillIn, submit, alert } = await setup();
       await fillIn();
       await submit();

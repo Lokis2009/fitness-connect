@@ -3,9 +3,12 @@ import { resolveReturnUrl } from './return-url';
 describe('resolveReturnUrl', () => {
   const fallback = '/home';
 
-  it.each(['/ok', '/', '/trainers?page=2', '/a/b#section'])('accepts the in-app path %s', (url) => {
-    expect(resolveReturnUrl(url, fallback)).toBe(url);
-  });
+  it.each(['/ok', '/', '/trainers?page=2', '/a/b#section'])(
+    'accepts the in-app path %s',
+    (url) => {
+      expect(resolveReturnUrl(url, fallback)).toBe(url);
+    },
+  );
 
   it.each([
     ['a missing value', null],

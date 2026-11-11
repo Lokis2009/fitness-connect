@@ -18,7 +18,12 @@ const config: LoginConfig = {
 };
 
 function userWithRole(role: Role): User {
-  return { id: '6f1c1d4e-7a52-4a39-9d52-1f3c2f6f5a10', email: `${role}@example.com`, displayName: role, role };
+  return {
+    id: '6f1c1d4e-7a52-4a39-9d52-1f3c2f6f5a10',
+    email: `${role}@example.com`,
+    displayName: role,
+    role,
+  };
 }
 
 describe('LoginPage', () => {
@@ -29,18 +34,27 @@ describe('LoginPage', () => {
     TestBed.configureTestingModule({
       providers: [
         provideRouter([
-          { path: 'login', component: LoginPage, data: { [LOGIN_CONFIG_DATA_KEY]: loginConfig } },
+          {
+            path: 'login',
+            component: LoginPage,
+            data: { [LOGIN_CONFIG_DATA_KEY]: loginConfig },
+          },
           { path: 'home', component: HomeStub },
           { path: 'ok', component: HomeStub },
         ]),
         {
           provide: AuthService,
-          useValue: { user: currentUser, isAuthenticated: computed(() => currentUser() !== null), signIn },
+          useValue: {
+            user: currentUser,
+            isAuthenticated: computed(() => currentUser() !== null),
+            signIn,
+          },
         },
       ],
     });
     const harness = await RouterTestingHarness.create();
     await harness.navigateByUrl(url);
+    await harness.fixture.whenStable();
     const root = harness.routeNativeElement as HTMLElement;
     return { harness, root, router: TestBed.inject(Router) };
   }
@@ -58,7 +72,10 @@ describe('LoginPage', () => {
   });
 
   it('omits the description when none is configured', async () => {
-    const { root } = await setup('/login', { ...config, description: undefined });
+    const { root } = await setup('/login', {
+      ...config,
+      description: undefined,
+    });
 
     expect(root.querySelector('fc-text')).toBeNull();
   });
@@ -86,13 +103,18 @@ describe('LoginPage', () => {
     expect(signIn).toHaveBeenCalledExactlyOnceWith('/ok');
   });
 
-  it.each(['//evil.com', 'https://evil.com'])('ignores the unsafe returnUrl %s', async (unsafe) => {
-    const { root } = await setup(`/login?returnUrl=${encodeURIComponent(unsafe)}`);
+  it.each(['//evil.com', 'https://evil.com'])(
+    'ignores the unsafe returnUrl %s',
+    async (unsafe) => {
+      const { root } = await setup(
+        `/login?returnUrl=${encodeURIComponent(unsafe)}`,
+      );
 
-    (root.querySelector('fc-button button') as HTMLButtonElement).click();
+      (root.querySelector('fc-button button') as HTMLButtonElement).click();
 
-    expect(signIn).toHaveBeenCalledExactlyOnceWith('/home');
-  });
+      expect(signIn).toHaveBeenCalledExactlyOnceWith('/home');
+    },
+  );
 
   it('redirects to the home path when already signed in with the expected role', async () => {
     currentUser.set(userWithRole('trainer'));
@@ -113,7 +135,9 @@ describe('LoginPage', () => {
   it('does not redirect to an unsafe returnUrl when already signed in', async () => {
     currentUser.set(userWithRole('trainer'));
 
-    const { router } = await setup(`/login?returnUrl=${encodeURIComponent('//evil.com')}`);
+    const { router } = await setup(
+      `/login?returnUrl=${encodeURIComponent('//evil.com')}`,
+    );
 
     expect(router.url).toBe('/home');
   });
@@ -123,8 +147,12 @@ describe('LoginPage', () => {
 
     const { harness } = await setup();
 
-    expect((harness.routeNativeElement as HTMLElement).textContent).toBe('home');
-    expect(TestBed.inject(Router).lastSuccessfulNavigation()?.extras.replaceUrl).toBe(true);
+    expect((harness.routeNativeElement as HTMLElement).textContent).toBe(
+      'home',
+    );
+    expect(
+      TestBed.inject(Router).lastSuccessfulNavigation()?.extras.replaceUrl,
+    ).toBe(true);
   });
 
   it('keeps showing the page when signed in with another role', async () => {
