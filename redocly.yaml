@@ -4,5 +4,6 @@ extends:
 rules:
   # The health check has no meaningful client error.
   operation-4xx-response: off
-  # The local server URL is intentional: Prism mounts the mock under its /v1 path.
+  # The local server URL documents the real API base path (/v1). Prism ignores it and
+  # serves the mock from the root, which tools/dev/proxy.conf.cjs accounts for.
   no-server-example.com: off

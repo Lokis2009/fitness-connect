@@ -1,7 +1,8 @@
 // Apps call /api/v1/...; the real API serves /v1/... and the Prism mock serves from the root.
 const mock = process.env.API_MOCK === 'true';
-const target =
-  process.env.API_TARGET || (mock ? 'http://localhost:4010' : 'http://localhost:3000');
+const target = mock
+  ? process.env.API_MOCK_TARGET || 'http://localhost:4010'
+  : process.env.API_TARGET || 'http://localhost:3000';
 
 module.exports = {
   '/api': {
