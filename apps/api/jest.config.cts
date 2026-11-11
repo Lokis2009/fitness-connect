@@ -2,6 +2,8 @@ module.exports = {
   displayName: 'api',
   preset: '../../jest.preset.js',
   testEnvironment: 'node',
+  // Integration tests prepare a database and boot the app.
+  testTimeout: 30000,
   transform: {
     '^.+\\.[tj]s$': ['ts-jest', { tsconfig: '<rootDir>/tsconfig.spec.json' }],
   },
@@ -14,6 +16,8 @@ module.exports = {
     '!src/**/*.spec.ts',
     '!src/index.ts',
     '!src/main.ts',
+    // Test support code (its JSON schema validator has its own spec).
+    '!src/testing/**',
   ],
   coverageThreshold: {
     global: { lines: 80, functions: 80, branches: 80, statements: 80 },

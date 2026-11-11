@@ -2,6 +2,8 @@ module.exports = {
   displayName: 'database',
   preset: '../../../jest.preset.js',
   testEnvironment: 'node',
+  // Specs create, migrate and seed real databases.
+  testTimeout: 30000,
   transform: {
     '^.+\\.[tj]s$': ['ts-jest', { tsconfig: '<rootDir>/tsconfig.spec.json' }],
   },

@@ -2,6 +2,8 @@ module.exports = {
   displayName: 'identity',
   preset: '../../../jest.preset.js',
   testEnvironment: 'node',
+  // The repository spec creates, migrates and seeds a real database.
+  testTimeout: 30000,
   transform: {
     '^.+\\.[tj]s$': ['ts-jest', { tsconfig: '<rootDir>/tsconfig.spec.json' }],
   },
