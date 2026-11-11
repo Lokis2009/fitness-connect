@@ -3,6 +3,7 @@
   "version": "0.0.0",
   "license": "MIT",
   "scripts": {
+    "dev:all": "bash tools/dev/start-all.sh",
     "dev:infra": "docker compose up -d --wait",
     "dev:infra:down": "docker compose down",
     "test:hooks": "node --test .claude/hooks/*.test.mjs",
