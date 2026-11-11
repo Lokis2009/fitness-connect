@@ -93,6 +93,19 @@ describe('Home', () => {
     expect(root.textContent).not.toContain('casey@example.com');
   });
 
+  it('shows no personal details once the user is gone', () => {
+    const response = new Subject<User>();
+    getMe.mockReturnValue(response);
+    const { fixture, root } = setup();
+
+    response.next(client);
+    user.set(null);
+    fixture.detectChanges();
+
+    expect(root.querySelector('h1')?.textContent).not.toContain('Casey');
+    expect(root.textContent).not.toContain('casey@example.com');
+  });
+
   it('signs out and goes to the login page', async () => {
     getMe.mockReturnValue(new Subject<User>());
     const { fixture, root, router } = setup();
