@@ -5,6 +5,8 @@ module.exports = {
   transform: {
     '^.+\\.[tj]s$': ['ts-jest', { tsconfig: '<rootDir>/tsconfig.spec.json' }],
   },
+  // jose ships ESM only; let ts-jest compile it to CommonJS (pnpm nests packages under .pnpm).
+  transformIgnorePatterns: ['/node_modules/(?!\\.pnpm/jose@|jose/)'],
   moduleFileExtensions: ['ts', 'js', 'html'],
   coverageDirectory: '../../coverage/apps/api',
   collectCoverageFrom: [
