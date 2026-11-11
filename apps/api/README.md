@@ -29,6 +29,9 @@ at startup and exits with a list of all problems.
 
 ## Run
 
+To start the API together with the three web apps, use `pnpm dev:all` (see the root `README.md`). To run the API
+alone:
+
 ```sh
 docker compose up -d --wait   # or: pnpm dev:infra (Postgres + PostGIS, Redis)
 cp .env.example .env
