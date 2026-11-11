@@ -59,6 +59,14 @@ describe('UsersRepository (real database)', () => {
       ).resolves.toBe(true);
     });
 
+    it('matches the email regardless of case', async () => {
+      const found = await repository.findWithDevCredentials(
+        'Client@Example.COM',
+      );
+
+      expect(found?.user.email).toBe('client@example.com');
+    });
+
     it('returns null for an unknown email', async () => {
       await expect(
         repository.findWithDevCredentials('ghost@example.com'),
