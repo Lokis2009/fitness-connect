@@ -29,6 +29,8 @@ describe('FcHeading', () => {
 
     const h1 = heading('default').querySelector('h1');
     expect(h1?.textContent).toBe('Default');
+    expect(h1?.classList).toContain('text-title');
+    expect(h1?.classList).toContain('text-ink');
     expect(heading('default').querySelector('h2, h3')).toBeNull();
   });
 
@@ -36,10 +38,12 @@ describe('FcHeading', () => {
     const { fixture, heading } = await setup();
 
     expect(heading('bound').querySelector('h2')?.textContent).toBe('Bound');
+    expect(heading('bound').querySelector('h2')?.classList).toContain('text-heading');
 
     fixture.componentInstance.level.set(3);
     await fixture.whenStable();
     expect(heading('bound').querySelector('h3')?.textContent).toBe('Bound');
+    expect(heading('bound').querySelector('h3')?.classList).toContain('text-subheading');
     expect(heading('bound').querySelector('h2')).toBeNull();
 
     fixture.componentInstance.level.set(1);

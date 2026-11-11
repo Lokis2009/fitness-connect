@@ -4,6 +4,6 @@ import { Component } from '@angular/core';
 @Component({
   selector: 'fc-card',
   template: '<ng-content />',
-  host: { class: 'block w-full max-w-md rounded-card bg-surface p-6 text-on-surface shadow-md' },
+  host: { class: 'block w-full max-w-md rounded-card border border-line-card bg-surface p-6 text-ink' },
 })
 export class FcCard {}

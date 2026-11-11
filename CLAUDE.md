@@ -15,6 +15,7 @@ All UI markup comes from the shared UI library (`libs/frontend/ui`, import path 
 - If the component you need does not exist in the shared UI library, create it there first (standalone, signals, OnPush, exported from the library's public API), then use it.
 - Layout wrappers count too. If you need a stack, grid, or container, add a layout component to the shared library.
 - Styling (Tailwind classes, design tokens) lives only inside the shared UI library.
+- Colors, spacing, radius and type come only from the design tokens and type scale in `libs/frontend/ui/src/styles/tokens.css`. Rules: `.claude/rules/design-system.md` (loads automatically). Do not add ad-hoc sizes, weights or colors.
 - Shared components are built on Angular Material and Angular CDK. Do not add another UI library.
 - Enforced by ESLint (`no-restricted-syntax` in the root `eslint.config.mjs`): outside `libs/frontend/ui`, only `fc-*` and `ng-*` element names pass lint. Do not disable or weaken this rule to make lint pass; add the missing shared component instead.
 
