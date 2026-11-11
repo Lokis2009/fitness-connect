@@ -1,5 +1,7 @@
 @use '@angular/material' as mat;
 
+// Material reads the font from the same --font-sans token as Tailwind (tokens.css), so inputs,
+// buttons and plain text never drift apart. Change the font in tokens.css only.
 :root {
   @include mat.theme(
     (
@@ -7,7 +9,10 @@
         theme-type: light,
         primary: mat.$azure-palette,
       ),
-      typography: Roboto,
+      typography: (
+        plain-family: var(--font-sans),
+        brand-family: var(--font-sans),
+      ),
       density: 0,
     )
   );

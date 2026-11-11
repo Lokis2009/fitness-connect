@@ -1,5 +1,10 @@
 @theme {
-  --font-sans: 'Roboto', system-ui, sans-serif;
+  /*
+   * The single source of truth for the app font. Material reads it too (see material-theme.scss).
+   * To use a brand font, load it with @font-face (or an @fontsource package) and put it first here.
+   */
+  --font-sans:
+    system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
 
   --color-brand: #0b57d0;
   --color-brand-contrast: #ffffff;
