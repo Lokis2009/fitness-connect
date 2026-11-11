@@ -1,5 +1,5 @@
 import { Component, input } from '@angular/core';
-import type { FieldTree } from '@angular/forms/signals';
+import { FormRoot, type FieldTree } from '@angular/forms/signals';
 
 /**
  * Wraps a Signal Forms field tree in a native form: Enter submits, validation is left to the
@@ -7,13 +7,11 @@ import type { FieldTree } from '@angular/forms/signals';
  */
 @Component({
   selector: 'fc-form',
-  template: '',
+  imports: [FormRoot],
+  template: '<form [formRoot]="form()"><ng-content /></form>',
+  host: { class: 'block' },
 })
 export class FcForm<T> {
   /** The root field tree created with `form()`; configure `submission` there. */
   readonly form = input.required<FieldTree<T>>();
-
-  constructor() {
-    throw new Error('not implemented');
-  }
 }
