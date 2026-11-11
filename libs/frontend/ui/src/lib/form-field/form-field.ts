@@ -20,23 +20,34 @@ let nextId = 0;
 /** Label, hint and error text around a projected control, wired together for assistive technology. */
 @Component({
   selector: 'fc-form-field',
-  template: '',
+  template: `
+    <label class="mb-1 block text-sm font-medium text-on-surface" [attr.for]="controlId">{{ label() }}</label>
+    <ng-content />
+    @if (hint()) {
+      <p class="mt-1 text-sm text-on-surface/70" data-fc-hint [id]="hintId">{{ hint() }}</p>
+    }
+    <div aria-live="polite">
+      @if (error()) {
+        <p class="mt-1 text-sm text-danger" data-fc-error [id]="errorId">{{ error() }}</p>
+      }
+    </div>
+  `,
+  host: { class: 'block' },
   providers: [{ provide: FC_FORM_FIELD, useExisting: forwardRef(() => FcFormField) }],
 })
 export class FcFormField implements FcFormFieldContext {
   readonly label = input.required<string>();
-  readonly hint = input('');
-  readonly error = input('');
+  readonly hint = input<string | null | undefined>('');
+  readonly error = input<string | null | undefined>('');
 
   private readonly uid = `fc-form-field-${nextId++}`;
   readonly controlId = `${this.uid}-control`;
   protected readonly hintId = `${this.uid}-hint`;
   protected readonly errorId = `${this.uid}-error`;
 
-  readonly describedBy = computed<string | null>(() => {
-    throw new Error('not implemented');
-  });
-  readonly invalid = computed<boolean>(() => {
-    throw new Error('not implemented');
+  readonly invalid = computed(() => !!this.error());
+  readonly describedBy = computed(() => {
+    const ids = [this.hint() ? this.hintId : null, this.invalid() ? this.errorId : null].filter(Boolean);
+    return ids.length > 0 ? ids.join(' ') : null;
   });
 }
