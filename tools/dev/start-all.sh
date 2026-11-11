@@ -24,6 +24,12 @@ for arg in "$@"; do
   esac
 done
 
+# Older Node versions make Nx fail with "Failed to process project graph".
+if ! node -e 'const [a, b] = process.versions.node.split(".").map(Number); process.exit(a > 22 || (a === 22 && b >= 12) || (a === 20 && b >= 19) ? 0 : 1)'; then
+  echo "Node $(node --version) is too old: need 20.19+ or 22.12+ (see .nvmrc; run 'nvm use')." >&2
+  exit 1
+fi
+
 # Nx loads .env from the workspace root for every task, so the API picks these values up.
 if [ ! -f .env ]; then
   cp .env.example .env
