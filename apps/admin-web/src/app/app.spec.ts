@@ -43,6 +43,6 @@ describe('App', () => {
     await TestBed.inject(Router).navigateByUrl('/');
     await fixture.whenStable();
     const compiled = fixture.nativeElement as HTMLElement;
-    expect(compiled.querySelector('fc-home')).not.toBeNull();
+    expect(compiled.querySelector('fc-signed-in-home')).not.toBeNull();
   });
 });

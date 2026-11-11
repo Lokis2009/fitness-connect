@@ -12,7 +12,8 @@ export const appRoutes: Route[] = [
   {
     path: '',
     canActivate: [authGuard, roleGuard('trainer')],
-    loadComponent: () => import('./home/home').then((m) => m.Home),
+    loadComponent: () =>
+      import('@fitness-connect/feature-home').then((m) => m.SignedInHome),
   },
   { path: '**', redirectTo: '' },
 ];
