@@ -2,20 +2,21 @@ import { HttpErrorResponse, type HttpInterceptorFn, HttpStatusCode } from '@angu
 import { inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { catchError, throwError } from 'rxjs';
+import { API_BASE_URL } from '@fitness-connect/data-access';
 import { AuthService } from './auth-service';
 
-const API_PREFIX = '/api/';
 const DEV_LOGIN_SUFFIX = '/dev/login';
 
 /**
- * Adds `Authorization: Bearer <token>` to requests whose URL starts with
- * `/api/`. A 401 response to such a request while signed in means the session
+ * Adds `Authorization: Bearer <token>` to requests to the API, that is whose URL is under
+ * `API_BASE_URL` (default `/api/v1`). A 401 response to such a request while signed in means the session
  * has expired: it ends the session and navigates to `/login`. A 401 while
  * signed out (for example a failed session restore at startup) and a 401 from
  * the dev login (wrong credentials) are left to the caller.
  */
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
-  if (!req.url.startsWith(API_PREFIX)) {
+  const baseUrl = inject(API_BASE_URL).replace(/\/+$/, '');
+  if (req.url !== baseUrl && !req.url.startsWith(`${baseUrl}/`)) {
     return next(req);
   }
 

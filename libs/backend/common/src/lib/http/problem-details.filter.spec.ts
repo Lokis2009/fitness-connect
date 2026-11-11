@@ -104,6 +104,44 @@ describe('ProblemDetailsFilter', () => {
     expect(JSON.stringify(body)).not.toContain('10.0.0.5');
   });
 
+  it('keeps the status of a client error raised by the HTTP platform', () => {
+    const tooLarge = Object.assign(new Error('request entity too large'), {
+      status: 413,
+      statusCode: 413,
+      expose: true,
+    });
+    const logger = jest.spyOn(Logger.prototype, 'error');
+
+    const { status, body } = run(tooLarge);
+
+    expect(status).toBe(413);
+    expect(body).toEqual({
+      type: 'about:blank',
+      title: 'Payload Too Large',
+      status: 413,
+      detail: 'request entity too large',
+      instance: '/v1/thing',
+    });
+    expect(logger).not.toHaveBeenCalled();
+  });
+
+  it('does not expose the message of a platform error that is not marked safe', () => {
+    const { status, body } = run(
+      Object.assign(new Error('secret detail'), { status: 400 }),
+    );
+
+    expect(status).toBe(400);
+    expect(body.detail).toBeUndefined();
+  });
+
+  it('treats a platform error with a server status as an unexpected 500', () => {
+    const { status } = run(
+      Object.assign(new Error('boom'), { status: 503, expose: false }),
+    );
+
+    expect(status).toBe(500);
+  });
+
   it('logs unexpected errors but not client errors', () => {
     const logger = jest.spyOn(Logger.prototype, 'error');
 

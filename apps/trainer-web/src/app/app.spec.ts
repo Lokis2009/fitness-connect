@@ -35,9 +35,9 @@ describe('App', () => {
     await TestBed.inject(Router).navigateByUrl('/');
     await fixture.whenStable();
     const compiled = fixture.nativeElement as HTMLElement;
-    expect(compiled.querySelector('fc-home fc-heading')?.textContent).toContain(
+    expect(compiled.querySelector('fc-signed-in-home fc-heading')?.textContent).toContain(
       'Tina Trainer',
     );
-    expect(compiled.querySelectorAll('fc-home fc-button').length).toBe(1);
+    expect(compiled.querySelectorAll('fc-signed-in-home fc-button').length).toBe(1);
   });
 });

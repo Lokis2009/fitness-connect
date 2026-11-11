@@ -13,7 +13,11 @@ jest.mock('@fitness-connect/common', () => {
   const actual = jest.requireActual<typeof import('@fitness-connect/common')>(
     '@fitness-connect/common',
   );
-  return { ...actual, verifyPassword: jest.fn(actual.verifyPassword) };
+  return {
+    ...actual,
+    hashPassword: jest.fn(actual.hashPassword),
+    verifyPassword: jest.fn(actual.verifyPassword),
+  };
 });
 
 const user: UserRow = {
@@ -89,5 +93,20 @@ describe('DevAuthService', () => {
       .catch(() => undefined);
 
     expect(verifyPassword).toHaveBeenCalledTimes(1);
+  });
+
+  it('retries the timing hash after it failed instead of caching the failure', async () => {
+    const fresh = new DevAuthService(
+      { findWithDevCredentials } as unknown as UsersRepository,
+      tokens,
+    );
+    jest.mocked(hashPassword).mockRejectedValueOnce(new Error('scrypt failed'));
+
+    await expect(
+      fresh.login({ email: 'ghost@example.com', password: 'password' }),
+    ).rejects.toThrow('scrypt failed');
+    await expect(
+      fresh.login({ email: 'ghost@example.com', password: 'password' }),
+    ).rejects.toBeInstanceOf(UnauthorizedException);
   });
 });

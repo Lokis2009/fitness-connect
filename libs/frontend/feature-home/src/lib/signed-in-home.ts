@@ -16,11 +16,11 @@ import {
 type SessionCheck = 'loading' | 'confirmed' | 'failed';
 
 /**
- * Signed-in landing page of the client app. Placeholder for real features: it greets the user,
- * confirms the session against the API and offers sign out.
+ * Signed-in landing page shared by the client, trainer and admin apps. Placeholder for real
+ * features: it greets the user, confirms the session against the API and offers sign out.
  */
 @Component({
-  selector: 'fc-home',
+  selector: 'fc-signed-in-home',
   imports: [FcPage, FcCard, FcStack, FcHeading, FcText, FcAlert, FcButton],
   template: `
     <fc-page>
@@ -46,13 +46,15 @@ type SessionCheck = 'loading' | 'confirmed' | 'failed';
     </fc-page>
   `,
 })
-export class Home {
+export class SignedInHome {
   private readonly auth = inject(AuthService);
   private readonly api = inject(ApiClient);
   private readonly router = inject(Router);
 
   protected readonly check = signal<SessionCheck>('loading');
-  protected readonly displayName = computed(() => this.auth.user()?.displayName ?? '');
+  protected readonly displayName = computed(
+    () => this.auth.user()?.displayName ?? '',
+  );
   protected readonly summary = computed(() => {
     const user = this.auth.user();
     return user ? `${user.email} · ${user.role}` : '';

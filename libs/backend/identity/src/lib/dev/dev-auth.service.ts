@@ -19,10 +19,9 @@ export class DevAuthService {
   /** Checks the dev credentials and issues a token. Throws 401 on any mismatch. */
   async login({ email, password }: DevLoginDto): Promise<DevLoginResponseDto> {
     const found = await this.users.findWithDevCredentials(email);
-    this.unknownUserHash ??= hashPassword(randomUUID());
     const matches = await verifyPassword(
       password,
-      found?.passwordHash ?? (await this.unknownUserHash),
+      found?.passwordHash ?? (await this.timingHash()),
     );
     if (!found || !matches) {
       throw new UnauthorizedException('Invalid email or password');
@@ -35,5 +34,16 @@ export class DevAuthService {
       role: user.role,
     });
     return { accessToken, user: toUserDto(user) };
+  }
+
+  /** Computed once; a failed attempt is discarded so a later login can retry it. */
+  private timingHash(): Promise<string> {
+    this.unknownUserHash ??= hashPassword(randomUUID()).catch(
+      (error: unknown) => {
+        this.unknownUserHash = undefined;
+        throw error;
+      },
+    );
+    return this.unknownUserHash;
   }
 }

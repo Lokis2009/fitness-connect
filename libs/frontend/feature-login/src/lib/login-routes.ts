@@ -1,5 +1,5 @@
-import { isDevMode } from '@angular/core';
 import type { Route } from '@angular/router';
+import { devLoginRoutes } from './dev-login-routes';
 import { LOGIN_CONFIG_DATA_KEY, type LoginConfig } from './login-config';
 
 /**
@@ -16,14 +16,7 @@ export function loginRoutes(config: LoginConfig): Route[] {
     },
   ];
 
-  if (isDevMode()) {
-    routes.push({
-      path: 'dev-login',
-      data,
-      loadComponent: () =>
-        import('./dev-login-page').then((m) => m.DevLoginPage),
-    });
-  }
+  routes.push(...devLoginRoutes(data));
 
   return routes;
 }

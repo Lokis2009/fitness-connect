@@ -4,7 +4,7 @@ import { provideRouter, Router } from '@angular/router';
 import { AuthService } from '@fitness-connect/auth';
 import { ApiClient, ApiError, type User } from '@fitness-connect/data-access';
 import { Subject, throwError } from 'rxjs';
-import { Home } from './home';
+import { SignedInHome } from './signed-in-home';
 
 const client: User = {
   id: '6f1c1d4e-7a52-4a39-9d52-1f3c2f6f5a10',
@@ -13,7 +13,7 @@ const client: User = {
   role: 'client',
 };
 
-describe('Home', () => {
+describe('SignedInHome', () => {
   const user = signal<User | null>(client);
   const signOut = vi.fn<() => void>();
   const getMe = vi.fn();
@@ -33,7 +33,7 @@ describe('Home', () => {
         { provide: ApiClient, useValue: { getMe } },
       ],
     });
-    const fixture = TestBed.createComponent(Home);
+    const fixture = TestBed.createComponent(SignedInHome);
     fixture.detectChanges();
     const root = fixture.nativeElement as HTMLElement;
     return { fixture, root, router: TestBed.inject(Router) };
@@ -92,6 +92,23 @@ describe('Home', () => {
     expect(alert?.textContent).toContain('could not confirm your session');
     expect(root.textContent).not.toContain('casey@example.com');
   });
+
+  it.each(['client', 'trainer', 'admin'] as const)(
+    'shows the role of a signed-in %s',
+    (role) => {
+      const current: User = { ...client, role, displayName: `Test ${role}` };
+      user.set(current);
+      const response = new Subject<User>();
+      getMe.mockReturnValue(response);
+      const { fixture, root } = setup();
+
+      response.next(current);
+      fixture.detectChanges();
+
+      expect(root.querySelector('h1')?.textContent).toContain(`Test ${role}`);
+      expect(root.textContent).toContain(`casey@example.com · ${role}`);
+    },
+  );
 
   it('shows no personal details once the user is gone', () => {
     const response = new Subject<User>();

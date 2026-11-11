@@ -11,7 +11,7 @@ Production uses the Cognito hosted login (D7), so `/login` is a thin landing pag
 | `LoginConfig` | `{ title: string; description?: string; expectedRole: Role; homePath: string }` |
 | `loginRoutes(config): Route[]` | Route `login` (lazy `LoginPage`) and, only when `isDevMode()` is true, route `dev-login` (lazy `DevLoginPage`). Both carry the config in route `data`. |
 | `LoginPage` | Selector `fc-login-page`. Heading, optional description and a "Sign in" button that calls `AuthService.signIn(returnUrl)`. Already signed in with `expectedRole`: redirects to the return URL instead of rendering. |
-| `DevLoginPage` | Selector `fc-dev-login-page`. Signal Forms form (email, password) that calls `DevAuthService.login(email, password, expectedRole)`. |
+| `DevLoginPage` (not exported) | Selector `fc-dev-login-page`. Signal Forms form (email, password) that calls `DevAuthService.login(email, password, expectedRole)`. Only reachable through the lazy `dev-login` route, so production builds can leave it out. |
 
 `returnUrl` comes from the query string and defaults to `homePath`. Only values that start with a single `/` are accepted (no `//host`, `/\host`, absolute URLs or whitespace), so a crafted link cannot redirect users to another site.
 
@@ -25,7 +25,7 @@ export const appConfig: ApplicationConfig = {
   providers: [
     provideRouter(routes),
     provideHttpClient(withInterceptors([authInterceptor])),
-    provideDevAuth(), // development only, see "Production builds"
+    provideAppAuth(), // dev login in development, none in production, see "Production builds"
   ],
 };
 
@@ -46,14 +46,16 @@ The pages inject `AuthService` (landing page) and `DevAuthService` (dev page). `
 
 ## Production builds and the dev page
 
-`loginRoutes` adds `dev-login` only when `isDevMode()` is true. In a production build `isDevMode()` returns `false` at runtime, so the route is never registered and `/dev-login` does not match anything.
+Production builds contain no dev login. Each app's `build` target has a `production` configuration with two `fileReplacements`:
 
-That is a runtime guarantee, not dead-code elimination. `isDevMode()` is a function call, so the bundler cannot prove the branch is dead, and the `import('./dev-login-page')` stays in the build as a lazy chunk that is never requested. That chunk also pulls in `DevAuthService` from `@fitness-connect/auth`. To keep the dev code out of the bundle completely, additionally:
+| Replaced | With | Effect |
+| --- | --- | --- |
+| `libs/frontend/auth/src/lib/provide-app-auth.ts` | `provide-app-auth.production.ts` | `provideAppAuth()` provides `UnconfiguredAuthService` instead of `DevAuthService` |
+| `libs/frontend/feature-login/src/lib/dev-login-routes.ts` | `dev-login-routes.production.ts` | `devLoginRoutes()` returns no routes, so the `dev-login` route and its lazy chunk are gone |
 
-- provide `provideDevAuth()` only from a development configuration (a `fileReplacements` entry for a dev-only `app.config` file, or a separate build configuration), and
-- check the production output for the dev chunk (for example by searching for `dev-login` in `dist/`).
+Dev-only code is reachable only through those two files: `DevAuthService` and `provideDevAuth()` live behind the `@fitness-connect/auth/dev` entry point, and `DevLoginPage` is not exported from this library. After a production build the output must not contain `DevAuth` or `dev-login` (`pnpm check:prod-bundles` checks this).
 
-`DevAuthService` is also only instantiated when somebody injects it, so a production build that does not call `provideDevAuth()` never creates it, and the API's dev login endpoint does not exist in production either (D20).
+In development, `devLoginRoutes()` still checks `isDevMode()` before it adds the route. The real production sign-in (Cognito hosted login, D7) replaces `UnconfiguredAuthService`; until then the landing page's "Sign in" button throws "not implemented".
 
 ## Running unit tests
 

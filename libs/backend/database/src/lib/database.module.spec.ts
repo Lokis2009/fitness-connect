@@ -30,7 +30,7 @@ describe('DatabaseModule', () => {
       API_PORT: 3000,
       CORS_ORIGINS: [],
       DATABASE_URL: url,
-      JWT_DEV_SECRET: 'secret-for-tests',
+      JWT_DEV_SECRET: 'secret-for-tests-of-at-least-32-characters',
     };
     return Test.createTestingModule({
       imports: [AppConfigModule.forRoot(env), DatabaseModule],

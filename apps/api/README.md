@@ -21,11 +21,11 @@ at startup and exits with a list of all problems.
 
 | Variable | Notes |
 |----------|-------|
-| `NODE_ENV` | `development` (default), `test` or `production` |
+| `NODE_ENV` | Required, no default: `development`, `test` or `production` |
 | `API_PORT` | 1 to 65535, default 3000 |
 | `CORS_ORIGINS` | Comma separated allow-list, default none |
 | `DATABASE_URL` | Required, `postgres://` URL |
-| `JWT_DEV_SECRET` | Required unless `NODE_ENV=production`; must not be set in production |
+| `JWT_DEV_SECRET` | Required unless `NODE_ENV=production`, at least 32 characters; must not be set in production |
 
 ## Run
 
@@ -41,7 +41,7 @@ pnpm nx serve api
 ```
 
 `pnpm db:generate` runs `drizzle-kit generate` after you change `libs/backend/database/src/lib/schema`;
-commit the generated SQL. `db:seed` refuses to run when `NODE_ENV=production`.
+commit the generated SQL. `db:seed` runs only when `NODE_ENV` is `development` or `test`.
 
 ### Seeded users
 

@@ -7,11 +7,8 @@ import {
   required,
 } from '@angular/forms/signals';
 import { ActivatedRoute, Router } from '@angular/router';
-import {
-  DevAuthService,
-  InvalidCredentialsError,
-  WrongRoleError,
-} from '@fitness-connect/auth';
+import { InvalidCredentialsError, WrongRoleError } from '@fitness-connect/auth';
+import { DevAuthService } from '@fitness-connect/auth/dev';
 import {
   FcAlert,
   FcButton,

@@ -4,7 +4,7 @@ import {
   provideBrowserGlobalErrorListeners,
 } from '@angular/core';
 import { provideRouter } from '@angular/router';
-import { authInterceptor, provideDevAuth } from '@fitness-connect/auth';
+import { authInterceptor, provideAppAuth } from '@fitness-connect/auth';
 import { appRoutes } from './app.routes';
 
 export const appConfig: ApplicationConfig = {
@@ -12,6 +12,6 @@ export const appConfig: ApplicationConfig = {
     provideBrowserGlobalErrorListeners(),
     provideRouter(appRoutes),
     provideHttpClient(withInterceptors([authInterceptor])),
-    provideDevAuth(), // development only: see feature-login README, "Production builds"
+    provideAppAuth(), // dev login in development, none in production (fileReplacements)
   ],
 };

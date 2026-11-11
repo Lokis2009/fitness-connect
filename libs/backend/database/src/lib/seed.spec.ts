@@ -95,11 +95,34 @@ describe('seedDevUsers', () => {
     expect(admin.displayName).not.toBe('Changed');
   });
 
-  it('refuses to run in production', async () => {
+  it.each([['production'], ['staging'], ['']])(
+    'refuses to run when NODE_ENV is "%s"',
+    async (value) => {
+      const previous = process.env['NODE_ENV'];
+      process.env['NODE_ENV'] = value;
+      try {
+        await expect(seedDevUsers(handle.db)).rejects.toThrow(/NODE_ENV/);
+      } finally {
+        process.env['NODE_ENV'] = previous;
+      }
+    },
+  );
+
+  it('refuses to run when NODE_ENV is unset', async () => {
     const previous = process.env['NODE_ENV'];
-    process.env['NODE_ENV'] = 'production';
+    delete process.env['NODE_ENV'];
     try {
-      await expect(seedDevUsers(handle.db)).rejects.toThrow(/production/);
+      await expect(seedDevUsers(handle.db)).rejects.toThrow(/NODE_ENV/);
+    } finally {
+      process.env['NODE_ENV'] = previous;
+    }
+  });
+
+  it('runs when NODE_ENV is development', async () => {
+    const previous = process.env['NODE_ENV'];
+    process.env['NODE_ENV'] = 'development';
+    try {
+      await expect(seedDevUsers(handle.db)).resolves.toBeUndefined();
     } finally {
       process.env['NODE_ENV'] = previous;
     }

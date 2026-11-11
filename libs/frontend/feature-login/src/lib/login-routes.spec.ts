@@ -2,7 +2,8 @@ import { Component, computed, isDevMode, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { type Route, provideRouter } from '@angular/router';
 import { RouterTestingHarness } from '@angular/router/testing';
-import { AuthService, DevAuthService } from '@fitness-connect/auth';
+import { AuthService } from '@fitness-connect/auth';
+import { DevAuthService } from '@fitness-connect/auth/dev';
 import { DevLoginPage } from './dev-login-page';
 import {
   LOGIN_CONFIG_DATA_KEY,

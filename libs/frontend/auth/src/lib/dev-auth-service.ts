@@ -37,14 +37,19 @@ export class DevAuthService extends AuthService {
     this.#user.set(null);
   }
 
-  /** Reads the stored token and loads the user with `GET /v1/me`; clears the token on failure. */
+  /**
+   * Reads the stored token and loads the user with `GET /v1/me`. Only a 401 (the token is no
+   * longer valid) clears the token; a network or server failure leaves it so a reload can retry.
+   */
   async restoreSession(): Promise<void> {
     if (this.#storage.get() === null) return;
 
     try {
       this.#user.set(await firstValueFrom(this.#api.getMe()));
-    } catch {
-      this.signOut();
+    } catch (error) {
+      if (error instanceof ApiError && error.status === 401) {
+        this.signOut();
+      }
     }
   }
 
@@ -52,7 +57,8 @@ export class DevAuthService extends AuthService {
    * Signs in with a seeded dev account and resolves with the user.
    *
    * @throws InvalidCredentialsError on HTTP 401
-   * @throws WrongRoleError (after signing out) when `expectedRole` is given and differs
+   * @throws WrongRoleError when `expectedRole` is given and differs; the rejected account's token
+   *   is never stored and an existing session is left alone
    * @throws ApiError for any other API failure
    */
   async login(email: string, password: string, expectedRole?: Role): Promise<User> {
@@ -68,7 +74,6 @@ export class DevAuthService extends AuthService {
 
     const { accessToken, user } = response;
     if (expectedRole !== undefined && user.role !== expectedRole) {
-      this.signOut();
       throw new WrongRoleError(expectedRole, user.role);
     }
 

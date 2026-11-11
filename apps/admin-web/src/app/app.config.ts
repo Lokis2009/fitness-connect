@@ -4,7 +4,7 @@ import {
   provideBrowserGlobalErrorListeners,
 } from '@angular/core';
 import { provideRouter } from '@angular/router';
-import { authInterceptor, provideDevAuth } from '@fitness-connect/auth';
+import { authInterceptor, provideAppAuth } from '@fitness-connect/auth';
 import { appRoutes } from './app.routes';
 
 export const appConfig: ApplicationConfig = {
@@ -13,6 +13,6 @@ export const appConfig: ApplicationConfig = {
     provideRouter(appRoutes),
     provideHttpClient(withInterceptors([authInterceptor])),
     // Development only. Production will provide a Cognito-backed AuthService instead.
-    provideDevAuth(),
+    provideAppAuth(), // dev login in development, none in production (fileReplacements)
   ],
 };

@@ -35,7 +35,7 @@ A marketplace connecting fitness trainers with clients ("Uber for fitness traine
 | D17 | API contract | Contract first: hand-written OpenAPI in `libs/shared/api-contract` is the source of truth; frontend types are generated from it; CI compares the NestJS-generated spec to it | Decided |
 | D18 | ORM | Drizzle ORM with `drizzle-kit` migrations; PostGIS via custom types | Decided |
 | D19 | CI | GitHub Actions running `nx affected` | Decided |
-| D20 | Local dev auth | API issues dev-only JWTs via `POST /v1/dev/login` for seeded users; same JWT guard later validates Cognito tokens. Dev module and the frontend `/dev-login` route never exist in production builds | Decided |
+| D20 | Local dev auth | API issues dev-only JWTs via `POST /v1/dev/login` for seeded users; same JWT guard later validates Cognito tokens. Dev module and the frontend `/dev-login` route never exist in production builds: the API needs an explicit `NODE_ENV` (no default) and mounts the dev module only outside production, and each app's production build replaces `provide-app-auth.ts` and `dev-login-routes.ts` (`fileReplacements`), checked in CI by `pnpm check:prod-bundles`. Until the Cognito implementation exists, production builds use `UnconfiguredAuthService` | Decided |
 | D21 | Local infrastructure | Docker Compose: Postgres with PostGIS, Redis | Decided |
 
 ## 3. High-level architecture
@@ -234,7 +234,6 @@ Next:
 
 ## 12. Known follow-ups from Phase 1
 
-- **Dev auth in production bundles.** `isDevMode()` hides the dev login route at runtime, but `DevAuthService` and the dev page still ship in a production bundle. Add a production build configuration that replaces them before any deployment.
 - **Bundle budgets.** The three apps warn that the initial bundle is about 510 kB against a 500 kB budget (shared UI and Material). Raise the budget or trim the bundle.
 - **Sign-out flash.** In `client-web` the heading briefly reads "Welcome, " after sign-out because the user is cleared before navigation finishes.
 - **Contract versus Nest.** The contract is checked against real responses by schema-validation tests, but the CI comparison of a Nest-generated spec to the hand-written one (D17) is not built because `@nestjs/swagger` is not installed.
