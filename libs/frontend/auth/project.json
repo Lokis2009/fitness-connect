@@ -1,0 +1,10 @@
+{
+  "name": "auth",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/frontend/auth/src",
+  "prefix": "fc",
+  "projectType": "library",
+  "tags": ["scope:shared", "type:data-access"],
+  "// targets": "to see all targets run: nx show project auth --web",
+  "targets": {}
+}

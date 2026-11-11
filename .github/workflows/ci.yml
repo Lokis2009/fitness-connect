@@ -33,7 +33,7 @@ jobs:
     env:
       DATABASE_URL: postgres://fitness:fitness@localhost:5432/fitness_connect
       REDIS_URL: redis://localhost:6379
-      JWT_DEV_SECRET: ci-only-secret
+      JWT_DEV_SECRET: ci-only-secret-of-at-least-32-characters
     steps:
       - uses: actions/checkout@v4
         with:
@@ -54,4 +54,10 @@ jobs:
           git diff --exit-code -- libs/shared/api-contract/src/generated
       - uses: nrwl/nx-set-shas@v4
       - run: pnpm nx affected -t lint build
+      - name: Check production builds contain no dev auth code
+        run: pnpm check:prod-bundles
       - run: pnpm nx affected -t test --coverage
+      - name: Install the Playwright browser
+        run: pnpm exec playwright install --with-deps chromium
+      - name: Run the end-to-end tests
+        run: pnpm nx e2e e2e

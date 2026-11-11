@@ -17,9 +17,11 @@ post:
         application/json:
           schema:
             $ref: '../schemas/DevLoginResponse.yaml'
+    '400':
+      $ref: '../responses/BadRequest.yaml'
     '401':
-      description: Unknown email or wrong password
-      content:
-        application/problem+json:
-          schema:
-            $ref: '../schemas/Problem.yaml'
+      $ref: '../responses/Unauthorized.yaml'
+    '404':
+      $ref: '../responses/NotFound.yaml'
+    '500':
+      $ref: '../responses/InternalError.yaml'

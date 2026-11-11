@@ -1,0 +1,5 @@
+description: The resource or route does not exist
+content:
+  application/problem+json:
+    schema:
+      $ref: '../schemas/Problem.yaml'

@@ -25,3 +25,10 @@ vitest.config.*.timestamp*
 .env
 .env.*
 !.env.example
+
+# Agent worktrees
+/.claude/worktrees
+
+# Playwright output
+test-results
+playwright-report

@@ -1,0 +1,5 @@
+description: The request body or parameters failed validation
+content:
+  application/problem+json:
+    schema:
+      $ref: '../schemas/Problem.yaml'

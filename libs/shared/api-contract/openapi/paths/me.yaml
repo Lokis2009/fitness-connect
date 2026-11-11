@@ -10,8 +10,10 @@ get:
           schema:
             $ref: '../schemas/User.yaml'
     '401':
-      description: Missing, invalid or expired token
-      content:
-        application/problem+json:
-          schema:
-            $ref: '../schemas/Problem.yaml'
+      $ref: '../responses/Unauthorized.yaml'
+    '403':
+      $ref: '../responses/Forbidden.yaml'
+    '404':
+      $ref: '../responses/NotFound.yaml'
+    '500':
+      $ref: '../responses/InternalError.yaml'

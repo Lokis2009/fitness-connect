@@ -1,0 +1,10 @@
+{
+  "name": "feature-login",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/frontend/feature-login/src",
+  "prefix": "fc",
+  "projectType": "library",
+  "tags": ["scope:shared", "type:feature"],
+  "// targets": "to see all targets run: nx show project feature-login --web",
+  "targets": {}
+}
