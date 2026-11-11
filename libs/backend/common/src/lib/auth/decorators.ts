@@ -2,8 +2,9 @@ import {
   createParamDecorator,
   ExecutionContext,
   SetMetadata,
+  UnauthorizedException,
 } from '@nestjs/common';
-import type { AuthUser } from './auth-user';
+import type { AuthenticatedRequest, AuthUser } from './auth-user';
 import type { Role } from './roles';
 
 export const IS_PUBLIC_KEY = 'auth:isPublic';
@@ -18,7 +19,11 @@ export const Roles = (...roles: Role[]) => SetMetadata(ROLES_KEY, roles);
 /** Injects the authenticated caller set by the JWT guard. */
 export const CurrentUser = createParamDecorator(
   (_data: unknown, context: ExecutionContext): AuthUser => {
-    void context;
-    throw new Error('not implemented');
+    const { user } = context.switchToHttp().getRequest<AuthenticatedRequest>();
+    if (!user) {
+      // Only reachable on a @Public() route, where there is no caller.
+      throw new UnauthorizedException();
+    }
+    return user;
   },
 );

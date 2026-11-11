@@ -1,5 +1,11 @@
-import * as crypto from 'node:crypto';
+import { timingSafeEqual } from 'node:crypto';
 import { hashPassword, verifyPassword } from './password-hash';
+
+jest.mock('node:crypto', () => {
+  const actual =
+    jest.requireActual<typeof import('node:crypto')>('node:crypto');
+  return { ...actual, timingSafeEqual: jest.fn(actual.timingSafeEqual) };
+});
 
 describe('password hashing', () => {
   it('stores scrypt$N$r$p$salt$hash with base64url salt and hash', async () => {
@@ -37,12 +43,11 @@ describe('password hashing', () => {
 
   it('compares in constant time', async () => {
     const stored = await hashPassword('password');
-    const spy = jest.spyOn(crypto, 'timingSafeEqual');
+    jest.mocked(timingSafeEqual).mockClear();
 
     await verifyPassword('password', stored);
 
-    expect(spy).toHaveBeenCalledTimes(1);
-    spy.mockRestore();
+    expect(timingSafeEqual).toHaveBeenCalledTimes(1);
   });
 
   it.each([

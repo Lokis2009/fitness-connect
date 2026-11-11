@@ -1,5 +1,6 @@
-import type { INestApplication } from '@nestjs/common';
+import { INestApplication, ValidationPipe } from '@nestjs/common';
 import type { Env } from '../config/env';
+import { ProblemDetailsFilter } from './problem-details.filter';
 
 export const API_PREFIX = 'v1';
 
@@ -11,7 +12,14 @@ export function configureApp(
   app: INestApplication,
   env: Pick<Env, 'CORS_ORIGINS'>,
 ): void {
-  void app;
-  void env;
-  throw new Error('not implemented');
+  app.setGlobalPrefix(API_PREFIX);
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,
+      forbidNonWhitelisted: true,
+      transform: true,
+    }),
+  );
+  app.useGlobalFilters(new ProblemDetailsFilter());
+  app.enableCors({ origin: env.CORS_ORIGINS });
 }

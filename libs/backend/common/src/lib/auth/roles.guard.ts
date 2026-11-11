@@ -1,5 +1,13 @@
-import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
+import {
+  CanActivate,
+  ExecutionContext,
+  ForbiddenException,
+  Injectable,
+} from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
+import type { AuthenticatedRequest } from './auth-user';
+import { ROLES_KEY } from './decorators';
+import type { Role } from './roles';
 
 /** Global guard: enforces `@Roles()` against the user set by the JWT guard. */
 @Injectable()
@@ -7,8 +15,16 @@ export class RolesGuard implements CanActivate {
   constructor(private readonly reflector: Reflector) {}
 
   canActivate(context: ExecutionContext): boolean {
-    void this.reflector;
-    void context;
-    throw new Error('not implemented');
+    const required = this.reflector.getAllAndOverride<Role[] | undefined>(
+      ROLES_KEY,
+      [context.getHandler(), context.getClass()],
+    );
+    if (!required || required.length === 0) return true;
+
+    const { user } = context.switchToHttp().getRequest<AuthenticatedRequest>();
+    if (!user || !required.includes(user.role)) {
+      throw new ForbiddenException();
+    }
+    return true;
   }
 }

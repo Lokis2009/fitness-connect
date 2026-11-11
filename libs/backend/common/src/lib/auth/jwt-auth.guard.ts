@@ -4,9 +4,14 @@ import {
   Inject,
   Injectable,
   Optional,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
+import type { AuthenticatedRequest } from './auth-user';
+import { IS_PUBLIC_KEY } from './decorators';
 import { TOKEN_VERIFIER, type TokenVerifier } from './token-verifier';
+
+const BEARER = /^Bearer\s+(\S+)$/i;
 
 /**
  * Global guard: requires a valid bearer token on every route that is not
@@ -23,9 +28,31 @@ export class JwtAuthGuard implements CanActivate {
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    void this.reflector;
-    void this.verifier;
-    void context;
-    throw new Error('not implemented');
+    const isPublic = this.reflector.getAllAndOverride<boolean | undefined>(
+      IS_PUBLIC_KEY,
+      [context.getHandler(), context.getClass()],
+    );
+    if (isPublic) return true;
+
+    const request = context.switchToHttp().getRequest<AuthenticatedRequest>();
+    const token = extractBearerToken(request.headers['authorization']);
+    if (!token || !this.verifier) {
+      throw new UnauthorizedException();
+    }
+
+    try {
+      request.user = await this.verifier.verify(token);
+    } catch {
+      // Never reveal why a token was refused.
+      throw new UnauthorizedException();
+    }
+    return true;
   }
+}
+
+function extractBearerToken(
+  header: string | string[] | undefined,
+): string | undefined {
+  if (typeof header !== 'string') return undefined;
+  return BEARER.exec(header)?.[1];
 }
