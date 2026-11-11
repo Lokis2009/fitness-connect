@@ -35,7 +35,7 @@ A marketplace connecting fitness trainers with clients ("Uber for fitness traine
 | D17 | API contract | Contract first: hand-written OpenAPI in `libs/shared/api-contract` is the source of truth; frontend types are generated from it; CI compares the NestJS-generated spec to it | Decided |
 | D18 | ORM | Drizzle ORM with `drizzle-kit` migrations; PostGIS via custom types | Decided |
 | D19 | CI | GitHub Actions running `nx affected` | Decided |
-| D20 | Local dev auth | API issues dev-only JWTs via `POST /v1/dev/login` for seeded users; same JWT guard later validates Cognito tokens. Dev module and the frontend `/dev-login` route never exist in production builds | Decided |
+| D20 | Local dev auth | API issues dev-only JWTs via `POST /v1/dev/login` for seeded users; same JWT guard later validates Cognito tokens. Dev module and the frontend `/dev-login` route never exist in production builds: the API needs an explicit `NODE_ENV` (no default) and mounts the dev module only outside production, and each app's production build replaces `provide-app-auth.ts` and `dev-login-routes.ts` (`fileReplacements`), checked in CI by `pnpm check:prod-bundles`. Until the Cognito implementation exists, production builds use `UnconfiguredAuthService` | Decided |
 | D21 | Local infrastructure | Docker Compose: Postgres with PostGIS, Redis | Decided |
 
 ## 3. High-level architecture

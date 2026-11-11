@@ -4,11 +4,16 @@
   "projectType": "application",
   "prefix": "fc",
   "sourceRoot": "apps/admin-web/src",
-  "tags": ["scope:admin", "type:app"],
+  "tags": [
+    "scope:admin",
+    "type:app"
+  ],
   "targets": {
     "build": {
       "executor": "@angular/build:application",
-      "outputs": ["{options.outputPath}"],
+      "outputs": [
+        "{options.outputPath}"
+      ],
       "defaultConfiguration": "production",
       "options": {
         "outputPath": "dist/apps/admin-web",
@@ -27,6 +32,16 @@
       },
       "configurations": {
         "production": {
+          "fileReplacements": [
+            {
+              "replace": "libs/frontend/auth/src/lib/provide-app-auth.ts",
+              "with": "libs/frontend/auth/src/lib/provide-app-auth.production.ts"
+            },
+            {
+              "replace": "libs/frontend/feature-login/src/lib/dev-login-routes.ts",
+              "with": "libs/frontend/feature-login/src/lib/dev-login-routes.production.ts"
+            }
+          ],
           "budgets": [
             {
               "type": "initial",
@@ -73,7 +88,9 @@
       "readyWhen": {
         "signal": true
       },
-      "dependsOn": ["build"],
+      "dependsOn": [
+        "build"
+      ],
       "executor": "@nx/web:file-server",
       "options": {
         "buildTarget": "admin-web:build",

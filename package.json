@@ -5,6 +5,7 @@
   "scripts": {
     "dev:infra": "docker compose up -d --wait",
     "dev:infra:down": "docker compose down",
+    "check:prod-bundles": "node tools/check-prod-bundles.mjs",
     "test:hooks": "node --test .claude/hooks/*.test.mjs",
     "mock:api": "prism mock libs/shared/api-contract/openapi/openapi.yaml --port 4010",
     "contract:lint": "redocly lint libs/shared/api-contract/openapi/openapi.yaml",

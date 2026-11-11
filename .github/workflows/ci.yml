@@ -54,6 +54,8 @@ jobs:
           git diff --exit-code -- libs/shared/api-contract/src/generated
       - uses: nrwl/nx-set-shas@v4
       - run: pnpm nx affected -t lint build
+      - name: Check production builds contain no dev auth code
+        run: pnpm check:prod-bundles
       - run: pnpm nx affected -t test --coverage
       - name: Install the Playwright browser
         run: pnpm exec playwright install --with-deps chromium
