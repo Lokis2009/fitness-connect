@@ -5,7 +5,8 @@ Architecture decisions are in [`Architecture.md`](Architecture.md).
 
 ## Local development
 
-Prerequisites: Node 20.19+ or 22.12+, pnpm, Docker.
+Prerequisites: Node 20.19+ or 22.12+ (`nvm use` picks the version from `.nvmrc`), pnpm, Docker. Older Node
+versions make Nx fail with "Failed to process project graph".
 
 ```sh
 pnpm install
