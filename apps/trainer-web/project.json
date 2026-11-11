@@ -1,0 +1,85 @@
+{
+  "name": "trainer-web",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "application",
+  "prefix": "fc",
+  "sourceRoot": "apps/trainer-web/src",
+  "tags": ["scope:trainer", "type:app"],
+  "targets": {
+    "build": {
+      "executor": "@angular/build:application",
+      "outputs": ["{options.outputPath}"],
+      "defaultConfiguration": "production",
+      "options": {
+        "outputPath": "dist/apps/trainer-web",
+        "browser": "apps/trainer-web/src/main.ts",
+        "tsConfig": "apps/trainer-web/tsconfig.app.json",
+        "assets": [
+          {
+            "glob": "**/*",
+            "input": "apps/trainer-web/public"
+          }
+        ],
+        "styles": [
+          "apps/trainer-web/src/styles.css",
+          "libs/frontend/ui/src/styles/material-theme.scss"
+        ]
+      },
+      "configurations": {
+        "production": {
+          "budgets": [
+            {
+              "type": "initial",
+              "maximumWarning": "500kb",
+              "maximumError": "1mb"
+            },
+            {
+              "type": "anyComponentStyle",
+              "maximumWarning": "4kb",
+              "maximumError": "8kb"
+            }
+          ],
+          "outputHashing": "all"
+        },
+        "development": {
+          "optimization": false,
+          "extractLicenses": false,
+          "sourceMap": true
+        }
+      }
+    },
+    "serve": {
+      "continuous": true,
+      "readyWhen": {
+        "signal": true
+      },
+      "executor": "@angular/build:dev-server",
+      "options": {
+        "proxyConfig": "tools/dev/proxy.conf.cjs",
+        "port": 4201
+      },
+      "defaultConfiguration": "development",
+      "configurations": {
+        "production": {
+          "buildTarget": "trainer-web:build:production"
+        },
+        "development": {
+          "buildTarget": "trainer-web:build:development"
+        }
+      }
+    },
+    "serve-static": {
+      "continuous": true,
+      "readyWhen": {
+        "signal": true
+      },
+      "dependsOn": ["build"],
+      "executor": "@nx/web:file-server",
+      "options": {
+        "buildTarget": "trainer-web:build",
+        "staticFilePath": "dist/apps/trainer-web/browser",
+        "spa": true
+      }
+    }
+  }
+}
