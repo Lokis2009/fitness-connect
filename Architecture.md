@@ -224,8 +224,25 @@ Related plan: `docs/plans/trainer-web.md` (its Q1 to Q7 map to items 2, 1, 9, 11
 
 ## 11. Next steps
 
-1. Resolve the open questions that block scaffolding (ORM, IaC/CI can wait; auth provider and payments should be settled first).
-2. Initialize the Nx workspace (convert the current bare TypeScript setup) with `apps/api`, `apps/client-web`, `apps/trainer-web`, `apps/admin-web`.
-3. Set up local dev with Docker Compose (Postgres+PostGIS, Redis).
-4. Implement the walking skeleton: auth, trainer profile, geo search, one scheduled booking end to end.
-5. Add dispatch and real-time after the booking flow works.
+Phase 1 (foundation and login) is done: the Nx workspace, the three Angular apps, the NestJS API, Postgres with PostGIS, the OpenAPI contract, and a login page in each app that signs in against the real API (development auth). Playwright runs 9 scenarios per app against the live stack (`pnpm nx e2e e2e`; Playwright starts the API and the apps and uses its own `fitness_connect_e2e` database).
+
+Next:
+1. Connect Cognito: a real `AuthService` implementation (hosted login, OIDC) and a Cognito JWKS verifier behind the existing JWT verifier abstraction (D7).
+2. Resolve the open questions that block the next features (section 10), payments first.
+3. Implement the walking skeleton: trainer profile, geo search, one scheduled booking end to end.
+4. Add dispatch and real-time after the booking flow works.
+
+## 12. Known follow-ups from Phase 1
+
+- **Dev auth in production bundles.** `isDevMode()` hides the dev login route at runtime, but `DevAuthService` and the dev page still ship in a production bundle. Add a production build configuration that replaces them before any deployment.
+- **Bundle budgets.** The three apps warn that the initial bundle is about 510 kB against a 500 kB budget (shared UI and Material). Raise the budget or trim the bundle.
+- **Sign-out flash.** In `client-web` the heading briefly reads "Welcome, " after sign-out because the user is cleared before navigation finishes.
+- **Contract versus Nest.** The contract is checked against real responses by schema-validation tests, but the CI comparison of a Nest-generated spec to the hand-written one (D17) is not built because `@nestjs/swagger` is not installed.
+- **Accessibility checks.** `axe-core` is not installed, so accessibility is covered by explicit assertions, not an AXE run. The Material outline, spinner and theme have been exercised by e2e but not reviewed visually.
+- **Commit guard.** The hook that enforces commit format and green checks is in the gitignored `.claude/settings.local.json`, so it protects only this machine.
+- **Local setup notes.** Official PostGIS images are amd64 only and run under emulation on Apple Silicon. The `docker` CLI path may need adding to your shell (`/Applications/Docker.app/Contents/Resources/bin`).
+- **Formatting.** Prettier is configured but not applied consistently across the repo.
+
+## 13. Form controls
+
+Form controls in the shared UI library implement `FormValueControl` from `@angular/forms/signals` and bind with `[formField]` (Angular 22.2 uses `[formField]`, not `[field]`). `fc-form-field` provides the `FC_FORM_FIELD` token that links label, hint and error to the wrapped control for accessibility. Feature libs cannot write a native `<form>`, so they use `fc-form` with `[form]` bound to a Signal Forms field tree.
