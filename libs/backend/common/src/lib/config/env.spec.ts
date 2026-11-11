@@ -1,8 +1,9 @@
 import { EnvValidationError, validateEnv } from './env';
 
 const valid = {
+  NODE_ENV: 'development',
   DATABASE_URL: 'postgres://fitness:fitness@localhost:5432/fitness_connect',
-  JWT_DEV_SECRET: 'change-me-dev-only',
+  JWT_DEV_SECRET: 'dev-only-secret-of-at-least-32-characters',
 };
 
 describe('validateEnv', () => {
@@ -44,6 +45,9 @@ describe('validateEnv', () => {
 
   it.each([
     ['an unknown NODE_ENV', { NODE_ENV: 'staging' }, 'NODE_ENV'],
+    ['a missing NODE_ENV', { NODE_ENV: undefined }, 'NODE_ENV'],
+    ['a blank NODE_ENV', { NODE_ENV: '' }, 'NODE_ENV'],
+    ['a dev secret shorter than 32 characters', { JWT_DEV_SECRET: 'short' }, 'JWT_DEV_SECRET'],
     ['a non numeric port', { API_PORT: 'abc' }, 'API_PORT'],
     ['a port of zero', { API_PORT: '0' }, 'API_PORT'],
     ['a port above 65535', { API_PORT: '65536' }, 'API_PORT'],
