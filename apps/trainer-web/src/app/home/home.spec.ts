@@ -115,7 +115,7 @@ describe('Home', () => {
     );
   });
 
-  it('signs out and navigates to /login when "Sign out" is clicked', async () => {
+  it('signs out and navigates to /login when "Sign out" is clicked', () => {
     const navigate = vi
       .spyOn(TestBed.inject(Router), 'navigateByUrl')
       .mockResolvedValue(true);
@@ -125,6 +125,5 @@ describe('Home', () => {
 
     expect(signOut).toHaveBeenCalledTimes(1);
     expect(navigate).toHaveBeenCalledWith('/login');
-    await fixture.whenStable();
   });
 });
