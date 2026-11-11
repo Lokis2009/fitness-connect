@@ -234,7 +234,6 @@ Next:
 
 ## 12. Known follow-ups from Phase 1
 
-- **Dev auth in production bundles.** `isDevMode()` hides the dev login route at runtime, but `DevAuthService` and the dev page still ship in a production bundle. Add a production build configuration that replaces them before any deployment.
 - **Bundle budgets.** The three apps warn that the initial bundle is about 510 kB against a 500 kB budget (shared UI and Material). Raise the budget or trim the bundle.
 - **Sign-out flash.** In `client-web` the heading briefly reads "Welcome, " after sign-out because the user is cleared before navigation finishes.
 - **Contract versus Nest.** The contract is checked against real responses by schema-validation tests, but the CI comparison of a Nest-generated spec to the hand-written one (D17) is not built because `@nestjs/swagger` is not installed.
