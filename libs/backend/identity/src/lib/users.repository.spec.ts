@@ -39,6 +39,10 @@ describe('UsersRepository (real database)', () => {
     it('returns null for an id that does not exist', async () => {
       await expect(repository.findById(randomUUID())).resolves.toBeNull();
     });
+
+    it('returns null, not a database error, for an id that is not a uuid', async () => {
+      await expect(repository.findById('not-a-uuid')).resolves.toBeNull();
+    });
   });
 
   describe('findWithDevCredentials', () => {
