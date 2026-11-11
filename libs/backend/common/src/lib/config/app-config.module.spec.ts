@@ -9,7 +9,7 @@ describe('AppConfigModule', () => {
       API_PORT: 3000,
       CORS_ORIGINS: [],
       DATABASE_URL: 'postgres://localhost/db',
-      JWT_DEV_SECRET: 'secret-for-tests',
+      JWT_DEV_SECRET: 'secret-for-tests-of-at-least-32-characters',
     };
 
     const moduleRef = await Test.createTestingModule({

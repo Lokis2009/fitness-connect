@@ -17,15 +17,17 @@ export type RawEnv = Record<string, string | undefined>;
 export class EnvValidationError extends Error {}
 
 const DEFAULT_API_PORT = 3000;
+const MIN_DEV_SECRET_LENGTH = 32;
 
 /** Parses and validates the raw environment. Throws {@link EnvValidationError} when invalid. */
 export function validateEnv(raw: RawEnv): Env {
   const problems: string[] = [];
 
-  const nodeEnv = raw['NODE_ENV'] || 'development';
+  // No default: a deployment that forgets NODE_ENV must not silently run in development mode.
+  const nodeEnv = raw['NODE_ENV'] ?? '';
   if (!(NODE_ENVS as readonly string[]).includes(nodeEnv)) {
     problems.push(
-      `NODE_ENV must be one of ${NODE_ENVS.join(', ')} (got "${nodeEnv}")`,
+      `NODE_ENV is required and must be one of ${NODE_ENVS.join(', ')} (got "${nodeEnv}")`,
     );
   }
   const isProduction = nodeEnv === 'production';
@@ -60,6 +62,10 @@ export function validateEnv(raw: RawEnv): Env {
     }
   } else if (!devSecret?.trim()) {
     problems.push('JWT_DEV_SECRET is required outside production');
+  } else if (devSecret.length < MIN_DEV_SECRET_LENGTH) {
+    problems.push(
+      `JWT_DEV_SECRET must be at least ${MIN_DEV_SECRET_LENGTH} characters`,
+    );
   }
 
   if (problems.length > 0) {

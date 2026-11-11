@@ -5,7 +5,7 @@ import { SignJWT } from 'jose';
 import { createApp } from '../app/create-app';
 
 export const TEST_DATABASE_NAME = 'fitness_connect_test';
-export const TEST_JWT_SECRET = 'integration-test-secret';
+export const TEST_JWT_SECRET = 'integration-test-secret-of-at-least-32-characters';
 
 /** An environment pointing at the migrated and seeded `fitness_connect_test` database. */
 export async function integrationEnv(

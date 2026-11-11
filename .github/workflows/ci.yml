@@ -33,7 +33,7 @@ jobs:
     env:
       DATABASE_URL: postgres://fitness:fitness@localhost:5432/fitness_connect
       REDIS_URL: redis://localhost:6379
-      JWT_DEV_SECRET: ci-only-secret
+      JWT_DEV_SECRET: ci-only-secret-of-at-least-32-characters
     steps:
       - uses: actions/checkout@v4
         with:
