@@ -44,7 +44,7 @@ describe('FcText', () => {
     fixture.componentInstance.variant.set('small');
     await fixture.whenStable();
     expect(paragraph('bound').classList).toContain('text-sm');
-    expect(paragraph('bound').classList).not.toContain('text-on-surface/70');
+    expect(paragraph('bound').classList).not.toContain('text-base');
 
     fixture.componentInstance.variant.set('body');
     await fixture.whenStable();
