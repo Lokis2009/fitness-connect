@@ -96,12 +96,13 @@ describe('SignedInHome', () => {
   it.each(['client', 'trainer', 'admin'] as const)(
     'shows the role of a signed-in %s',
     (role) => {
-      user.set({ ...client, role, displayName: `Test ${role}` });
+      const current: User = { ...client, role, displayName: `Test ${role}` };
+      user.set(current);
       const response = new Subject<User>();
       getMe.mockReturnValue(response);
       const { fixture, root } = setup();
 
-      response.next(user()!);
+      response.next(current);
       fixture.detectChanges();
 
       expect(root.querySelector('h1')?.textContent).toContain(`Test ${role}`);
