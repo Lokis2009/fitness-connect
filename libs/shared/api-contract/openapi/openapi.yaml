@@ -9,7 +9,7 @@ info:
     Source of truth for the HTTP API. Keep this file thin: add paths under
     paths/ and schemas under schemas/ and reference them here.
 servers:
-  - url: /v1
+  - url: http://localhost:3000/v1
 tags:
   - name: system
     description: Liveness and service information.

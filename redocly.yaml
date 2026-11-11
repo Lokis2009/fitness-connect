@@ -4,3 +4,5 @@ extends:
 rules:
   # The health check has no meaningful client error.
   operation-4xx-response: off
+  # The local server URL is intentional: Prism mounts the mock under its /v1 path.
+  no-server-example.com: off
