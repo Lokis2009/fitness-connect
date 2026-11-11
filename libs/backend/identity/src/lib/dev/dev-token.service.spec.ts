@@ -15,7 +15,8 @@ const caller: AuthUser = {
   role: 'trainer',
 };
 
-function service(secret: string | undefined = SECRET) {
+function service(...args: [] | [secret: string | undefined]) {
+  const secret = args.length === 0 ? SECRET : args[0];
   return new DevTokenService({ JWT_DEV_SECRET: secret } as Env);
 }
 

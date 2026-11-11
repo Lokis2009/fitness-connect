@@ -1,7 +1,8 @@
 import { Body, Controller, HttpCode, Post } from '@nestjs/common';
 import { Public } from '@fitness-connect/common';
 import { DevAuthService } from './dev-auth.service';
-import type { DevLoginDto, DevLoginResponseDto } from './dev-login.dto';
+// Value import on purpose: the validation pipe reads the class from decorator metadata.
+import { DevLoginDto, type DevLoginResponseDto } from './dev-login.dto';
 
 @Controller('dev')
 export class DevAuthController {
@@ -11,8 +12,6 @@ export class DevAuthController {
   @Post('login')
   @HttpCode(200)
   login(@Body() body: DevLoginDto): Promise<DevLoginResponseDto> {
-    void this.auth;
-    void body;
-    throw new Error('not implemented');
+    return this.auth.login(body);
   }
 }
