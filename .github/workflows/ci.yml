@@ -44,6 +44,8 @@ jobs:
           node-version: 22
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      - name: Test the commit guard
+        run: pnpm test:hooks
       - name: Lint the OpenAPI contract
         run: pnpm contract:lint
       - name: Check generated contract types are up to date
