@@ -1,5 +1,5 @@
 import { TestBed } from '@angular/core/testing';
-import { provideRouter } from '@angular/router';
+import { provideRouter, Router } from '@angular/router';
 import { App } from './app';
 import { appRoutes } from './app.routes';
 
@@ -11,8 +11,11 @@ describe('App', () => {
     }).compileComponents();
   });
 
-  it('creates the root component', () => {
+  it('renders the home page from the shared UI library', async () => {
     const fixture = TestBed.createComponent(App);
-    expect(fixture.componentInstance).toBeTruthy();
+    await TestBed.inject(Router).navigateByUrl('/');
+    await fixture.whenStable();
+    const compiled = fixture.nativeElement as HTMLElement;
+    expect(compiled.querySelectorAll('fc-home fc-button').length).toBe(3);
   });
 });
