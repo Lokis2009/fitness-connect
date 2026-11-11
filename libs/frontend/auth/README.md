@@ -13,9 +13,11 @@ Authentication for the client, trainer and admin apps. Import path: `@fitness-co
 | `AuthService.signIn(returnUrl?: string): void` | Starts sign-in. Production will redirect to the Cognito hosted login, so do not assume a password form. |
 | `AuthService.signOut(): void` | Clears the session. Does not navigate. |
 | `AuthService.restoreSession(): Promise<void>` | Restores a session after a reload. Never rejects. `DevAuthService` discards the stored token only on a 401; a network or server failure keeps it so the next reload can retry. |
-| `DevAuthService` | Development implementation (see below). |
+| `DevAuthService` (from `@fitness-connect/auth/dev`) | Development implementation (see below). |
 | `DevAuthService.login(email, password, expectedRole?): Promise<User>` | Signs in via `POST /v1/dev/login`. Throws `InvalidCredentialsError` (401), `WrongRoleError` (role differs from `expectedRole`; the rejected account is not stored and an existing session is left alone), or `ApiError`. |
-| `provideDevAuth(): EnvironmentProviders` | Provides `DevAuthService` as `AuthService` and restores the session at startup. |
+| `provideDevAuth(): EnvironmentProviders` (from `@fitness-connect/auth/dev`) | Provides `DevAuthService` as `AuthService` and restores the session at startup. |
+| `provideAppAuth(): EnvironmentProviders` | What the apps call. Development: `provideDevAuth()`. Production builds swap the file for `provide-app-auth.production.ts` (`fileReplacements`), which provides `UnconfiguredAuthService` (no session; `signIn` throws until the Cognito implementation exists). |
+| `UnconfiguredAuthService` | Production placeholder `AuthService`. |
 | `authGuard` | `CanActivateFn`. Unauthenticated users go to `/login?returnUrl=<url>`. |
 | `roleGuard(role: Role): CanActivateFn` | Same redirect when the user's role differs (or nobody is signed in). |
 | `authInterceptor` | `HttpInterceptorFn`. Adds `Authorization: Bearer <token>` only to URLs under `API_BASE_URL` (default `/api/v1`). |
@@ -31,7 +33,7 @@ export const appConfig: ApplicationConfig = {
   providers: [
     provideRouter(routes),
     provideHttpClient(withInterceptors([authInterceptor])),
-    provideDevAuth(), // non-production only (see below)
+    provideAppAuth(), // dev login in development, none in production (see below)
   ],
 };
 
@@ -43,9 +45,9 @@ export const routes: Routes = [
 ];
 ```
 
-- `provideDevAuth()` and the `/dev-login` route must only be added when the environment is not production (use a separate `app.config.dev.ts` or a file replacement). Production builds will provide a Cognito-backed `AuthService` instead (later phase). `DevAuthService` is tree-shaken from builds that never reference it.
+- Dev-only code lives behind the `@fitness-connect/auth/dev` entry point and is reachable only from `provide-app-auth.ts` and the `dev-login` route, both of which production builds replace (see the feature-login README), so it never reaches the production bundle. Production builds will provide a Cognito-backed `AuthService` instead (later phase).
 - Register `authInterceptor` with `provideHttpClient`, otherwise requests go out without a token and session restore always fails.
-- Guards run after `provideDevAuth()`'s startup `restoreSession()`, so a reload keeps the user on the page.
+- Guards run after the startup `restoreSession()`, so a reload keeps the user on the page.
 
 ## Dev login page
 

@@ -2,11 +2,8 @@ import { Component } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { Router, provideRouter } from '@angular/router';
 import { RouterTestingHarness } from '@angular/router/testing';
-import {
-  DevAuthService,
-  InvalidCredentialsError,
-  WrongRoleError,
-} from '@fitness-connect/auth';
+import { InvalidCredentialsError, WrongRoleError } from '@fitness-connect/auth';
+import { DevAuthService } from '@fitness-connect/auth/dev';
 import type { Role, User } from '@fitness-connect/data-access';
 import { DevLoginPage } from './dev-login-page';
 import { LOGIN_CONFIG_DATA_KEY, type LoginConfig } from './login-config';

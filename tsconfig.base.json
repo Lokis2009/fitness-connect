@@ -26,6 +26,7 @@
         "./libs/frontend/data-access/src/index.ts"
       ],
       "@fitness-connect/auth": ["./libs/frontend/auth/src/index.ts"],
+      "@fitness-connect/auth/dev": ["./libs/frontend/auth/src/dev.ts"],
       "@fitness-connect/common": ["./libs/backend/common/src/index.ts"],
       "@fitness-connect/database": ["./libs/backend/database/src/index.ts"],
       "@fitness-connect/identity": ["./libs/backend/identity/src/index.ts"],
