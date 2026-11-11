@@ -1,4 +1,4 @@
-import { Service, computed } from '@angular/core';
+import { Service, signal } from '@angular/core';
 import { AuthService } from './auth-service';
 
 /**
@@ -7,26 +7,22 @@ import { AuthService } from './auth-service';
  */
 @Service()
 export class UnconfiguredAuthService extends AuthService {
-  readonly user = computed(() => {
-    throw new Error('not implemented');
-  });
-  readonly isAuthenticated = computed(() => {
-    throw new Error('not implemented');
-  });
+  readonly user = signal(null).asReadonly();
+  readonly isAuthenticated = signal(false).asReadonly();
 
   accessToken(): string | null {
-    throw new Error('not implemented');
+    return null;
   }
 
   signIn(): void {
-    throw new Error('not implemented');
+    throw new Error('Production sign-in is not implemented yet (Cognito, D7)');
   }
 
   signOut(): void {
-    throw new Error('not implemented');
+    // Nothing to clear: there is never a session.
   }
 
-  restoreSession(): Promise<void> {
-    throw new Error('not implemented');
+  async restoreSession(): Promise<void> {
+    // Nothing to restore.
   }
 }
