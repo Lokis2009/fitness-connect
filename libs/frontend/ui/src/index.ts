@@ -6,3 +6,4 @@ export * from './lib/heading/heading';
 export * from './lib/text/text';
 export * from './lib/alert/alert';
 export * from './lib/form-field/form-field';
+export * from './lib/text-input/text-input';
