@@ -32,6 +32,11 @@ A marketplace connecting fitness trainers with clients ("Uber for fitness traine
 | D14 | Package manager / workspace | pnpm, Nx classic (path-alias) setup, no TS project references (`@nx/angular` does not support them) | Decided |
 | D15 | Shared UI library | `libs/frontend/ui`, import path `@fitness-connect/ui`, selector prefix `fc`, built on Angular Material + CDK, styled with Tailwind CSS and design tokens | Decided |
 | D16 | Raw HTML rule | Apps and feature libs use only `fc-*` components (and `ng-*` structural elements) in templates. Enforced by ESLint (`no-restricted-syntax` in the root `eslint.config.mjs`), switched off only in `libs/frontend/ui` | Decided |
+| D17 | API contract | Contract first: hand-written OpenAPI in `libs/shared/api-contract` is the source of truth; frontend types are generated from it; CI compares the NestJS-generated spec to it | Decided |
+| D18 | ORM | Drizzle ORM with `drizzle-kit` migrations; PostGIS via custom types | Decided |
+| D19 | CI | GitHub Actions running `nx affected` | Decided |
+| D20 | Local dev auth | API issues dev-only JWTs via `POST /v1/dev/login` for seeded users; same JWT guard later validates Cognito tokens. Dev module and the frontend `/dev-login` route never exist in production builds | Decided |
+| D21 | Local infrastructure | Docker Compose: Postgres with PostGIS, Redis | Decided |
 
 ## 3. High-level architecture
 
@@ -126,7 +131,7 @@ NestJS WebSocket gateway (Socket.IO proposed) with the Redis adapter so multiple
 ### 6.4 Authentication and authorization
 - Managed identity provider issues JWTs; the API validates them and maps them to internal users and roles.
 - Role-based access control in NestJS guards. Per-resource ownership checks in services.
-- Provider: Amazon Cognito (D7). Roles (client, trainer, admin) are carried as Cognito groups in the JWT.
+- Provider: Amazon Cognito (D7), hosted login page for now. Each app's login page is a thin "Sign in" landing page. Roles (client, trainer, admin) are carried as Cognito groups in the JWT.
 - Keep it swappable: use standard OIDC in the frontend (not Amplify), hide the provider behind the `AuthService` interface, store users in our own database keyed by the token `sub`, and avoid Cognito-specific custom attributes.
 - Development is free and offline: a fake `AuthService` implementation in the frontend and a stub JWT guard in the API. A real Cognito user pool is created only for staging and production. Verify current Cognito pricing and free-tier limits before launch.
 - Revisit if phone or social login becomes required, or if a fully custom branded sign-in flow is needed. Those are Cognito's weak spots.
@@ -161,7 +166,7 @@ Modelled as a `Location` entity (name, address, point, type). Whether partner gy
 - Responsive/PWA from the start: no native apps at launch, but client and trainer apps will be used on phones. Push via web push is limited on iOS; revisit if native apps are added.
 - SSR for the public trainer search and profile pages (SEO). **Proposed**.
 
-Implementation plans: `docs/plans/trainer-web.md`.
+Implementation plans: `docs/plans/phase-1-repo-foundation.md` (all apps, API, database, login pages) and `docs/plans/trainer-web.md`.
 
 ### 7.1 Shared UI library rule
 
@@ -205,8 +210,8 @@ Single list of unresolved decisions. When one is answered, move it to section 2 
 | 2 | ~~Identity provider~~ | | Resolved: Amazon Cognito (D7) |
 | 3 | Video provider (Daily, Twilio, LiveKit, Chime SDK) | Online sessions | Join button opens a provider-supplied URL |
 | 4 | Maps and geocoding provider | Service area, venue picker, geo search | Venue as text plus coordinates |
-| 5 | ORM: Prisma vs TypeORM vs Drizzle/Kysely (PostGIS needs raw SQL in all of them) | Start of the API | None; decide before the first backend module |
-| 6 | IaC tool (Terraform or CDK) and CI platform (GitHub Actions proposed) | First deployment | Local only until needed |
+| 5 | ~~ORM~~ | | Resolved: Drizzle (D18) |
+| 6 | IaC tool (Terraform or CDK). CI platform resolved: GitHub Actions (D19) | First deployment | Local only until needed |
 | 7 | Launch country (regulation, currency, payment provider availability, VAT) | Payments, privacy rules | Single currency, no tax handling |
 | 8 | Whether venues become first-class partners | `locations` data model | Venue is a simple location entity (D12) |
 | 9 | Trainer verification requirements (documents, background checks) | Onboarding, admin queue | Document upload plus manual admin review |
