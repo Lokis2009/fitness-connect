@@ -6,7 +6,7 @@ import {
   type Database,
   type UserRow,
 } from '@fitness-connect/database';
-import { eq } from 'drizzle-orm';
+import { eq, sql } from 'drizzle-orm';
 
 export interface UserWithPasswordHash {
   user: UserRow;
@@ -31,7 +31,7 @@ export class UsersRepository {
     return user ?? null;
   }
 
-  /** The user and their dev password hash, or null when either is missing. */
+  /** The user and their dev password hash, or null when either is missing. The email match ignores case. */
   async findWithDevCredentials(
     email: string,
   ): Promise<UserWithPasswordHash | null> {
@@ -39,7 +39,7 @@ export class UsersRepository {
       .select({ user: users, passwordHash: devCredentials.passwordHash })
       .from(users)
       .innerJoin(devCredentials, eq(devCredentials.userId, users.id))
-      .where(eq(users.email, email))
+      .where(sql`lower(${users.email}) = ${email.toLowerCase()}`)
       .limit(1);
     return found ?? null;
   }
