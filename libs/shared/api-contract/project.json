@@ -1,0 +1,9 @@
+{
+  "name": "api-contract",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/shared/api-contract/src",
+  "projectType": "library",
+  "tags": ["scope:shared", "type:util"],
+  "// targets": "to see all targets run: nx show project api-contract --web",
+  "targets": {}
+}

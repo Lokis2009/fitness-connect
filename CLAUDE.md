@@ -2,6 +2,10 @@
 
 Architecture decisions live in `Architecture.md`. Read it before making structural changes, and update it when a decision changes.
 
+## Workflow (mandatory)
+
+Rules in `.claude/rules/workflow.md` apply to all work: skeleton first, tests first (red and green in separate commits), commit every logical step in Angular-style messages on a branch per workstream. You may commit locally without asking; never push unless asked.
+
 ## Frontend UI rule (mandatory)
 
 All UI markup comes from the shared UI library (`libs/frontend/ui`, import path `@fitness-connect/ui`, selector prefix `fc`).

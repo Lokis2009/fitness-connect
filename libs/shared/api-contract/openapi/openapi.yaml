@@ -1,0 +1,47 @@
+openapi: 3.1.0
+info:
+  title: Fitness Connect API
+  version: 0.1.0
+  license:
+    name: MIT
+    identifier: MIT
+  description: >
+    Source of truth for the HTTP API. Keep this file thin: add paths under
+    paths/ and schemas under schemas/ and reference them here.
+servers:
+  - url: http://localhost:3000/v1
+tags:
+  - name: system
+    description: Liveness and service information.
+  - name: identity
+    description: The signed-in user and roles.
+  - name: dev
+    description: Development only. Not available in production.
+security:
+  - bearerAuth: []
+paths:
+  /health:
+    $ref: './paths/health.yaml'
+  /me:
+    $ref: './paths/me.yaml'
+  /dev/login:
+    $ref: './paths/dev-login.yaml'
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    Role:
+      $ref: './schemas/Role.yaml'
+    User:
+      $ref: './schemas/User.yaml'
+    HealthStatus:
+      $ref: './schemas/HealthStatus.yaml'
+    DevLoginRequest:
+      $ref: './schemas/DevLoginRequest.yaml'
+    DevLoginResponse:
+      $ref: './schemas/DevLoginResponse.yaml'
+    Problem:
+      $ref: './schemas/Problem.yaml'

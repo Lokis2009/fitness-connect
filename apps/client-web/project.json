@@ -54,6 +54,9 @@
         "signal": true
       },
       "executor": "@angular/build:dev-server",
+      "options": {
+        "proxyConfig": "tools/dev/proxy.conf.cjs"
+      },
       "defaultConfiguration": "development",
       "configurations": {
         "production": {

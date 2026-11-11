@@ -1,0 +1,25 @@
+post:
+  tags: [dev]
+  operationId: devLogin
+  summary: Issue a development token for a seeded user
+  description: Exists only when the API does not run in production mode.
+  security: []
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: '../schemas/DevLoginRequest.yaml'
+  responses:
+    '200':
+      description: Token for the user
+      content:
+        application/json:
+          schema:
+            $ref: '../schemas/DevLoginResponse.yaml'
+    '401':
+      description: Unknown email or wrong password
+      content:
+        application/problem+json:
+          schema:
+            $ref: '../schemas/Problem.yaml'

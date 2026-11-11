@@ -2,7 +2,14 @@
   "name": "@fitness-connect/source",
   "version": "0.0.0",
   "license": "MIT",
-  "scripts": {},
+  "scripts": {
+    "dev:infra": "docker compose up -d --wait",
+    "dev:infra:down": "docker compose down",
+    "test:hooks": "node --test .claude/hooks/*.test.mjs",
+    "mock:api": "prism mock libs/shared/api-contract/openapi/openapi.yaml --port 4010",
+    "contract:lint": "redocly lint libs/shared/api-contract/openapi/openapi.yaml",
+    "contract:types": "openapi-typescript libs/shared/api-contract/openapi/openapi.yaml -o libs/shared/api-contract/src/generated/api.d.ts"
+  },
   "private": true,
   "devDependencies": {
     "@analogjs/vite-plugin-angular": "~2.7.3",
@@ -21,7 +28,9 @@
     "@nx/vitest": "24.0.0",
     "@nx/web": "24.0.0",
     "@oxc-project/runtime": "^0.115.0",
+    "@redocly/cli": "^2.77.0",
     "@schematics/angular": "~22.2.0",
+    "@stoplight/prism-cli": "^5.16.0",
     "@swc-node/register": "1.11.1",
     "@swc/core": "1.15.8",
     "@swc/helpers": "0.5.18",
@@ -35,6 +44,7 @@
     "eslint-config-prettier": "^10.0.0",
     "jsdom": "^27.1.0",
     "nx": "24.0.0",
+    "openapi-typescript": "^7.13.0",
     "postcss": "^8.5.32",
     "prettier": "^3.8.1",
     "tailwindcss": "^4.3.5",

@@ -1,0 +1,57 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  main:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgis/postgis:16-3.4
+        env:
+          POSTGRES_USER: fitness
+          POSTGRES_PASSWORD: fitness
+          POSTGRES_DB: fitness_connect
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U fitness -d fitness_connect"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+    env:
+      DATABASE_URL: postgres://fitness:fitness@localhost:5432/fitness_connect
+      REDIS_URL: redis://localhost:6379
+      JWT_DEV_SECRET: ci-only-secret
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Test the commit guard
+        run: pnpm test:hooks
+      - name: Lint the OpenAPI contract
+        run: pnpm contract:lint
+      - name: Check generated contract types are up to date
+        run: |
+          pnpm contract:types
+          git diff --exit-code -- libs/shared/api-contract/src/generated
+      - uses: nrwl/nx-set-shas@v4
+      - run: pnpm nx affected -t lint build
+      - run: pnpm nx affected -t test --coverage

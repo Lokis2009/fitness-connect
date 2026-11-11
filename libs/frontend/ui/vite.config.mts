@@ -24,6 +24,14 @@ export default defineConfig(() => ({
     coverage: {
       reportsDirectory: '../../../coverage/libs/frontend/ui',
       provider: 'v8' as const,
+      include: ['src/**/*.ts'],
+      exclude: ['src/**/*.spec.ts', 'src/test-setup.ts', 'src/index.ts'],
+      thresholds: {
+        lines: 80,
+        functions: 80,
+        branches: 80,
+        statements: 80,
+      },
     },
   },
 }));

@@ -20,3 +20,8 @@ dist
 coverage
 vitest.config.*.timestamp*
 .vitest
+
+# Environment
+.env
+.env.*
+!.env.example
