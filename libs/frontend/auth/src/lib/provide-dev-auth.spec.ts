@@ -7,7 +7,6 @@ import type { User } from '@fitness-connect/data-access';
 import { AuthService } from './auth-service';
 import { DevAuthService } from './dev-auth-service';
 import { provideDevAuth } from './provide-dev-auth';
-import { TokenStorage } from './token-storage';
 
 const user: User = {
   id: '6f1c1d4e-7a52-4a39-9d52-1f3c2f6f5a10',
@@ -36,7 +35,8 @@ describe('provideDevAuth', () => {
   });
 
   it('restores the stored session at startup', async () => {
-    TestBed.inject(TokenStorage).set('stored-jwt');
+    // Must be stored before the test module (and so the initializer) is created.
+    sessionStorage.setItem('fc.access-token', 'stored-jwt');
     const http = TestBed.inject(HttpTestingController);
     const initialized = TestBed.inject(ApplicationInitStatus).donePromise;
 

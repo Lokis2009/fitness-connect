@@ -1,9 +1,17 @@
-import type { CanActivateFn } from '@angular/router';
+import { inject } from '@angular/core';
+import { type CanActivateFn, Router } from '@angular/router';
 import type { Role } from '@fitness-connect/data-access';
+import { AuthService } from './auth-service';
 
 /** Allows signed-in users; others are redirected to `/login?returnUrl=<requested url>`. */
-export const authGuard: CanActivateFn = () => {
-  throw new Error('not implemented');
+export const authGuard: CanActivateFn = (_route, state) => {
+  const auth = inject(AuthService);
+  const router = inject(Router);
+
+  return (
+    auth.isAuthenticated() ||
+    router.createUrlTree(['/login'], { queryParams: { returnUrl: state.url } })
+  );
 };
 
 /**
@@ -11,7 +19,13 @@ export const authGuard: CanActivateFn = () => {
  * is redirected to `/login?returnUrl=<requested url>`.
  */
 export function roleGuard(role: Role): CanActivateFn {
-  return () => {
-    throw new Error(`not implemented (${role})`);
+  return (_route, state) => {
+    const auth = inject(AuthService);
+    const router = inject(Router);
+
+    return (
+      auth.user()?.role === role ||
+      router.createUrlTree(['/login'], { queryParams: { returnUrl: state.url } })
+    );
   };
 }

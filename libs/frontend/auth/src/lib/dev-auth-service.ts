@@ -1,6 +1,10 @@
-import { Service, computed, signal } from '@angular/core';
-import type { Role, User } from '@fitness-connect/data-access';
+import { Service, computed, inject, signal } from '@angular/core';
+import { Router } from '@angular/router';
+import { ApiClient, ApiError, type Role, type User } from '@fitness-connect/data-access';
+import { firstValueFrom } from 'rxjs';
+import { InvalidCredentialsError, WrongRoleError } from './auth-errors';
 import { AuthService } from './auth-service';
+import { TokenStorage } from './token-storage';
 
 /**
  * Development-only `AuthService`. Signs in through `POST /v1/dev/login`
@@ -9,27 +13,39 @@ import { AuthService } from './auth-service';
  */
 @Service()
 export class DevAuthService extends AuthService {
-  protected readonly currentUser = signal<User | null>(null);
+  readonly #api = inject(ApiClient);
+  readonly #storage = inject(TokenStorage);
+  readonly #router = inject(Router);
+  readonly #user = signal<User | null>(null);
 
-  readonly user = this.currentUser.asReadonly();
-  readonly isAuthenticated = computed(() => this.currentUser() !== null);
+  readonly user = this.#user.asReadonly();
+  readonly isAuthenticated = computed(() => this.#user() !== null);
 
   accessToken(): string | null {
-    throw new Error('not implemented');
+    return this.#storage.get();
   }
 
   /** Navigates to `/dev-login`, keeping `returnUrl` as a query parameter. */
   signIn(returnUrl?: string): void {
-    throw new Error('not implemented');
+    void this.#router.navigate(['/dev-login'], {
+      queryParams: returnUrl ? { returnUrl } : undefined,
+    });
   }
 
   signOut(): void {
-    throw new Error('not implemented');
+    this.#storage.clear();
+    this.#user.set(null);
   }
 
   /** Reads the stored token and loads the user with `GET /v1/me`; clears the token on failure. */
-  restoreSession(): Promise<void> {
-    throw new Error('not implemented');
+  async restoreSession(): Promise<void> {
+    if (this.#storage.get() === null) return;
+
+    try {
+      this.#user.set(await firstValueFrom(this.#api.getMe()));
+    } catch {
+      this.signOut();
+    }
   }
 
   /**
@@ -39,7 +55,25 @@ export class DevAuthService extends AuthService {
    * @throws WrongRoleError (after signing out) when `expectedRole` is given and differs
    * @throws ApiError for any other API failure
    */
-  login(email: string, password: string, expectedRole?: Role): Promise<User> {
-    throw new Error('not implemented');
+  async login(email: string, password: string, expectedRole?: Role): Promise<User> {
+    let response;
+    try {
+      response = await firstValueFrom(this.#api.devLogin({ email, password }));
+    } catch (error) {
+      if (error instanceof ApiError && error.status === 401) {
+        throw new InvalidCredentialsError({ cause: error });
+      }
+      throw error;
+    }
+
+    const { accessToken, user } = response;
+    if (expectedRole !== undefined && user.role !== expectedRole) {
+      this.signOut();
+      throw new WrongRoleError(expectedRole, user.role);
+    }
+
+    this.#storage.set(accessToken);
+    this.#user.set(user);
+    return user;
   }
 }

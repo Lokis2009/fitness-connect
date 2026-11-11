@@ -1,4 +1,15 @@
+import { HttpErrorResponse } from '@angular/common/http';
 import type { Problem } from './api-types';
+
+function isProblem(value: unknown): value is Problem {
+  if (typeof value !== 'object' || value === null) return false;
+  const candidate = value as Record<string, unknown>;
+  return (
+    typeof candidate['type'] === 'string' &&
+    typeof candidate['title'] === 'string' &&
+    typeof candidate['status'] === 'number'
+  );
+}
 
 /**
  * Typed error for every failed API call. Wraps the RFC 9457 problem details
@@ -19,6 +30,29 @@ export class ApiError extends Error {
 
   /** Converts anything thrown by `HttpClient` into an `ApiError`. */
   static from(error: unknown): ApiError {
-    throw new Error('not implemented');
+    if (error instanceof ApiError) return error;
+
+    if (error instanceof HttpErrorResponse) {
+      if (isProblem(error.error)) {
+        return new ApiError(error.status, error.error, { cause: error });
+      }
+      const title = error.status === 0 ? 'Network error' : error.statusText || 'Request failed';
+      return new ApiError(
+        error.status,
+        { type: 'about:blank', title, status: error.status },
+        { cause: error },
+      );
+    }
+
+    return new ApiError(
+      0,
+      {
+        type: 'about:blank',
+        title: 'Unexpected error',
+        status: 0,
+        detail: error instanceof Error ? error.message : undefined,
+      },
+      { cause: error },
+    );
   }
 }
