@@ -1,7 +1,7 @@
 @use '@angular/material' as mat;
 
-// Material reads the font from the same --font-sans token as Tailwind (tokens.css), so inputs,
-// buttons and plain text never drift apart. Change the font in tokens.css only.
+// Material reads its colors, font and shape from the design tokens in tokens.css, so Material
+// components and Tailwind markup never drift apart. Change values in tokens.css only.
 :root {
   @include mat.theme(
     (
@@ -14,6 +14,41 @@
         brand-family: var(--font-sans),
       ),
       density: 0,
+    )
+  );
+
+  // The azure palette above is only the base. These overrides point it at the design tokens,
+  // including the per-role accent (--accent follows <html data-role>).
+  @include mat.theme-overrides(
+    (
+      primary: var(--accent),
+      on-primary: var(--color-on-accent),
+      background: var(--color-page),
+      on-background: var(--color-ink),
+      surface: var(--color-surface),
+      on-surface: var(--color-ink),
+      on-surface-variant: var(--color-ink-muted),
+      outline: var(--color-line-input),
+      outline-variant: var(--color-line-card),
+      error: var(--color-danger),
+    )
+  );
+
+  // Buttons: 48px high, 10px radius, 16px / 600 label (the "button" step of the type scale).
+  @include mat.button-overrides(
+    (
+      filled-container-height: var(--spacing-control),
+      filled-container-shape: var(--radius-control),
+      filled-label-text-size: var(--text-button),
+      filled-label-text-weight: var(--text-button--font-weight),
+      outlined-container-height: var(--spacing-control),
+      outlined-container-shape: var(--radius-control),
+      outlined-label-text-size: var(--text-button),
+      outlined-label-text-weight: var(--text-button--font-weight),
+      text-container-height: var(--spacing-control),
+      text-container-shape: var(--radius-control),
+      text-label-text-size: var(--text-button),
+      text-label-text-weight: var(--text-button--font-weight),
     )
   );
 }

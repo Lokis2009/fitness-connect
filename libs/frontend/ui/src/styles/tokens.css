@@ -22,7 +22,12 @@
   --accent: var(--accent-admin);
 }
 
-@theme {
+/* static: always emit the variables, since material-theme.scss reads them without a Tailwind utility. */
+@theme static {
+  /* Tokens only: drop Tailwind's default palette and type sizes so text-sm or bg-red-500 cannot be used by accident. */
+  --color-*: initial;
+  --text-*: initial;
+
   /* Fonts. Inter for all interface text, Space Grotesk for the wordmark only. Material reads --font-sans too. */
   --font-sans: Inter, system-ui, sans-serif;
   --font-brand: 'Space Grotesk', Inter, system-ui, sans-serif;
@@ -106,6 +111,6 @@
 }
 
 /* Semantic aliases that follow the role accent at runtime, so they must be `inline`. */
-@theme inline {
+@theme static inline {
   --color-accent: var(--accent);
 }
