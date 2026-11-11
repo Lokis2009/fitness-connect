@@ -64,7 +64,8 @@ Use `border` (1 px) for inputs, pills and cards.
 6. Headings follow document order: one `h1` per page (`title`), then `heading`, `subheading`. Choose the level for structure, the step for looks, through `fc-heading`.
 7. Interface text stays at 13 px or more. Anything below 14 px (only `pill`) must be 600 weight.
 8. No uppercase transforms, no letter-spacing tweaks, no italics for emphasis. Use weight.
-9. Lowercase wordmark only: `fit`, hyphen bar, `connect`, in Space Grotesk 700, one color (accent on light, white on accent or dark).
+9. Links are always underlined, never color alone. The PDF shows them underlined, although the design file only underlines on hover; always-on also satisfies WCAG 1.4.1 for links inside sentences.
+10. Lowercase wordmark only: `fit`, hyphen bar, `connect`, in Space Grotesk 700, one color (`ink` on light backgrounds, white on accent or dark). `design.md` says green on light, but the design file and the PDF render it in `ink`.
 
 ### Type scale
 
@@ -79,7 +80,7 @@ Use `border` (1 px) for inputs, pills and cards.
 | `text-button` | 16 px | 600 | normal | `on-accent` | Button label |
 | `text-label` | 14 px | 500 | normal | `ink` | Form labels |
 | `text-caption` | 14 px | 400 | 1.5 | `ink-muted` | Hints, footer text |
-| `text-link` | 14 px | 600 | normal | `accent` | Links, underline on hover |
+| `text-link` | 14 px | 600 | normal | `accent` | Links, always underlined |
 | `text-pill` | 13 px | 600 | normal | `ink` | Role pill |
 
 `text-heading` and `text-subheading` are derived from the scale because the design has no `h2` or `h3`. Replace their values once the design defines them.
