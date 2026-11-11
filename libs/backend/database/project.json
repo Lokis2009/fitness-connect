@@ -24,7 +24,7 @@
         "cwd": "{workspaceRoot}",
         "command": "node -r @swc-node/register libs/backend/database/src/cli/migrate.ts",
         "env": {
-          "TS_NODE_PROJECT": "libs/backend/database/tsconfig.lib.json"
+          "TS_NODE_PROJECT": "tsconfig.base.json"
         }
       }
     },
@@ -34,7 +34,7 @@
         "cwd": "{workspaceRoot}",
         "command": "node -r @swc-node/register libs/backend/database/src/cli/seed.ts",
         "env": {
-          "TS_NODE_PROJECT": "libs/backend/database/tsconfig.lib.json"
+          "TS_NODE_PROJECT": "tsconfig.base.json"
         }
       }
     }

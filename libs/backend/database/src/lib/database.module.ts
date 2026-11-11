@@ -1,6 +1,4 @@
-import { Global, Module, OnApplicationShutdown } from '@nestjs/common';
-import type { Pool } from 'pg';
-import { Inject } from '@nestjs/common';
+import { Global, Inject, Module, OnApplicationShutdown } from '@nestjs/common';
 import { APP_ENV, type Env } from '@fitness-connect/common';
 import { createDatabase, type DatabaseHandle } from './client';
 
@@ -28,11 +26,10 @@ const DATABASE_HANDLE = Symbol('DATABASE_HANDLE');
 })
 export class DatabaseModule implements OnApplicationShutdown {
   constructor(
-    @Inject(DATABASE_HANDLE) private readonly handle: { pool: Pool },
+    @Inject(DATABASE_HANDLE) private readonly handle: DatabaseHandle,
   ) {}
 
   async onApplicationShutdown(): Promise<void> {
-    void this.handle;
-    throw new Error('not implemented');
+    await this.handle.pool.end();
   }
 }

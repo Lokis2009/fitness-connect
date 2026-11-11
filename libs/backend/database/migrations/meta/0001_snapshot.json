@@ -27,12 +27,8 @@
           "name": "dev_credentials_user_id_users_id_fk",
           "tableFrom": "dev_credentials",
           "tableTo": "users",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -94,16 +90,12 @@
         "users_cognito_sub_unique": {
           "name": "users_cognito_sub_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "cognito_sub"
-          ]
+          "columns": ["cognito_sub"]
         },
         "users_email_unique": {
           "name": "users_email_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "email"
-          ]
+          "columns": ["email"]
         }
       },
       "policies": {},
@@ -115,11 +107,7 @@
     "public.user_role": {
       "name": "user_role",
       "schema": "public",
-      "values": [
-        "client",
-        "trainer",
-        "admin"
-      ]
+      "values": ["client", "trainer", "admin"]
     }
   },
   "schemas": {},

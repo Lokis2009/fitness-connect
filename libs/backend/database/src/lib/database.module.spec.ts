@@ -55,6 +55,10 @@ describe('DatabaseModule', () => {
 
     await moduleRef.close();
 
-    await expect(db.execute(sql`select 1`)).rejects.toThrow(/pool/i);
+    await expect(db.execute(sql`select 1`)).rejects.toMatchObject({
+      cause: {
+        message: expect.stringMatching(/after calling end on the pool/),
+      },
+    });
   });
 });
