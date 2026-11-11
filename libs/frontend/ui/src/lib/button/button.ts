@@ -24,6 +24,8 @@ export class FcButton {
   readonly variant = input<FcButtonVariant>('primary');
   readonly type = input<FcButtonType>('button');
   readonly disabled = input(false);
+  /** While true the button is disabled, shows a spinner, is marked busy and keeps its width. */
+  readonly loading = input(false);
 
   protected readonly appearance = computed(() => APPEARANCE[this.variant()]);
 }
