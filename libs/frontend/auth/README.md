@@ -12,13 +12,13 @@ Authentication for the client, trainer and admin apps. Import path: `@fitness-co
 | `AuthService.accessToken(): string \| null` | Current bearer token. |
 | `AuthService.signIn(returnUrl?: string): void` | Starts sign-in. Production will redirect to the Cognito hosted login, so do not assume a password form. |
 | `AuthService.signOut(): void` | Clears the session. Does not navigate. |
-| `AuthService.restoreSession(): Promise<void>` | Restores a session after a reload. Never rejects. |
+| `AuthService.restoreSession(): Promise<void>` | Restores a session after a reload. Never rejects. `DevAuthService` discards the stored token only on a 401; a network or server failure keeps it so the next reload can retry. |
 | `DevAuthService` | Development implementation (see below). |
-| `DevAuthService.login(email, password, expectedRole?): Promise<User>` | Signs in via `POST /v1/dev/login`. Throws `InvalidCredentialsError` (401), `WrongRoleError` (role differs from `expectedRole`; the user is signed out), or `ApiError`. |
+| `DevAuthService.login(email, password, expectedRole?): Promise<User>` | Signs in via `POST /v1/dev/login`. Throws `InvalidCredentialsError` (401), `WrongRoleError` (role differs from `expectedRole`; the rejected account is not stored and an existing session is left alone), or `ApiError`. |
 | `provideDevAuth(): EnvironmentProviders` | Provides `DevAuthService` as `AuthService` and restores the session at startup. |
 | `authGuard` | `CanActivateFn`. Unauthenticated users go to `/login?returnUrl=<url>`. |
 | `roleGuard(role: Role): CanActivateFn` | Same redirect when the user's role differs (or nobody is signed in). |
-| `authInterceptor` | `HttpInterceptorFn`. Adds `Authorization: Bearer <token>` only to URLs starting with `/api/`. |
+| `authInterceptor` | `HttpInterceptorFn`. Adds `Authorization: Bearer <token>` only to URLs under `API_BASE_URL` (default `/api/v1`). |
 | `TokenStorage` | Token held in memory and `sessionStorage` (`get`, `set`, `clear`). |
 | `InvalidCredentialsError`, `WrongRoleError` (`expected`, `actual`) | Errors thrown by `login`. |
 | `User`, `Role` | Re-exported contract types. |
@@ -66,7 +66,7 @@ The landing page's "Sign in" button calls `inject(AuthService).signIn(returnUrl)
 
 ## Interceptor and 401
 
-A 401 on an `/api/` request while signed in is treated as an expired session: the interceptor calls `signOut()` and navigates to `/login?returnUrl=<current url>`. A 401 while signed out (for example the startup `GET /v1/me` with a stale token, which `restoreSession` handles itself) or from `POST /v1/dev/login` (wrong password) is passed to the caller untouched.
+A 401 on an API request while signed in is treated as an expired session: the interceptor calls `signOut()` and navigates to `/login?returnUrl=<current url>`. A 401 while signed out (for example the startup `GET /v1/me` with a stale token, which `restoreSession` handles itself) or from `POST /v1/dev/login` (wrong password) is passed to the caller untouched.
 
 ## Running unit tests
 
