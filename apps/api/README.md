@@ -38,7 +38,7 @@ pnpm nx serve api
 ```
 
 `pnpm db:generate` runs `drizzle-kit generate` after you change `libs/backend/database/src/lib/schema`;
-commit the generated SQL. `db:seed` refuses to run when `NODE_ENV=production`.
+commit the generated SQL. `db:seed` runs only when `NODE_ENV` is `development` or `test`.
 
 ### Seeded users
 

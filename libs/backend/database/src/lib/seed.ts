@@ -24,11 +24,15 @@ export const SEED_USERS: readonly SeedUser[] = [
 /**
  * Inserts one user per role with the dev password. Idempotent: users are
  * matched by email and keep their id, and an existing password hash is kept.
- * Refuses to run when `NODE_ENV` is `production`.
+ * Runs only when `NODE_ENV` is explicitly `development` or `test`, so an unset
+ * or unexpected value never seeds the well-known password into a real database.
  */
 export async function seedDevUsers(db: Database): Promise<void> {
-  if (process.env['NODE_ENV'] === 'production') {
-    throw new Error('Refusing to seed development users in production');
+  const nodeEnv = process.env['NODE_ENV'];
+  if (nodeEnv !== 'development' && nodeEnv !== 'test') {
+    throw new Error(
+      `Refusing to seed development users: NODE_ENV must be "development" or "test" (got "${nodeEnv ?? ''}")`,
+    );
   }
 
   await db.transaction(async (tx) => {
