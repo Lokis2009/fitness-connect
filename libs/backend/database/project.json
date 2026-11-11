@@ -1,0 +1,42 @@
+{
+  "name": "database",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/backend/database/src",
+  "projectType": "library",
+  "tags": ["scope:api", "type:api-lib"],
+  "// targets": "to see all targets run: nx show project database --web",
+  "targets": {
+    "test": {
+      "options": {
+        "passWithNoTests": true
+      }
+    },
+    "generate": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "{workspaceRoot}",
+        "command": "drizzle-kit generate --config libs/backend/database/drizzle.config.ts"
+      }
+    },
+    "migrate": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "{workspaceRoot}",
+        "command": "node -r @swc-node/register libs/backend/database/src/cli/migrate.ts",
+        "env": {
+          "TS_NODE_PROJECT": "tsconfig.base.json"
+        }
+      }
+    },
+    "seed": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "{workspaceRoot}",
+        "command": "node -r @swc-node/register libs/backend/database/src/cli/seed.ts",
+        "env": {
+          "TS_NODE_PROJECT": "tsconfig.base.json"
+        }
+      }
+    }
+  }
+}

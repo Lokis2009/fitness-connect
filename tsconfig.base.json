@@ -25,7 +25,10 @@
       "@fitness-connect/data-access": [
         "./libs/frontend/data-access/src/index.ts"
       ],
-      "@fitness-connect/auth": ["./libs/frontend/auth/src/index.ts"]
+      "@fitness-connect/auth": ["./libs/frontend/auth/src/index.ts"],
+      "@fitness-connect/common": ["./libs/backend/common/src/index.ts"],
+      "@fitness-connect/database": ["./libs/backend/database/src/index.ts"],
+      "@fitness-connect/identity": ["./libs/backend/identity/src/index.ts"]
     }
   },
   "exclude": ["node_modules", "tmp"]
