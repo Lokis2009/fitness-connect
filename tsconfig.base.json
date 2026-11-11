@@ -21,7 +21,11 @@
       "@fitness-connect/ui": ["./libs/frontend/ui/src/index.ts"],
       "@fitness-connect/api-contract": [
         "./libs/shared/api-contract/src/index.ts"
-      ]
+      ],
+      "@fitness-connect/data-access": [
+        "./libs/frontend/data-access/src/index.ts"
+      ],
+      "@fitness-connect/auth": ["./libs/frontend/auth/src/index.ts"]
     }
   },
   "exclude": ["node_modules", "tmp"]
