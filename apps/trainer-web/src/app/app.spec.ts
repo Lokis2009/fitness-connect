@@ -2,6 +2,8 @@ import { computed, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter, Router } from '@angular/router';
 import { AuthService, type User } from '@fitness-connect/auth';
+import { ApiClient } from '@fitness-connect/data-access';
+import { of } from 'rxjs';
 import { App } from './app';
 import { appRoutes } from './app.routes';
 
@@ -23,15 +25,19 @@ describe('App', () => {
           provide: AuthService,
           useValue: { user, isAuthenticated: computed(() => user() !== null) },
         },
+        { provide: ApiClient, useValue: { getMe: () => of(trainer) } },
       ],
     }).compileComponents();
   });
 
-  it('renders the home page from the shared UI library', async () => {
+  it('renders the signed-in home page from the shared UI library', async () => {
     const fixture = TestBed.createComponent(App);
     await TestBed.inject(Router).navigateByUrl('/');
     await fixture.whenStable();
     const compiled = fixture.nativeElement as HTMLElement;
-    expect(compiled.querySelectorAll('fc-home fc-button').length).toBe(3);
+    expect(compiled.querySelector('fc-home fc-heading')?.textContent).toContain(
+      'Tina Trainer',
+    );
+    expect(compiled.querySelectorAll('fc-home fc-button').length).toBe(1);
   });
 });
