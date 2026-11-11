@@ -30,6 +30,9 @@
       "@fitness-connect/common": ["./libs/backend/common/src/index.ts"],
       "@fitness-connect/database": ["./libs/backend/database/src/index.ts"],
       "@fitness-connect/identity": ["./libs/backend/identity/src/index.ts"],
+      "@fitness-connect/feature-home": [
+        "./libs/frontend/feature-home/src/index.ts"
+      ],
       "@fitness-connect/feature-login": [
         "./libs/frontend/feature-login/src/index.ts"
       ]
