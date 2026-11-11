@@ -10,3 +10,5 @@ get:
         application/json:
           schema:
             $ref: '../schemas/HealthStatus.yaml'
+    '500':
+      $ref: '../responses/InternalError.yaml'

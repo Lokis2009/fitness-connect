@@ -1,0 +1,5 @@
+description: The signed-in user's role is not allowed to do this
+content:
+  application/problem+json:
+    schema:
+      $ref: '../schemas/Problem.yaml'
