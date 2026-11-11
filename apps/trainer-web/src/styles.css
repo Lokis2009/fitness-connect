@@ -1,0 +1,4 @@
+@import 'tailwindcss';
+@import '../../../libs/frontend/ui/src/styles/tokens.css';
+
+@source '../../../libs/frontend/ui/src';
