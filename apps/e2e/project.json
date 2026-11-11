@@ -5,5 +5,10 @@
   "sourceRoot": "apps/e2e/src",
   "tags": ["scope:shared", "type:util"],
   "implicitDependencies": ["api", "client-web", "trainer-web", "admin-web"],
-  "targets": {}
+  "targets": {
+    "e2e": {
+      "dependsOn": [],
+      "cache": false
+    }
+  }
 }
