@@ -3,3 +3,4 @@ export * from './lib/stack/stack';
 export * from './lib/page/page';
 export * from './lib/card/card';
 export * from './lib/heading/heading';
+export * from './lib/text/text';
