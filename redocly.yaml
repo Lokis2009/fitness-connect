@@ -1,0 +1,6 @@
+extends:
+  - recommended
+
+rules:
+  # The health check has no meaningful client error.
+  operation-4xx-response: off
