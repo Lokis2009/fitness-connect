@@ -71,6 +71,15 @@
   --text-lead--line-height: 1.5;
   --text-lead--font-weight: 400;
 
+  /* Not in the design file: h2 and h3 steps, derived from the scale. Adjust once the design defines them. */
+  --text-heading: 1.5rem;
+  --text-heading--line-height: 1.25;
+  --text-heading--font-weight: 600;
+
+  --text-subheading: 1.125rem;
+  --text-subheading--line-height: 1.4;
+  --text-subheading--font-weight: 600;
+
   --text-body: 1rem;
   --text-body--line-height: 1.5;
   --text-body--font-weight: 400;

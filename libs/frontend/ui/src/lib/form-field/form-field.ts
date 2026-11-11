@@ -21,14 +21,14 @@ let nextId = 0;
 @Component({
   selector: 'fc-form-field',
   template: `
-    <label class="mb-1 block text-sm font-medium text-on-surface" [attr.for]="controlId">{{ label() }}</label>
+    <label class="mb-label block text-label text-ink" [attr.for]="controlId">{{ label() }}</label>
     <ng-content />
     @if (hint()) {
-      <p class="mt-1 text-sm text-on-surface/70" data-fc-hint [id]="hintId">{{ hint() }}</p>
+      <p class="mt-label text-caption text-ink-muted" data-fc-hint [id]="hintId">{{ hint() }}</p>
     }
     <div aria-live="polite">
       @if (error()) {
-        <p class="mt-1 text-sm text-danger" data-fc-error [id]="errorId">{{ error() }}</p>
+        <p class="mt-label text-caption text-danger" data-fc-error [id]="errorId">{{ error() }}</p>
       }
     </div>
   `,

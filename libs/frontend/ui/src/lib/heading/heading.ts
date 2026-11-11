@@ -16,13 +16,13 @@ function toHeadingLevel(value: number | string): FcHeadingLevel {
     <ng-template #content><ng-content /></ng-template>
     @switch (level()) {
       @case (2) {
-        <h2 class="text-2xl font-semibold text-on-surface"><ng-container [ngTemplateOutlet]="content" /></h2>
+        <h2 class="text-heading text-ink"><ng-container [ngTemplateOutlet]="content" /></h2>
       }
       @case (3) {
-        <h3 class="text-lg font-medium text-on-surface"><ng-container [ngTemplateOutlet]="content" /></h3>
+        <h3 class="text-subheading text-ink"><ng-container [ngTemplateOutlet]="content" /></h3>
       }
       @default {
-        <h1 class="text-3xl font-bold text-on-surface"><ng-container [ngTemplateOutlet]="content" /></h1>
+        <h1 class="text-title text-ink"><ng-container [ngTemplateOutlet]="content" /></h1>
       }
     }
   `,
