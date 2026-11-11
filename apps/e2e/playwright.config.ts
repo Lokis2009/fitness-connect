@@ -30,7 +30,8 @@ export default defineConfig({
     ...APPS.map((app) => ({
       command: `pnpm nx serve ${app.name}`,
       cwd: '../..',
-      url: `http://localhost:${app.port}`,
+      // main.js only exists once the first build has finished; the index page answers earlier.
+      url: `http://localhost:${app.port}/main.js`,
       reuseExistingServer,
       timeout: 180_000,
     })),
