@@ -3,6 +3,7 @@ import { Component } from '@angular/core';
 /** Surface with padding and rounded corners that projects its content. */
 @Component({
   selector: 'fc-card',
-  template: '',
+  template: '<ng-content />',
+  host: { class: 'block w-full max-w-md rounded-card bg-surface p-6 text-on-surface shadow-md' },
 })
 export class FcCard {}
