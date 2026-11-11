@@ -10,6 +10,33 @@
       "options": {
         "passWithNoTests": true
       }
+    },
+    "generate": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "{workspaceRoot}",
+        "command": "drizzle-kit generate --config libs/backend/database/drizzle.config.ts"
+      }
+    },
+    "migrate": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "{workspaceRoot}",
+        "command": "node -r @swc-node/register libs/backend/database/src/cli/migrate.ts",
+        "env": {
+          "TS_NODE_PROJECT": "libs/backend/database/tsconfig.lib.json"
+        }
+      }
+    },
+    "seed": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "{workspaceRoot}",
+        "command": "node -r @swc-node/register libs/backend/database/src/cli/seed.ts",
+        "env": {
+          "TS_NODE_PROJECT": "libs/backend/database/tsconfig.lib.json"
+        }
+      }
     }
   }
 }

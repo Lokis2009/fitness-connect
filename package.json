@@ -8,7 +8,10 @@
     "test:hooks": "node --test .claude/hooks/*.test.mjs",
     "mock:api": "prism mock libs/shared/api-contract/openapi/openapi.yaml --port 4010",
     "contract:lint": "redocly lint libs/shared/api-contract/openapi/openapi.yaml",
-    "contract:types": "openapi-typescript libs/shared/api-contract/openapi/openapi.yaml -o libs/shared/api-contract/src/generated/api.d.ts"
+    "contract:types": "openapi-typescript libs/shared/api-contract/openapi/openapi.yaml -o libs/shared/api-contract/src/generated/api.d.ts",
+    "db:generate": "nx run database:generate",
+    "db:migrate": "nx run database:migrate",
+    "db:seed": "nx run database:seed"
   },
   "private": true,
   "devDependencies": {

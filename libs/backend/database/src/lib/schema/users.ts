@@ -1,7 +1,19 @@
-import { ROLES } from '@fitness-connect/common';
+import type { Role } from '@fitness-connect/common';
 import { pgEnum, pgTable, text, timestamp, uuid } from 'drizzle-orm/pg-core';
 
-export const userRole = pgEnum('user_role', ROLES);
+// A literal list, not the ROLES constant of the common lib: drizzle-kit loads
+// this file without tsconfig path aliases, so it may only import types from
+// workspace libs. The assertions below keep both lists identical.
+const USER_ROLES = ['client', 'trainer', 'admin'] as const;
+type SameRoles = [Role] extends [(typeof USER_ROLES)[number]]
+  ? [(typeof USER_ROLES)[number]] extends [Role]
+    ? true
+    : never
+  : never;
+const rolesMatchCommonLib: SameRoles = true;
+void rolesMatchCommonLib;
+
+export const userRole = pgEnum('user_role', USER_ROLES);
 
 export const users = pgTable('users', {
   id: uuid('id').primaryKey().defaultRandom(),
