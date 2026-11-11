@@ -18,7 +18,10 @@
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
     "paths": {
-      "@fitness-connect/ui": ["./libs/frontend/ui/src/index.ts"]
+      "@fitness-connect/ui": ["./libs/frontend/ui/src/index.ts"],
+      "@fitness-connect/api-contract": [
+        "./libs/shared/api-contract/src/index.ts"
+      ]
     }
   },
   "exclude": ["node_modules", "tmp"]

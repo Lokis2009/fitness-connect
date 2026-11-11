@@ -1,0 +1,12 @@
+get:
+  tags: [system]
+  operationId: getHealth
+  summary: Liveness check
+  security: []
+  responses:
+    '200':
+      description: Service is up
+      content:
+        application/json:
+          schema:
+            $ref: '../schemas/HealthStatus.yaml'

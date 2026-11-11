@@ -1,0 +1,17 @@
+get:
+  tags: [identity]
+  operationId: getMe
+  summary: The signed-in user
+  responses:
+    '200':
+      description: Current user
+      content:
+        application/json:
+          schema:
+            $ref: '../schemas/User.yaml'
+    '401':
+      description: Missing, invalid or expired token
+      content:
+        application/problem+json:
+          schema:
+            $ref: '../schemas/Problem.yaml'
