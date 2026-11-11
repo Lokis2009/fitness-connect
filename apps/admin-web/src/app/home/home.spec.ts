@@ -46,6 +46,11 @@ describe('Home', () => {
     return { harness, root, router: TestBed.inject(Router) };
   }
 
+  async function settle(harness: RouterTestingHarness): Promise<void> {
+    await harness.fixture.whenStable();
+    harness.detectChanges();
+  }
+
   function signOutButton(root: HTMLElement): HTMLButtonElement {
     const button = Array.from(root.querySelectorAll('button')).find((b) =>
       b.textContent?.includes('Sign out'),
@@ -82,7 +87,7 @@ describe('Home', () => {
     const { harness, root } = await setup();
 
     me.next(admin);
-    harness.detectChanges();
+    await settle(harness);
 
     expect(root.querySelector('h1')?.textContent).toContain('Ada Admin');
     expect(root.querySelector('fc-text')?.textContent).toContain('admin@example.com');
@@ -94,7 +99,7 @@ describe('Home', () => {
     const { harness, root } = await setup();
 
     me.error(new Error('boom'));
-    harness.detectChanges();
+    await settle(harness);
 
     const alert = root.querySelector('fc-alert [role="alert"]');
     expect(alert?.textContent).toContain('Could not confirm your session');
@@ -104,7 +109,7 @@ describe('Home', () => {
   it('signs out and navigates to /login', async () => {
     const { harness, root, router } = await setup();
     me.next(admin);
-    harness.detectChanges();
+    await settle(harness);
 
     signOutButton(root).click();
     await harness.fixture.whenStable();
@@ -116,7 +121,7 @@ describe('Home', () => {
   it('keeps the sign out button available when the session check fails', async () => {
     const { harness, root, router } = await setup();
     me.error(new Error('boom'));
-    harness.detectChanges();
+    await settle(harness);
 
     signOutButton(root).click();
     await harness.fixture.whenStable();
