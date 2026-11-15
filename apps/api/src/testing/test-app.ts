@@ -1,24 +1,55 @@
 import type { INestApplication } from '@nestjs/common';
 import type { Env } from '@fitness-connect/common';
-import { DEV_PASSWORD, prepareTestDatabase } from '@fitness-connect/database';
+import {
+  createDatabase,
+  DEV_PASSWORD,
+  prepareTestDatabase,
+  seedDevTrainerData,
+} from '@fitness-connect/database';
 import { SignJWT } from 'jose';
 import { createApp } from '../app/create-app';
 
 export const TEST_DATABASE_NAME = 'fitness_connect_test';
-export const TEST_JWT_SECRET = 'integration-test-secret-of-at-least-32-characters';
+export const TEST_JWT_SECRET =
+  'integration-test-secret-of-at-least-32-characters';
 
-/** An environment pointing at the migrated and seeded `fitness_connect_test` database. */
+/**
+ * An environment pointing at a migrated and seeded test database,
+ * `fitness_connect_test` unless `databaseName` says otherwise. A spec that
+ * changes bookings uses a database of its own, so parallel specs do not
+ * disturb each other.
+ */
 export async function integrationEnv(
   overrides: Partial<Env> = {},
+  databaseName = TEST_DATABASE_NAME,
 ): Promise<Env> {
   return {
     NODE_ENV: 'test',
     API_PORT: 0,
     CORS_ORIGINS: ['http://localhost:4200'],
-    DATABASE_URL: await prepareTestDatabase(TEST_DATABASE_NAME),
+    DATABASE_URL: await prepareTestDatabase(databaseName),
     JWT_DEV_SECRET: TEST_JWT_SECRET,
     ...overrides,
   };
+}
+
+/**
+ * Restores the trainer data of the dev seed, relative to `now`: both trainer
+ * profiles, the venue, and the four bookings of `trainer@example.com`. Their
+ * pending requests expire one hour after they were made, so a spec that reads
+ * them calls this first. It replaces the seeded trainers' bookings, so only
+ * use it on a database that no other spec writes to.
+ */
+export async function seedTrainerData(
+  env: Env,
+  now: Date = new Date(),
+): Promise<void> {
+  const { db, pool } = createDatabase(env.DATABASE_URL);
+  try {
+    await seedDevTrainerData(db, now);
+  } finally {
+    await pool.end();
+  }
 }
 
 export interface RunningApp {

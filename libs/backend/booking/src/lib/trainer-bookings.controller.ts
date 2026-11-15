@@ -16,9 +16,7 @@ export class TrainerBookingsController {
   bookingRequests(
     @CurrentUser() caller: AuthUser,
   ): Promise<BookingRequestListDto> {
-    void caller;
-    void this.bookings;
-    throw new Error('not implemented');
+    return this.bookings.listPendingRequests(caller.id);
   }
 
   @Get('sessions')
@@ -26,8 +24,10 @@ export class TrainerBookingsController {
     @CurrentUser() caller: AuthUser,
     @Query() query: SessionsQueryDto,
   ): Promise<SessionListDto> {
-    void caller;
-    void query;
-    throw new Error('not implemented');
+    return this.bookings.listSessions(
+      caller.id,
+      new Date(query.from),
+      new Date(query.to),
+    );
   }
 }

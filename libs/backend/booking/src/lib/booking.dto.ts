@@ -14,10 +14,17 @@ export function toBookingRequestDto(
   clientName: string,
   venue: VenueSummaryDto,
 ): BookingRequestDto {
-  void row;
-  void clientName;
-  void venue;
-  throw new Error('not implemented');
+  return {
+    id: row.id,
+    clientName,
+    startsAt: row.startsAt.toISOString(),
+    durationMinutes: row.durationMinutes,
+    priceMinor: row.priceMinor,
+    currency: row.currency,
+    venue: toVenueSummary(venue),
+    requestedAt: row.requestedAt.toISOString(),
+    expiresAt: row.expiresAt.toISOString(),
+  };
 }
 
 /** Maps a confirmed row to a `Session`. It has no price. */
@@ -26,14 +33,26 @@ export function toSessionDto(
   clientName: string,
   venue: VenueSummaryDto,
 ): SessionDto {
-  void row;
-  void clientName;
-  void venue;
-  throw new Error('not implemented');
+  return {
+    id: row.id,
+    clientName,
+    startsAt: row.startsAt.toISOString(),
+    durationMinutes: row.durationMinutes,
+    venue: toVenueSummary(venue),
+  };
 }
 
 /** Maps a decided row to the `Booking` result of accept and decline. */
 export function toBookingDto(row: BookingRow): BookingDto {
-  void row;
-  throw new Error('not implemented');
+  return {
+    id: row.id,
+    status: row.status,
+    startsAt: row.startsAt.toISOString(),
+    decidedAt: row.decidedAt ? row.decidedAt.toISOString() : null,
+  };
+}
+
+/** Copies the three public fields, so nothing else a lookup returns reaches a response. */
+function toVenueSummary(venue: VenueSummaryDto): VenueSummaryDto {
+  return { name: venue.name, area: venue.area, timeZone: venue.timeZone };
 }
