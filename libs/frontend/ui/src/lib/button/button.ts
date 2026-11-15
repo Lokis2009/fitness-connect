@@ -42,6 +42,8 @@ export class FcButton {
   readonly disabled = input(false);
   /** While true the button is disabled, shows a spinner, is marked busy and keeps its width. */
   readonly loading = input(false);
+  /** Label shown next to the spinner while loading. Without it the label stays in place under the spinner. */
+  readonly loadingLabel = input<string>();
 
   protected readonly appearance = computed(() => APPEARANCE[this.variant()]);
 }

@@ -1,4 +1,6 @@
-import { Component } from '@angular/core';
+import { Component, input } from '@angular/core';
+
+export type FcPageAlign = 'center' | 'top';
 
 /** Full-height page container that centers its content. */
 @Component({
@@ -10,4 +12,7 @@ import { Component } from '@angular/core';
   `,
   host: { class: 'block' },
 })
-export class FcPage {}
+export class FcPage {
+  /** `center` centers the content (login pages), `top` lays out a list page. */
+  readonly align = input<FcPageAlign>('center');
+}
