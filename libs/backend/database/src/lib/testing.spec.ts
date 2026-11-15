@@ -109,7 +109,7 @@ describe('prepareTestDatabase', () => {
         url,
         'select status from trainer_profiles order by status',
       ),
-    ).resolves.toEqual([{ status: 'approved' }, { status: 'submitted' }]);
+    ).resolves.toEqual([{ status: 'submitted' }, { status: 'approved' }]);
     await expect(
       query<{ name: string }>(url, 'select name from venues'),
     ).resolves.toEqual([{ name: 'Iron Hall Gym' }]);
