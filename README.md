@@ -42,7 +42,9 @@ Options: `pnpm dev:all --no-infra` skips starting Docker (use it when Postgres a
 `--no-migrate` skips migrations.
 
 The script does not seed data. For the dev users (`client@example.com`, `trainer@example.com`,
-`admin@example.com`, password `password`) run `pnpm db:seed` once; it is idempotent. Details in
+`admin@example.com`, password `password`) run `pnpm db:seed` once; it is idempotent. The seed also adds a
+second trainer, `pat.pending@example.com` (same password), whose profile is under review, so you can see
+the `/setup` page in `trainer-web`. Details in
 [`apps/api/README.md`](apps/api/README.md).
 
 ### Other scripts

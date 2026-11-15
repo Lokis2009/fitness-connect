@@ -1,6 +1,6 @@
 # trainer-access
 
-Trainer approval status helpers and route guards for the trainer app. Import path: `@fitness-connect/trainer-access`. Tags: `scope:trainer`, `type:data-access`. No UI markup. It sits outside the shared `auth` library, which the client and admin apps also use.
+Trainer approval status helpers and route guards for the trainer app. Import path: `@fitness-connect/trainer-access`. Tags: `scope:trainer`, `type:data-access`. No UI markup. It sits outside the shared `auth` library, which the client and admin apps also use. It reads only the user that `auth` loaded at startup, so the guards are synchronous, and it makes no API calls. Only the trainer app and the trainer feature libs use it.
 
 ## Public API
 
