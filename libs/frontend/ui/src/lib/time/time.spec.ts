@@ -119,13 +119,14 @@ describe('FcTime', () => {
     });
 
     it('still gives the Today and range forms in UTC', async () => {
-      const { text } = await setup((host) => {
+      const { time, root } = await setup((host) => {
         host.timeZone.set('Europe/Warsw');
         host.format.set('range');
         host.durationMinutes.set(60);
       });
 
-      expect(text()).toBe('09:00–10:00 UTC time');
+      expect(time().textContent).toBe('09:00–10:00');
+      expect(root.querySelector('span')?.textContent?.trim()).toBe('UTC time');
     });
   });
 
