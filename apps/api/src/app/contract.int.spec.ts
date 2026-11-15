@@ -75,6 +75,25 @@ describe('API conformance to the OpenAPI contract', () => {
     }
   });
 
+  it('keeps the trainerStatus values of User in step with TrainerStatus', () => {
+    // User inlines the list, because the test validator has no oneOf and cannot express a nullable
+    // $ref. This spec stops the two lists from drifting apart.
+    const { components } = loadContract() as unknown as {
+      components: {
+        schemas: {
+          User: { properties: { trainerStatus: { enum: (string | null)[] } } };
+          TrainerStatus: { enum: string[] };
+        };
+      };
+    };
+
+    const inlined = components.schemas.User.properties.trainerStatus.enum.filter(
+      (value) => value !== null,
+    );
+    expect(inlined).toEqual(components.schemas.TrainerStatus.enum);
+    expect(components.schemas.User.properties.trainerStatus.enum).toContain(null);
+  });
+
   it('GET /health', async () => {
     expectConforms(await call(url, 'GET', '/v1/health'), 'GET', '/health');
   });
