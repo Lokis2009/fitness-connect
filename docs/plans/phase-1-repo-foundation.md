@@ -1,10 +1,10 @@
-1. # Phase 1 plan: repo foundation for parallel development
+# Phase 1 plan: repo foundation for parallel development
 
 > Historical foundation plan: the login/API/database foundation is implemented. Starting-point inventories below describe the earlier repository state, not current missing work.
 >
 > Current product scope: [first-release PRD](../prd/scheduled-in-person-sessions.md) and [decision log](../decisions/first-release.md). Feature breakdown follows PRD review.
 
-Status: draft. Source decisions live in `Architecture.md`. This plan supersedes the "Phase 1: scaffold" step in `docs/plans/trainer-web.md` and the "Next steps" in `Architecture.md` section 11.
+Status: done. Source decisions live in `Architecture.md`. This plan supersedes the "Phase 1: scaffold" step in `docs/plans/trainer-web.md` and the next-steps list that `Architecture.md` used to hold. Current next steps live in `STATUS.md`.
 
 ## 1. Goal
 
@@ -130,7 +130,7 @@ For each of `trainer-web` and `admin-web` (check generator `--help` first):
 ### W8: integration and e2e (serial, last)
 - `apps/e2e` with Playwright: for each app, sign in with the seeded user of the right role, see the home page; sign in with the wrong role, see the error; sign out.
 - Wire `pnpm dev:all` to start infra, API and all three apps.
-- Update `Architecture.md` (decisions P1 to P6, section 11 next steps) and `README.md` with the run instructions.
+- Update `Architecture.md` (decisions P1 to P6; next steps now live in `STATUS.md`) and `README.md` with the run instructions.
 - Acceptance: CI green on a pull request, including e2e; a fresh clone runs with `pnpm install`, `cp .env.example .env`, `pnpm dev:infra`, `pnpm db:migrate`, `pnpm db:seed`, `pnpm dev:all`.
 
 ## 7. Dependency graph

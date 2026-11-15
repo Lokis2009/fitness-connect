@@ -89,12 +89,17 @@ libs/
     feature-*/       Feature libs per app domain (search, booking, schedule...)
   backend/
     <domain>/        One lib per backend module (see section 5)
+status/
+  status.yaml        Hand-edited workstreams; the source for STATUS.md
+tools/
+  status/            Generator for STATUS.md (pnpm status:generate, status:check)
 ```
 
 Rules:
 - Nx module boundary tags enforced via ESLint (`scope:client`, `scope:trainer`, `scope:admin`, `scope:api`, `scope:shared`, and `type:feature|data-access|ui|util`).
 - Frontend apps never import backend libs. Shared code goes only through `libs/shared`.
 - Cross-module backend calls go through each module's public API (index barrel or events), never through another module's internals or tables.
+- `STATUS.md` is generated from `status/status.yaml`, the open questions in section 10, the plan, PRD and decision docs, and the Nx project list. Never edit it by hand. CI runs `pnpm status:check` and fails when it is stale.
 
 ## 5. Backend modules (NestJS)
 
@@ -228,16 +233,11 @@ Single list of unresolved decisions. When one is answered, move it to section 2 
 
 Related plan: `docs/plans/trainer-web.md` (its Q1 to Q7 map to items 2, 1, 9, 11, 4, 3, 13 above).
 
-## 11. Next steps
+## 11. Status and next steps
+
+Current status and next steps live in [STATUS.md](STATUS.md), generated from `status/status.yaml`. Do not list them here.
 
 Phase 1 (foundation and login) is done: the Nx workspace, the three Angular apps, the NestJS API, Postgres with PostGIS, the OpenAPI contract, and a login page in each app that signs in against the real API (development auth). Playwright runs 9 scenarios per app against the live stack (`pnpm nx e2e e2e`; Playwright starts the API and the apps and uses its own `fitness_connect_e2e` database).
-
-Next:
-1. Review the [first-release PRD](docs/prd/scheduled-in-person-sessions.md) and its open rules, including minimum booking notice, pending-slot holds, verification, and cancellation.
-2. Split the agreed journey into features and acceptance criteria after PRD review.
-3. Plan one approved trainer publishing availability and one client receiving trainer approval for a scheduled in-person booking; no platform payments.
-4. Connect Cognito (hosted login, OIDC, JWT verification) before a real-user launch.
-5. Keep on-demand dispatch, online/video sessions, and platform payments deferred until separately prioritized.
 
 ## 12. Known follow-ups from Phase 1
 
