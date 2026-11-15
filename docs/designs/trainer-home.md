@@ -61,6 +61,7 @@ The proposed solution is a trainer-only home that lists pending requests first, 
 *   **Release gate**: Home must not ship to real users before cancel and record completion exist. PRD acceptance item 10 cannot pass without a recording path. Confirm this as a rule.
 *   **Production sign-in and the deep link**: The dev login keeps the query string through `returnUrl` (checked in `auth-guards.ts` and `return-url.ts`). The production Cognito sign-in does not exist yet. When it is built, it must keep `/?request=<id>` through the hosted login redirect.
 *   **More than one venue (O12)**: The client computes the day window from one venue time zone, which `getMe` returns. If a trainer can have several venues, that rule must change. This design assumes one venue per trainer.
+*   **Desktop column width**: The mockup shows one centered column about 958 px wide in a 1706 px frame. The design uses a 960 px token, which assumes the frame is 1x. If it is 2x, the column is about 480 px. The design owner should confirm before the token is added.
 *   **Client cancellation**: A client can cancel a confirmed session (PDR-010), which removes the row. Should home show "Cancelled by client" for today and tomorrow, or rely on refresh and on the notification rules (O6)?
 
 ## Critical User Journeys (CUJs)
@@ -130,6 +131,7 @@ The proposed solution is a trainer-only home that lists pending requests first, 
 | 9 | Home lists confirmed sessions that have not ended. A session in progress stays until it ends. | Author, reconciliation with the brief |
 | 10 | Each e2e test creates its own bookings through the database. The dev seed is for manual use. | Author, Stage 9 review |
 | 11 | `booking` gets client names and venues through public lookups of `identity` and `trainers`, not by reading their tables. | Author, Stage 9 review |
+| 12 | The UI mockups (list states, request card states, phone and desktop home) are the source for layout and copy. The venue's city names the time zone ("Warsaw time"). Empty, error and notice panels are a new `fc-state` component, and `fc-alert` is not restyled. The desktop column is 960 px wide, pending confirmation from the design owner. | Author, mockup review |
 
 ### What exists today
 
@@ -186,7 +188,7 @@ New operations. All need a trainer token. Unapproved trainers get 403 with code 
 ```text
 BookingRequest: { id, clientName, startsAt, durationMinutes, priceMinor, currency,
                   venue: { name, area, timeZone }, requestedAt, expiresAt }
-Session:        { id, clientName, startsAt, durationMinutes, priceMinor, currency,
+Session:        { id, clientName, startsAt, durationMinutes,
                   venue: { name, area, timeZone } }
 Booking:        { id, status, startsAt, decidedAt }
 ```
@@ -257,11 +259,11 @@ The `**` route redirects to `''`. Approved-only routes sit under one parent rout
 
 **Home page.**
 
-*   `RequestsStore` and `SessionsStore` each hold `data`, `loading`, `error` and `lastUpdated` signals. Loading, empty and error are separate states. A failed refresh keeps the last list and shows "Could not refresh. Showing the update from HH:mm". With no earlier data it shows an error with a retry. It never shows the empty state.
+*   `RequestsStore` and `SessionsStore` each hold `data`, `loading`, `error` and `lastUpdated` signals. Loading, empty and error are separate states: loading shows skeleton cards (`fc-skeleton`), and empty and error show `fc-state` panels with the copy in "Page copy". A failed refresh keeps the last list and shows "Could not refresh. Showing the update from HH:mm". With no earlier data it shows an error with a retry. It never shows the empty state.
 *   **Refresh.** On open, when the tab becomes visible, and every 30 seconds while visible (a constant, `REFRESH_INTERVAL_MS`). It pauses while hidden. This list is the in-app alert required by PDR-012.
 *   **Clock.** `ClockService` keeps `offset = serverTime - Date.now()` from each response and exposes a `now` signal that ticks once a second. Other code in the library takes `now` from it, and its spec fails if the page or the stores call `Date.now()` directly. Deadlines, expiry and the late-window caption use it, so a wrong device clock does not change them.
-*   **Request card** (built from `fc-card`, `fc-stack`, `fc-heading`, `fc-text` and `fc-button`): client name, date and time with zone, duration, price, venue name and area, and the deadline ("Respond by 14:30 CET, 42 min left"). Accept is primary and Decline is secondary, with space between them and 44 px touch targets.
-*   **Late-window caption.** When `startsAt - now` is under 3 hours, the card adds: "Starts within 3 hours of your reply. Cancelling later will be flagged." Accept still commits on one tap. The 3-hour constant (`LATE_WINDOW_MS`) has one definition, in `late-window.ts`, with a comment citing PDR-010.
+*   **Request card** (built from `fc-card`, `fc-stack`, `fc-heading`, `fc-text`, `fc-badge`, `fc-time`, `fc-deadline` and `fc-button`), from top to bottom: the client name (`h3`); the date and time in bold, with "Today," or "Tomorrow," for those days ("Today, 16:00 Warsaw time"); a muted line with the price and the venue name ("120 PLN · Iron Hall Gym"); "Respond by 14:30 (Warsaw)" with a badge "37 min left"; and one row with Accept (primary) and Decline (secondary) at equal width and 48 px height. Duration and venue area are in the payload but not shown. The price is `priceMinor` divided by 100, without decimals when whole and with two when not, followed by the currency code. It assumes two decimals for every currency, because O7 is open and PLN is the only currency in view.
+*   **Late-window caption.** When `startsAt - now` is under 3 hours, the card adds: "Session starts within 3 hours. Cancelling later will be flagged." Accept still commits on one tap. The 3-hour constant (`LATE_WINDOW_MS`) has one definition, in `late-window.ts`, with a comment citing PDR-010.
 *   **Per-card state** is a small state machine:
 
     | State | Event | Next state |
@@ -269,29 +271,56 @@ The `**` route redirects to `''`. Approved-only routes sit under one parent rout
     | `idle` | tap Accept or Decline | `submitting` (the action is kept) |
     | `idle` | the clock reaches `expiresAt` | `expired` (a disabled card; the store refetches once) |
     | `submitting` | 200 | `accepted` or `declined` (the result is kept) |
-    | `submitting` | 409 `booking-expired`, `booking-withdrawn` or `booking-not-pending`, or 404 | `unavailable` (the store refetches once) |
+    | `submitting` | 409 `booking-expired` | `unavailable`, reason `expired` (the store refetches once) |
+    | `submitting` | 409 `booking-withdrawn` | `unavailable`, reason `withdrawn` (the store refetches once) |
+    | `submitting` | 409 `booking-not-pending`, or 404 | `unavailable`, reason `answered` (the store refetches once). A 404 hides whether the id is unknown or another trainer's, and "already answered" is the least misleading text. |
     | `submitting` | 403 `trainer-not-approved` | `refreshUser()`, then navigate to `/setup` unless the status is still `approved`, in which case `failed` |
-    | `submitting` | network error or 5xx | `failed` ("Not sent. Try again"; both buttons enabled) |
-    | `failed` | tap | `submitting` |
+    | `submitting` | network error or 5xx | `failed` (an error box with the message in "Page copy" and a Retry button; both buttons enabled) |
+    | `failed` | tap Retry | `submitting` (the kept action again) |
+    | `failed` | tap Accept or Decline | `submitting` (that action) |
     | `accepted`, `declined`, `unavailable`, `expired` | none | stay until the page is left |
 
-    A 401 follows the existing interceptor flow, and the card stays visible. A repeat of the same action is safe because of idempotency. While submitting, both buttons are disabled and Accept shows its loading state. Card texts are "Accepted. Thu 12 Nov, 10:00 CET", "Declined.", "This request is no longer available." and "Expired."
+    A 401 follows the existing interceptor flow, and the card stays visible. A repeat of the same action is safe because of idempotency. The card looks like this in each state:
+
+    *   **`submitting`:** the card is unchanged. The pressed button shows a spinner with the label "Accepting" or "Declining" (`fc-button` `loadingLabel`), and the other button is disabled.
+    *   **`accepted` and `declined`:** a compact card with the client name and a badge ("Accepted" or "Declined"), and one sentence ("Accepted. Tue 17 Nov, 10:00 Warsaw time." or "Declined. No reason was sent.").
+    *   **`unavailable`:** a compact card with the client name, the badge "No longer available" and one sentence by reason: "This request expired before you answered.", "The client withdrew this request." or "This request was already answered."
+    *   **`expired`:** the card keeps its details, the badge "Expired" replaces the time-left badge, the text "The 1-hour response window has ended." is added above the buttons, and both buttons are disabled. A disabled Accept looks outlined, as the Material theme renders a disabled filled button.
+    *   **`failed`:** the card keeps its details and time-left badge, adds an error box with "We could not reach the server. Your answer may not have been saved." and a Retry button, and leaves Accept and Decline enabled.
 *   **Store rules.** `RequestsStore` keeps a map keyed by booking id. A poll merges by id: a card in `submitting` keeps its state and the response is not applied to it, resolved cards (`accepted`, `declined`, `unavailable`, `expired`) stay in place even after the server list drops them, and new ids are added as `idle`. Order is by `expiresAt`, with resolved cards after open ones. Refresh uses `exhaustMap`, so a trigger while a request is in flight is ignored. The store triggers one refetch per card at the deadline and after a 409. Both stores are provided in `TrainerHome`'s `providers`, so they live until the page is left. `SessionsStore` handles a 403 `trainer-not-approved` the same way.
-*   **Confirmed sessions.** `SessionsStore` computes `from` as the start of today and `to` as the end of tomorrow in `trainerVenueTimeZone`, with pure functions that take epoch milliseconds and a zone: `dayWindow(now, zone)`, `dayOf(startsAt, zone, now)` (`today`, `tomorrow` or `null`) and `hasEnded(startsAt, durationMinutes, now)` (true when `startsAt` plus duration is at or before `now`). The start of a local date is the earliest instant whose local date is that date. It is found with `Intl.DateTimeFormat(..., { timeZone }).formatToParts`, searching 14 hours either side of UTC midnight, so a day without a local 00:00 (a DST gap) starts at the first instant that exists. No date library is added. The functions are tested for DST changes, a zone whose midnight does not exist, a 00:30 local session that falls on another UTC day, and a session ending exactly at `now`. A session that started before `from` and is still running is returned by the endpoint and shown. The store hides a session once `startsAt` plus its duration has passed, using `ClockService.now`, so ended sessions leave the list without a refetch and a session in progress stays until it ends. The response is grouped under "Today" and "Tomorrow" headings with the zone label. If `trainerVenueTimeZone` is `null`, the list shows an error, not an empty state.
-*   **Deep link.** The email link is `<trainer-web-origin>/?request=<bookingId>`. After the first load, if the id is in the pending list the card gets a highlight and keyboard focus and scrolls into view. If it is not, an `fc-alert` says "That request is no longer available. It may have expired or been answered." Opening the link never accepts anything. Nothing in the link needs a lookup endpoint.
-*   **Sign-out** stays on home, because there is no navigation shell.
-*   **Heading.** The page keeps the heading "Welcome, {name}" that the e2e suite already checks.
+*   **Confirmed sessions.** `SessionsStore` computes `from` as the start of today and `to` as the end of tomorrow in `trainerVenueTimeZone`, with pure functions that take epoch milliseconds and a zone: `dayWindow(now, zone)`, `dayOf(startsAt, zone, now)` (`today`, `tomorrow` or `null`) and `hasEnded(startsAt, durationMinutes, now)` (true when `startsAt` plus duration is at or before `now`). The start of a local date is the earliest instant whose local date is that date. It is found with `Intl.DateTimeFormat(..., { timeZone }).formatToParts`, searching 14 hours either side of UTC midnight, so a day without a local 00:00 (a DST gap) starts at the first instant that exists. No date library is added. The functions are tested for DST changes, a zone whose midnight does not exist, a 00:30 local session that falls on another UTC day, and a session ending exactly at `now`. A session that started before `from` and is still running is returned by the endpoint and shown. The store hides a session once `startsAt` plus its duration has passed, using `ClockService.now`, so ended sessions leave the list without a refetch and a session in progress stays until it ends. If `trainerVenueTimeZone` is `null`, the list shows an error, not an empty state. The list has the section title "Today and tomorrow" (`h2`), then day groups headed "Today, Sun 15 Nov" and "Tomorrow, Mon 16 Nov" (`h3`, `fc-time` with `format="day"`). Each session is a row: on the left the time range in bold ("17:30–18:30", `fc-time` with `format="range"`) with "Warsaw time" under it, and on the right the client name above the venue name, right aligned. The row has no price.
+*   **Deep link.** The email link is `<trainer-web-origin>/?request=<bookingId>`. After the first successful load of the pending list, if the id is in the list the card gets the accent border, the badge "Opened from email", keyboard focus, and scrolls into view. A failed first load waits for the first success, and later polls do not highlight again. The highlight and badge end when the trainer answers that card or leaves the page. If the id is not in the list after that load, an `fc-state` notice (info) shows the text in "Page copy"; it is dismissed when the trainer answers any card or leaves the page. Opening the link never accepts anything. Nothing in the link needs a lookup endpoint.
+*   **Page header.** The page title is `h1` "Trainer home", with the subtitle "Times are shown in Warsaw time." (the city comes from `trainerVenueTimeZone`, and the subtitle is hidden while it is `null`). "Sign out" is a text-style `fc-button` at the top right, because there is no navigation shell. The page does not show the trainer's name or email. This replaces the placeholder greeting, so the e2e project changes (see table O).
+*   **Page layout.** One column. On a desktop window it is centered, at most 960 px wide (token `--container-column`, pending confirmation from the design owner), and on a phone it fills the width with 20 px side padding. The "Booking requests" heading carries a badge with the number of open cards (idle, submitting and failed, not resolved ones).
+
+**Page copy** (from the mockups):
+
+| Where | Text |
+|---|---|
+| Requests empty | "No requests waiting" / "New booking requests appear here as soon as a client books you." |
+| Requests error | "Could not load requests" / "Requests may be waiting for you. Check your connection and try again." / "Try again" |
+| Sessions empty | "No sessions today or tomorrow" / "Confirmed sessions show up here." |
+| Sessions error | "Could not load sessions" / "Your schedule may not be empty. Check your connection and try again." / "Try again" |
+| Deep-link notice | "That request is no longer available. It may have expired, been answered, or belong to another trainer." |
+| Failed answer | "We could not reach the server. Your answer may not have been saved." / "Retry" |
+| Failed refresh | "Could not refresh. Showing the update from {HH:mm}." (not in the mockups; it is the only place the stale-data state is told to the trainer) |
+| Buttons | "Accept", "Decline", "Accepting", "Declining" |
 
 **Shared UI additions** (each exported, with a spec, built with tokens only):
 
 | Addition | Purpose |
 |---|---|
-| `fc-time` | Shows a UTC instant in a given IANA zone with the zone label, using `Intl.DateTimeFormat` with the fixed locale `en-GB` (one language, D13) and a 24-hour clock. Output looks like "Thu 12 Nov, 10:00 CET", in a `<time datetime>` element. Angular's `DatePipe` does not accept IANA zones. |
-| `fc-deadline` | "Respond by 14:30 CET, 42 min left" or "Expired", from an end time, a `now` value in epoch milliseconds and a zone. Minutes left round up, under one minute shows "less than 1 min left", and at or past the end it shows "Expired". It has no live region, so screen readers are not interrupted every second. |
+| `fc-time` | Shows a UTC instant in a given IANA zone, using `Intl.DateTimeFormat` with the fixed locale `en-GB` (one language, D13) and a 24-hour clock, inside a `<time datetime>` element. The zone label is the venue's city, taken from the IANA id (`Europe/Warsaw` gives "Warsaw", `America/Argentina/Buenos_Aires` gives "Buenos Aires", `UTC` stays "UTC"). Three formats through the `format` input: `datetime` (default) renders "Tue 17 Nov, 10:00 Warsaw time", or "Today, 16:00 Warsaw time" and "Tomorrow, ..." when the optional `now` input (epoch ms) is set; `day` renders "Today, Sun 15 Nov" or "Tomorrow, Mon 16 Nov" (needs `now`); `range` renders "17:30–18:30" with "Warsaw time" on a second line (needs `durationMinutes`). Angular's `DatePipe` does not accept IANA zones. |
+| `fc-deadline` | "Respond by 14:30 (Warsaw)" followed by an `fc-badge` "37 min left", from an end time, a `now` value in epoch milliseconds and a zone. Minutes left round up, and under one minute shows "less than 1 min left". At or past the end the badge is not shown (the card shows its own "Expired" badge). It has no live region, so screen readers are not interrupted every second. |
+| `fc-badge` | A small pill with a border for short labels: "Opened from email", "37 min left", "Accepted", "Declined", "No longer available", "Expired", and the count next to "Booking requests". It uses the `text-pill` step and the `rounded-pill` radius, and has no color variants in this feature. |
+| `fc-skeleton` | Loading placeholder: grey bars inside a card-shaped box. Inputs `lines` (number of text bars, default 2) and `actions` (adds two button bars). It is `aria-hidden`, and its container sets `aria-busy`. |
+| `fc-state` | A panel for empty, error and notice messages. Variants `empty`, `error` and `info`. A bold title (not for `info`), a projected body, an optional action (a text-style `fc-button`) and an icon for `error` and `info`. `error` uses `role="alert"`, the others `role="status"`. The existing `fc-alert` is not restyled, because the login pages use it. |
+| `fcMoney` pipe | Formats `priceMinor` and a currency code as "120 PLN" or "120.50 PLN". |
+| `fc-button` `loadingLabel` input | While `loading` is true, shows the spinner next to this label ("Accepting") instead of hiding the label. Without it the button behaves as today. |
 | `fcScrollIntoView` directive | When its input becomes true, scrolls the host into view and focuses it. Feature templates cannot touch the DOM. |
 | `fc-card` `highlighted` input | Accent border for the deep-linked card. |
 | `fc-card` width | `fc-card` is fixed at a login-card width (`max-w-md`). Add a `size` input for a full-width variant. |
-| `fc-page` `align` input | `center` (default, so the login pages are unchanged) or `top` for list pages. |
+| `fc-page` `align` input | `center` (default, so the login pages are unchanged) or `top` for list pages. `top` centers one content block of at most the `--container-column` width (960 px) with 20 px side padding. The token is added to `tokens.css` and to the token table in `design-system.md`, with a test first. |
 
 ### Seed data and tests
 
@@ -462,6 +491,12 @@ Each option below was weighed in `/egm-brainstorm` or `/egm-draft`. Where the au
 *   **Cons**: The e2e database is never reset and runs with one worker and a retry on CI, so a retry finds the data already used. Placing "today's" session at a fixed time depends on the clock.
 *   **Reason for Rejection**: Rejected by author in the Stage 9 review: each test creates its own bookings, with today's session in progress and tomorrow's at noon of the venue date.
 
+#### Alternative V: Restyle `fc-alert` to the mockup's panel look instead of adding `fc-state`
+
+*   **Pros**: One component for messages, with a title and an action slot.
+*   **Cons**: The login pages and `SignedInHome` use `fc-alert`, so their error and info messages would change appearance, and their specs and the `role="alert"` e2e assertions would need checking.
+*   **Reason for Rejection**: Rejected by author in the mockup review: the approved login pages stay untouched, so empty, error and notice panels are a new `fc-state` component.
+
 --------------------------------------------------------------------------------
 
 ### Additional Resources
@@ -501,7 +536,7 @@ Slices for step 4. Each `feat` commit leaves lint and tests green for the affect
 2.  `database`: `seed.ts`, `seed.spec.ts`, `cli/seed.ts` and `testing.ts`.
 3.  `trainers` and `identity`: the three trainer fields on `User`, the lookups, the approval guard, `me.int.spec.ts` and `dev-login.int.spec.ts`.
 4.  `booking`: lists, accept and decline, `contract.int.spec.ts`, `trainer-home.int.spec.ts` and `test-app.ts`.
-5.  `ui`: `fc-time`, `fc-deadline`, `fcScrollIntoView`, and the `fc-card` and `fc-page` inputs.
+5.  `ui`: `fc-time` (with `zoneCity`), `fc-deadline`, `fc-badge`, `fc-skeleton`, `fc-state`, the `fcMoney` pipe, `fcScrollIntoView`, the `loadingLabel` input of `fc-button`, the `fc-card` and `fc-page` inputs, and the `--container-column` token.
 6.  `data-access` and `auth`: client methods, `ApiError.code` and `refreshUser()`.
 7.  `trainer-access`: the two guards and their decision table.
 8.  `feature-trainer-setup`.
@@ -572,8 +607,15 @@ frontend
       lastUpdated: Signal<number | null>, accept(id), decline(id), refresh(), retry()
   SessionsStore  (in TrainerHome's providers)
       today: Signal<Session[]>, tomorrow: Signal<Session[]>, loadState: Signal<...>, refresh(), retry()
-  fc-time:           inputs value (ISO string), timeZone (IANA string)
+  zoneCity(zone: string): string                   // "Europe/Warsaw" -> "Warsaw"
+  fc-time:           inputs value (ISO string), timeZone (IANA string), format ('datetime' | 'day' | 'range'),
+                     now? (epoch ms), durationMinutes? (for 'range')
   fc-deadline:       inputs until (ISO string), now (epoch ms), timeZone
+  fc-badge:          projects its content
+  fc-skeleton:       inputs lines (number), actions (boolean)
+  fc-state:          inputs variant ('empty' | 'error' | 'info'), title; projects body and an action slot
+  fcMoney:           pipe (priceMinor: number, currency: string): string
+  fc-button:         new optional input loadingLabel (string)
   fcScrollIntoView:  selector [fcScrollIntoView], boolean input of the same name
 ```
 
@@ -626,8 +668,8 @@ Enum values are literal lists in the schema files, as in `schema/users.ts`, beca
 Seed data for `seedDevTrainerData`, used for manual work (the e2e tests create their own data):
 
 *   Profiles: `trainer@example.com` is `approved`, `pat.pending@example.com` is `submitted`.
-*   Venue for Taylor: "Riverside Studio", area "Powisle", address "12 Example Street", instructions "Ring the bell at the gym entrance", zone `Europe/Warsaw`.
-*   Bookings for Taylor from `client@example.com`, 6000 minor units `PLN`, 60 minutes: pending A starts at `now` plus 5 hours, requested 5 minutes ago, expires in 55 minutes. Pending B starts at `now` plus 2 hours (inside the late window), requested 10 minutes ago, expires in 50 minutes. A and B do not overlap. Confirmed C started 15 minutes ago (in progress). Confirmed D starts tomorrow at noon in the venue zone.
+*   Venue for Taylor: "Iron Hall Gym" (the name in the mockups), area "Powisle", address "12 Example Street", instructions "Ring the bell at the gym entrance", zone `Europe/Warsaw`.
+*   Bookings for Taylor from `client@example.com`, 12000 minor units `PLN` (120 PLN, as in the mockups), 60 minutes: pending A starts at `now` plus 5 hours, requested 5 minutes ago, expires in 55 minutes. Pending B starts at `now` plus 2 hours (inside the late window), requested 10 minutes ago, expires in 50 minutes. A and B do not overlap. Confirmed C started 15 minutes ago (in progress). Confirmed D starts tomorrow at noon in the venue zone.
 *   Reset: delete the seeded trainers' bookings (history rows cascade), then insert them again.
 
 #### C. Backend common (`libs/backend/common`)
@@ -714,13 +756,20 @@ All new components are standalone, signal-based and use only tokens from `tokens
 
 | File | Action | What changes and why |
 |---|---|---|
-| `src/lib/time/time.ts`, `.spec.ts` | Create | `fc-time`. Inputs `value` (ISO instant) and `timeZone`. Renders "Thu 12 Nov, 10:00 CET" with `Intl.DateTimeFormat`, locale `en-GB` (a constant `UI_LOCALE`), 24-hour clock and the short zone name, inside a `<time>` element with a `datetime` attribute. |
-| `src/lib/deadline/deadline.ts`, `.spec.ts` | Create | `fc-deadline`. Inputs `until`, `now` (epoch ms) and `timeZone`. Renders "Respond by 14:30 CET, 42 min left". Minutes round up, under one minute shows "less than 1 min left", and at or past `until` it shows "Expired". No live region. |
+| `src/lib/time/zone-city.ts`, `.spec.ts` | Create | `zoneCity(zone)`: the last path segment of the IANA id with underscores turned into spaces (`Europe/Warsaw` gives "Warsaw", `America/Argentina/Buenos_Aires` gives "Buenos Aires", `UTC` gives "UTC"). |
+| `src/lib/time/time.ts`, `.spec.ts` | Create | `fc-time`. Inputs `value` (ISO instant), `timeZone`, `format` (`datetime`, `day` or `range`), and optional `now` (epoch ms) and `durationMinutes`. Renders with `Intl.DateTimeFormat`, locale `en-GB` (a constant `UI_LOCALE`) and a 24-hour clock, inside a `<time>` element with a `datetime` attribute. The three formats and the "Today," and "Tomorrow," forms are described in the Technical Plan. |
+| `src/lib/deadline/deadline.ts`, `.spec.ts` | Create | `fc-deadline`. Inputs `until`, `now` (epoch ms) and `timeZone`. Renders "Respond by 14:30 (Warsaw)" and an `fc-badge` with the time left. Minutes round up, and under one minute shows "less than 1 min left". At or past `until` it shows no badge. No live region. |
+| `src/lib/badge/badge.ts`, `.spec.ts` | Create | `fc-badge`: a bordered pill that projects its content, using the `text-pill` step and the `rounded-pill` radius. |
+| `src/lib/skeleton/skeleton.ts`, `.spec.ts` | Create | `fc-skeleton` with inputs `lines` and `actions`, drawn with the `line-card` token, `aria-hidden`. |
+| `src/lib/state/state.ts`, `.spec.ts` | Create | `fc-state` with variants `empty`, `error` and `info`, a `title` input, a projected body and an action slot. Icon for `error` and `info`. `role="alert"` for `error`, `role="status"` otherwise. |
+| `src/lib/money/money.ts`, `.spec.ts` | Create | Pipe `fcMoney`: `priceMinor` divided by 100, no decimals when whole and two when not, then the currency code ("120 PLN", "120.50 PLN"). Assumes two decimals for every currency. |
+| `src/lib/button/button.ts`, `.spec.ts` | Modify | New optional input `loadingLabel`. When `loading` is true and it is set, the button shows the spinner and that label, stays disabled and keeps `aria-busy`. Without it the loading look is unchanged, so the login pages are not affected. |
+| `src/styles/tokens.css` | Modify | Add `--container-column: 60rem` (960 px), after the design owner confirms the width. A test of `fc-page align="top"` comes first (the "Adding or changing a token" steps in `design-system.md`). |
 | `src/lib/scroll-into-view/scroll-into-view.ts`, `.spec.ts` | Create | `fcScrollIntoView` directive. When its boolean input turns true, sets `tabindex="-1"` on the host, scrolls it into view and focuses the host. |
 | `src/lib/card/card.ts`, `.spec.ts` | Modify | Add `highlighted` (accent border) and `size` (`default` keeps `max-w-md`, `full` fills the width). |
-| `src/lib/page/page.ts`, `.spec.ts` | Modify | Add `align` (`center` by default, `top` for list pages). |
+| `src/lib/page/page.ts`, `.spec.ts` | Modify | Add `align` (`center` by default, `top` for list pages). `top` centers one content block of at most the `--container-column` width, with 20 px side padding. |
 | `src/test-setup.ts` | Modify | jsdom has no `Element.prototype.scrollIntoView`, so add a stub for the directive spec. |
-| `src/index.ts` | Modify | Export the three new items. |
+| `src/index.ts` | Modify | Export the new items: `fc-time`, `fc-deadline`, `fc-badge`, `fc-skeleton`, `fc-state`, `fcMoney` and `fcScrollIntoView`. |
 | `README.md` | Modify | List the new components. |
 
 #### K. `trainer-access` (new library, tags `scope:trainer`, `type:data-access`)
@@ -751,14 +800,14 @@ The page holds its markup inline, with `@for` loops over requests and sessions. 
 | File | Action | What changes and why |
 |---|---|---|
 | `src/index.ts` | Create | Exports `TrainerHome`. |
-| `src/lib/trainer-home.ts`, `.spec.ts` | Create | The page: heading "Welcome, {name}", "Signed in as {email}", sign-out, the deep-link notice, the request list, the session list. All markup uses `fc-*` only. It provides both stores in its `providers`. |
+| `src/lib/trainer-home.ts`, `.spec.ts` | Create | The page: `h1` "Trainer home" with the subtitle "Times are shown in {City} time.", the "Sign out" text button, the deep-link notice, the "Booking requests" section with its count badge and cards, and the "Today and tomorrow" section with day groups and session rows. Loading, empty and error states use `fc-skeleton` and `fc-state` with the copy in the Technical Plan. All markup uses `fc-*` only. It provides both stores in its `providers`. |
 | `src/lib/clock.service.ts`, `.spec.ts` | Create | Server-time offset and a `now` signal ticking each second. Other code in the library takes `now` from it, and its spec fails if the page or the stores call `Date.now()` directly (a spec that spies on `Date.now`). Specs use fake timers. |
 | `src/lib/late-window.ts`, `.spec.ts` | Create | Exports `LATE_WINDOW_MS` (3 hours), with a one-line comment citing PDR-010. |
 | `src/lib/day-window.ts`, `.spec.ts` | Create | Three pure functions on epoch milliseconds: `dayWindow(now, zone)` returns `{ from, to }`, `dayOf(startsAt, zone, now)` returns `'today'`, `'tomorrow'` or `null`, and `hasEnded(startsAt, durationMinutes, now)` is true when `startsAt` plus duration is at or before `now`. |
 | `src/lib/refresh-trigger.ts`, `.spec.ts` | Create | Emits on start, on the tab becoming visible, and every `REFRESH_INTERVAL_MS` (30 000) while visible. |
 | `src/lib/requests-store.ts`, `.spec.ts` | Create | Pending list state, the map of cards, accept and decline, error mapping from `ApiError.code`, and a 403 `trainer-not-approved` handled with `refreshUser()` then navigation to `/setup`, per the state machine in the Technical Plan. Refresh uses `exhaustMap`. |
 | `src/lib/sessions-store.ts`, `.spec.ts` | Create | Confirmed list state for today and tomorrow, with its own loading, empty and error states. Hides sessions for which `hasEnded` is true, using `ClockService.now`. Handles a 403 like `RequestsStore`. |
-| `src/lib/request-card-state.ts`, `.spec.ts` | Create | The per-card state machine (idle, submitting, accepted, declined, unavailable, expired, failed) as pure functions, following the transition table in the Technical Plan. |
+| `src/lib/request-card-state.ts`, `.spec.ts` | Create | The per-card state machine (idle, submitting, accepted, declined, unavailable with a `reason` of `expired`, `withdrawn` or `answered`, expired, failed) as pure functions, following the transition table in the Technical Plan. |
 
 The deep-link notice, the highlight and the page copy follow the Technical Plan.
 
@@ -768,16 +817,17 @@ The deep-link notice, the highlight and the page copy follow the Technical Plan.
 |---|---|---|
 | `src/app/app.routes.ts` | Modify | Add `setup` with `[authGuard, roleGuard('trainer'), trainerSetupGuard]`. Change `''` to one parent with `canActivate: [authGuard, roleGuard('trainer')]`, `canActivateChild: [trainerApprovedGuard]` and one child that loads `TrainerHome`. Keep `**` redirecting to `''`. Change the login description to "Answer booking requests and see your schedule", because the old text promised earnings, which are out of scope (PDR-004). |
 | `src/app/app.routes.spec.ts` | Modify | Update the description assertion to the new text, give fixtures `trainerStatus: 'approved'`, stub the `ApiClient` list methods, and add the routing table cases (signed out, wrong role, approved, unapproved, `**`, and `returnUrl` keeping `?request=<id>`). |
-| `src/app/app.spec.ts` | Modify | Expect the trainer home instead of `fc-signed-in-home`, with an approved trainer fixture. |
+| `src/app/app.spec.ts` | Modify | Expect the trainer home (`h1` "Trainer home") instead of `fc-signed-in-home`, with an approved trainer fixture. |
 
 #### O. End-to-end (`apps/e2e`)
 
 | File | Action | What changes and why |
 |---|---|---|
 | `src/db.ts` | Create | Helper using `pg` and `E2E_DATABASE_URL` from `stack.ts`. `createBooking(options)` inserts a booking and returns its id. `expireBooking(id)` moves a request's deadline into the past. |
-| `src/apps.ts` | Modify | Add an optional `unapprovedTrainer: { email, displayName }` to `AppUnderTest`, set for the trainer app. |
+| `src/apps.ts` | Modify | Add an optional `unapprovedTrainer: { email, displayName }` to `AppUnderTest`, set for the trainer app. Set the trainer app's `homeHeading` to `Trainer home`, and add `showsEmail: boolean` (true for client and admin, false for trainer), because the new home shows neither the name nor the email. |
 | `src/trainer-home.e2e.ts` | Create | Starts with `test.skip(app.name !== 'trainer-web')`, because `playwright.config.ts` runs every `*.e2e.ts` for all three apps. Each test creates its own bookings through `db.ts`. Today's session starts 5 minutes before now and lasts 60 minutes, so it is in progress whenever the test runs. Tomorrow's session starts at noon of tomorrow's venue date (found with `Intl.DateTimeFormat` parts), which avoids the DST gap. Scenarios: approved trainer sees both lists; accept; decline; a lost race (the test expires the request through the database); the signed-out deep link; an unapproved trainer lands on `/setup`. |
-| `src/login.e2e.ts`, `src/landing.e2e.ts` | No change | They assert only the landing title, the sign-in button, the home heading and the email, so they must still pass. Home keeps the greeting as the only `h1`. |
+| `src/login.e2e.ts` | Modify | Assert that the email text is visible only when `app.showsEmail` is true. The `h1` assertions use `app.homeHeading`, so they follow the new trainer value. Home has one `h1`, so the strict-mode assertions still hold. |
+| `src/landing.e2e.ts` | No change | It asserts only the landing title and the sign-in button. |
 
 #### P. Documentation
 
@@ -786,6 +836,7 @@ The deep-link notice, the highlight and the page copy follow the Technical Plan.
 | `Architecture.md` | Modify | Section 2: add D22 (approval status as flat fields on `getMe`, with synchronous guards), D23 (polling is the first-release in-app alert), D24 (problem details carry an optional `code`) and D25 (cross-module reads go through public lookups). Section 5: change the `booking` lifecycle to the PRD states. Section 6.3: "Polling first; WebSockets proposed". Section 11: name the trainer home as the current step. |
 | `docs/plans/trainer-web.md` | Modify | Section 6 route table: narrow the `/` row to this home (pending requests and today's and tomorrow's sessions; no stats). Add a `/setup` row (read-only verification status). Leave `/onboarding` and `/verification` as planned, because `/setup` covers only the status display until they exist. Fix the tag of `auth` in section 4 to `type:data-access`. |
 | `README.md` | Modify | Mention the second seeded trainer in its list of seeded users. |
+| `.claude/rules/design-system.md` | Modify | Add the `--container-column` row to the token table and mention `fc-badge`, `fc-skeleton` and `fc-state` under "Where each rule is applied". |
 | `libs/backend/trainers/README.md`, `libs/backend/booking/README.md`, `libs/frontend/trainer-access/README.md`, `libs/frontend/feature-trainer-home/README.md`, `libs/frontend/feature-trainer-setup/README.md` | Create | Generated by Nx, then edited to describe each library's purpose and boundaries. |
 
 ### Pseudocode
@@ -842,14 +893,14 @@ start(date): search from (UTC midnight of date) - 14 h to + 14 h for the first i
 *   **`booking` repository and service (real Postgres):** the pending list excludes requests past their deadline by time, other trainers and other statuses, and sorts by `expires_at`. A request with `expires_at == now` is excluded. The sessions list is overlap-based: a running session that started before `from` is returned, `to` is exclusive, and a span of exactly 7 days is accepted. Accept and decline for each row of the decision table, repeat accept and repeat decline, and accept racing expiry (the deadline passes during the lock wait). Two trainers accepting one client's overlapping requests concurrently end with exactly one confirmed and the other withdrawn, with no deadlock. Touching ranges stay pending. An overlapping request past its deadline is left alone. Every change writes a history row. The service takes client names and venues from `UsersService` and `TrainersService` only.
 *   **`booking` controllers and `trainer-home.int.spec.ts`:** 401 without a token, 403 for a client and for an unapproved trainer (code `trainer-not-approved`), 404 for another trainer's booking and for a malformed id, 400 for a bad `from` or `to` (a span over 7 days, a bare date, `from` after `to`), response shapes validated against the contract, and no `address` field anywhere.
 *   **`contract.int.spec.ts`:** every new path is served and conforms for its documented statuses.
-*   **`ui`:** `fc-time` shows the zone label and a `<time datetime>` and renders across a DST date. `fc-deadline` rounds minutes up, shows "less than 1 min left", and shows "Expired" at the boundary. `fcScrollIntoView` focuses and scrolls when its input becomes true and not before (with `scrollIntoView` stubbed in `test-setup.ts`). `fc-card` highlighted and size. `fc-page` align.
+*   **`ui`:** `zoneCity` for `Europe/Warsaw`, a zone with an underscore and `UTC`. `fc-time` in each format (`datetime`, `day`, `range`), the "Today," and "Tomorrow," forms, the city label, a `<time datetime>` element, and a DST date. `fc-deadline` rounds minutes up, shows "less than 1 min left", and shows no badge at the boundary. `fc-badge` projects its content. `fc-skeleton` renders the requested lines and actions and is `aria-hidden`. `fc-state` roles (`alert` for `error`, `status` otherwise), icon and action slot. `fcMoney` for whole and fractional amounts. `fc-button` with `loadingLabel` shows the spinner and the label, and without it behaves as before. `fcScrollIntoView` focuses and scrolls when its input becomes true and not before (with `scrollIntoView` stubbed in `test-setup.ts`). `fc-card` highlighted and size. `fc-page` align.
 *   **`data-access` and `auth`:** each new `ApiClient` method (URL, method, error mapping), `ApiError.code`, and `refreshUser()` success, rejection with the user kept, and no sign-out of its own.
 *   **`trainer-access`:** the guard decision table, plus a trainer with `trainerStatus` `null`.
 *   **`ClockService`:** `sync` sets the offset, `now` ticks each second (fake timers), and a skewed device clock does not move the result.
 *   **`refreshTrigger`:** emits on start, again after `REFRESH_INTERVAL_MS` while visible, on becoming visible, and not while hidden.
 *   **`RequestsStore` and `request-card-state`:** every row of the transition table. A poll never overwrites a `submitting` card. Resolved cards survive a poll that drops them. A failed refresh keeps the last list. With no data it shows the error state, not the empty state. `exhaustMap` ignores an overlapping trigger. A 403 navigates to `/setup`, or shows the error if the status is still `approved`.
 *   **`SessionsStore`:** groups by `dayOf`, hides ended sessions as the clock passes the end, shows an error when the venue time zone is `null`, and handles a 403.
-*   **`TrainerHome`:** loading, empty, error and loaded states for both lists, the late caption on a card inside 3 hours only, the highlight, the notice for an unknown id, and sign-out.
+*   **`TrainerHome`:** skeleton, empty, error and loaded states for both lists with the copy in "Page copy", the request count badge, the late caption on a card inside 3 hours only, each card state's text (including the three unavailable reasons and the expired and failed cards), the highlight with its badge and its end, the notice for an unknown id, the subtitle (hidden when the zone is `null`), the day groups and session rows, and sign-out.
 *   **`TrainerSetup`:** each status text, the missing-note case, "Check again" success and failure, and navigation to `/` when approved.
 *   **`trainer-web`:** the route table (signed out, wrong role, approved, unapproved, `**`), and `returnUrl` keeps `?request=<id>`.
 *   **e2e:** the scenarios listed in table O, each creating its own data.
@@ -862,7 +913,7 @@ start(date): search from (UTC midnight of date) - 14 h to + 14 h for the first i
 *   **Static analysis and linting**: `pnpm nx affected -t lint --base=main`. The raw-HTML lint rule must stay on. A feature template with a raw element fails it.
 *   **Test coverage requirement**: 80% lines, functions, branches and statements per project. No threshold is lowered.
 *   **E2E/Integration**: `pnpm nx e2e e2e`. All three apps' existing login scenarios and the new trainer home scenarios pass.
-*   **Manual check in a browser** (UI rule): run the API and `trainer-web`, sign in as `trainer@example.com`, then check: both lists; accept and decline; the late caption; the deadline flipping to "Expired"; the deep link while signed in and signed out; the second trainer landing on `/setup`; the layout at a 375 px wide viewport; Tab order (greeting, requests top to bottom with Accept before Decline, sessions, sign-out); and a failed refresh with the API stopped.
+*   **Manual check in a browser** (UI rule): run the API and `trainer-web`, sign in as `trainer@example.com`, then check: both lists; accept and decline; the late caption; the deadline flipping to "Expired"; the deep link while signed in and signed out; the second trainer landing on `/setup`; the layout at a 375 px wide viewport; Tab order (Sign out, then requests top to bottom with Accept before Decline); the desktop column no wider than 960 px; and a failed refresh with the API stopped. Compare the page and each card state with the four mockups.
 
 --------------------------------------------------------------------------------
 
