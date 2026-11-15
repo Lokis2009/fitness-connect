@@ -89,20 +89,32 @@ const WITHDRAWN = {
   code: 'booking-withdrawn',
   message: 'The client withdrew this request.',
 };
+const STARTED = {
+  code: 'booking-expired',
+  message: 'The session has already started.',
+};
 const NOT_PENDING = {
   code: 'booking-not-pending',
   message: 'This request was already answered.',
 };
 
-/** What to do with a booking in `status`. This is the decision table of the design. */
+type Conflict = { code: string; message: string };
+
+/**
+ * What to do with a booking in `status`. This is the decision table of the design, plus one rule:
+ * a pending request whose session has started cannot be accepted, even inside its response window.
+ * It can still be declined, to clear a stale request.
+ */
 function outcomeOf(
   status: BookingStatus,
   pastDeadline: boolean,
+  started: boolean,
   action: Action,
-): 'apply' | 'repeat' | typeof EXPIRED {
+): 'apply' | 'repeat' | Conflict {
   switch (status) {
     case 'pending':
-      return pastDeadline ? EXPIRED : 'apply';
+      if (pastDeadline) return EXPIRED;
+      return started && action === 'accept' ? STARTED : 'apply';
     case 'confirmed':
       return action === 'accept' ? 'repeat' : NOT_PENDING;
     case 'declined':
@@ -218,6 +230,7 @@ export class BookingsRepository {
       const outcome = outcomeOf(
         current.status,
         current.expiresAt.getTime() <= now.getTime(),
+        current.startsAt.getTime() <= now.getTime(),
         action,
       );
       if (outcome === 'repeat') {
