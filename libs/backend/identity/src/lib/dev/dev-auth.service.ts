@@ -35,7 +35,11 @@ export class DevAuthService {
       email: user.email,
       role: user.role,
     });
-    return { accessToken, user: toUserDto(user) };
+    const trainerFields = await this.trainers.getUserTrainerFields({
+      id: user.id,
+      role: user.role,
+    });
+    return { accessToken, user: toUserDto(user, trainerFields) };
   }
 
   /** Computed once; a failed attempt is discarded so a later login can retry it. */

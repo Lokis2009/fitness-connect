@@ -18,6 +18,10 @@ export class MeController {
       // The token is valid but its user is gone.
       throw new UnauthorizedException();
     }
-    return toUserDto(user);
+    const trainerFields = await this.trainers.getUserTrainerFields({
+      id: user.id,
+      role: user.role,
+    });
+    return toUserDto(user, trainerFields);
   }
 }

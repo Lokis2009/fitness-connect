@@ -11,13 +11,15 @@ export type UserDto = components['schemas']['User'];
  */
 export function toUserDto(
   user: UserRow,
-  trainerFields?: TrainerUserFields,
+  trainerFields: TrainerUserFields,
 ): UserDto {
-  void trainerFields;
   return {
     id: user.id,
     email: user.email,
     displayName: user.displayName,
     role: user.role,
+    trainerStatus: trainerFields.trainerStatus,
+    trainerStatusNote: trainerFields.trainerStatusNote,
+    trainerVenueTimeZone: trainerFields.trainerVenueTimeZone,
   };
 }
