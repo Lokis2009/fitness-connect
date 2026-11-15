@@ -83,3 +83,4 @@ Technical decisions: see the Decisions section of [Architecture.md](Architecture
 | trainer-access | library | scope:trainer, type:data-access | `libs/frontend/trainer-access` |
 | ui | library | scope:shared, type:ui | `libs/frontend/ui` |
 | api-contract | library | scope:shared, type:util | `libs/shared/api-contract` |
+| venue-time | library | scope:shared, type:util | `libs/shared/venue-time` |
