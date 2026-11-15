@@ -1,0 +1,9 @@
+{
+  "name": "venue-time",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/shared/venue-time/src",
+  "projectType": "library",
+  "tags": ["scope:shared", "type:util"],
+  "// targets": "to see all targets run: nx show project venue-time --web",
+  "targets": {}
+}

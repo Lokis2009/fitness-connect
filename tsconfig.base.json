@@ -46,7 +46,8 @@
       ],
       "@fitness-connect/feature-trainer-setup": [
         "./libs/frontend/feature-trainer-setup/src/index.ts"
-      ]
+      ],
+      "@fitness-connect/venue-time": ["./libs/shared/venue-time/src/index.ts"]
     }
   },
   "exclude": ["node_modules", "tmp"]
