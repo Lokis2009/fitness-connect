@@ -3,6 +3,14 @@
 Nx monorepo (pnpm): a NestJS API and three Angular web apps (client, trainer, admin) sharing a UI library.
 Architecture decisions are in [`Architecture.md`](Architecture.md).
 
+## Product planning
+
+- [First-release PRD: scheduled, in-person sessions](docs/prd/scheduled-in-person-sessions.md)
+- [Confirmed product decisions and pending proposals](docs/decisions/first-release.md)
+
+The first release uses trainer approval within 24 hours and direct payment to the trainer in person.
+On-demand dispatch, video sessions, and platform payments are deferred. Feature breakdown follows PRD review.
+
 ## Local development
 
 Prerequisites: Node 20.19+ or 22.12+ (`nvm use` picks the version from `.nvmrc`), pnpm, Docker. Older Node
