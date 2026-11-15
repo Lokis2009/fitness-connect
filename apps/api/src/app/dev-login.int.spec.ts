@@ -2,10 +2,33 @@ import type { INestApplication } from '@nestjs/common';
 import { decodeJwt } from 'jose';
 import { call, integrationEnv, login, startApp } from '../testing/test-app';
 
+const NOT_A_TRAINER = {
+  trainerStatus: null,
+  trainerStatusNote: null,
+  trainerVenueTimeZone: null,
+};
+
 const SEEDED = [
-  ['client@example.com', 'client'],
-  ['trainer@example.com', 'trainer'],
-  ['admin@example.com', 'admin'],
+  ['client@example.com', 'client', NOT_A_TRAINER],
+  [
+    'trainer@example.com',
+    'trainer',
+    {
+      trainerStatus: 'approved',
+      trainerStatusNote: null,
+      trainerVenueTimeZone: 'Europe/Warsaw',
+    },
+  ],
+  [
+    'pat.pending@example.com',
+    'trainer',
+    {
+      trainerStatus: 'submitted',
+      trainerStatusNote: null,
+      trainerVenueTimeZone: null,
+    },
+  ],
+  ['admin@example.com', 'admin', NOT_A_TRAINER],
 ] as const;
 
 describe('POST /v1/dev/login', () => {
@@ -20,20 +43,21 @@ describe('POST /v1/dev/login', () => {
     await app.close();
   });
 
-  it.each(SEEDED)('signs in %s as a %s', async (email, role) => {
+  it.each(SEEDED)('signs in %s as a %s', async (email, role, trainerFields) => {
     const response = await login(url, email);
 
     expect(response.status).toBe(200);
     expect(response.contentType).toContain('application/json');
     const body = response.body as {
       accessToken: string;
-      user: Record<string, string>;
+      user: Record<string, string | null>;
     };
     expect(body.user).toEqual({
       id: expect.stringMatching(/^[0-9a-f-]{36}$/),
       email,
       displayName: expect.any(String),
       role,
+      ...trainerFields,
     });
     expect(Object.keys(body).sort()).toEqual(['accessToken', 'user']);
 

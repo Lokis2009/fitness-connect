@@ -14,10 +14,33 @@ import {
   tokenFor,
 } from '../testing/test-app';
 
+const NOT_A_TRAINER = {
+  trainerStatus: null,
+  trainerStatusNote: null,
+  trainerVenueTimeZone: null,
+};
+
 const SEEDED = [
-  ['client@example.com', 'client'],
-  ['trainer@example.com', 'trainer'],
-  ['admin@example.com', 'admin'],
+  ['client@example.com', 'client', NOT_A_TRAINER],
+  [
+    'trainer@example.com',
+    'trainer',
+    {
+      trainerStatus: 'approved',
+      trainerStatusNote: null,
+      trainerVenueTimeZone: 'Europe/Warsaw',
+    },
+  ],
+  [
+    'pat.pending@example.com',
+    'trainer',
+    {
+      trainerStatus: 'submitted',
+      trainerStatusNote: null,
+      trainerVenueTimeZone: null,
+    },
+  ],
+  ['admin@example.com', 'admin', NOT_A_TRAINER],
 ] as const;
 
 /** A protected route that only admins may call, to exercise the roles guard end to end. */
@@ -54,24 +77,28 @@ describe('GET /v1/me', () => {
     await app.close();
   });
 
-  it.each(SEEDED)('returns %s from the database', async (email, role) => {
-    const { body } = await login(url, email);
-    const { accessToken, user } = body as {
-      accessToken: string;
-      user: { id: string };
-    };
+  it.each(SEEDED)(
+    'returns %s from the database',
+    async (email, role, trainerFields) => {
+      const { body } = await login(url, email);
+      const { accessToken, user } = body as {
+        accessToken: string;
+        user: { id: string };
+      };
 
-    const response = await call(url, 'GET', '/v1/me', { token: accessToken });
+      const response = await call(url, 'GET', '/v1/me', { token: accessToken });
 
-    expect(response.status).toBe(200);
-    expect(response.contentType).toContain('application/json');
-    expect(response.body).toEqual({
-      id: user.id,
-      email,
-      displayName: expect.any(String),
-      role,
-    });
-  });
+      expect(response.status).toBe(200);
+      expect(response.contentType).toContain('application/json');
+      expect(response.body).toEqual({
+        id: user.id,
+        email,
+        displayName: expect.any(String),
+        role,
+        ...trainerFields,
+      });
+    },
+  );
 
   it('answers 401 problem details without a token', async () => {
     const response = await call(url, 'GET', '/v1/me');

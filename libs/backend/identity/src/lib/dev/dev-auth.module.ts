@@ -1,5 +1,6 @@
 import { Global, Module } from '@nestjs/common';
 import { TOKEN_VERIFIER } from '@fitness-connect/common';
+import { TrainersModule } from '@fitness-connect/trainers';
 import { IdentityModule } from '../identity.module';
 import { DevAuthController } from './dev-auth.controller';
 import { DevAuthService } from './dev-auth.service';
@@ -11,7 +12,7 @@ import { DevTokenService } from './dev-token.service';
  */
 @Global()
 @Module({
-  imports: [IdentityModule],
+  imports: [IdentityModule, TrainersModule],
   controllers: [DevAuthController],
   providers: [
     DevAuthService,
