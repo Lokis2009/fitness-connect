@@ -419,6 +419,11 @@ describe('TrainerHome', () => {
       const card = requestCard(root, 'b1');
       expect(card.textContent).toContain('Accepted');
       expect(card.textContent).toContain('Mon 16 Nov, 11:00 Warsaw time');
+      // One sentence in one line of text, as in the mockup.
+      const sentences = Array.from(card.querySelectorAll<HTMLElement>('fc-text')).map((el) =>
+        (el.textContent ?? '').replace(/\s+/g, ' ').trim(),
+      );
+      expect(sentences).toContain('Accepted. Mon 16 Nov, 11:00 Warsaw time.');
       expect(card.textContent).not.toContain('Respond by');
       expect(buttons(card)).toHaveLength(0);
     });
