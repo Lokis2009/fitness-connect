@@ -12,6 +12,5 @@ export class CodedHttpException extends HttpException {
     message: string,
   ) {
     super({ statusCode: status, message, code }, status);
-    throw new Error('not implemented');
   }
 }
