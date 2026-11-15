@@ -386,6 +386,30 @@ describe('TrainerHome', () => {
       expect(button(root, 'Accept', card).disabled).toBe(true);
     });
 
+    it('loads the sessions again after an accept, so the new session shows without a reload', async () => {
+      acceptBooking.mockReturnValue(of(booking('b1', 'confirmed')));
+      const { fixture, root } = setup();
+      expect(getSessions).toHaveBeenCalledTimes(1);
+      expect(text(root)).not.toContain('Trainee s9');
+      getSessions.mockImplementation(() => of(sessionList([session('s9', '2026-11-16T10:00:00Z')])));
+
+      click(fixture, button(root, 'Accept', requestCard(root, 'b1')));
+      await flush(fixture);
+
+      expect(getSessions).toHaveBeenCalledTimes(2);
+      expect(text(root)).toContain('Trainee s9');
+    });
+
+    it('does not load the sessions again after a decline', async () => {
+      declineBooking.mockReturnValue(of(booking('b1', 'declined')));
+      const { fixture, root } = setup();
+
+      click(fixture, button(root, 'Decline', requestCard(root, 'b1')));
+      await flush(fixture);
+
+      expect(getSessions).toHaveBeenCalledTimes(1);
+    });
+
     it('shows a compact accepted card with the session time', () => {
       acceptBooking.mockReturnValue(of(booking('b1', 'confirmed')));
       const { fixture, root } = setup();

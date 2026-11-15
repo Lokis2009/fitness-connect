@@ -408,6 +408,31 @@ describe('RequestsStore', () => {
       expect(stateOf(store, 'b1')).toEqual({ kind: 'accepted', booking: result });
     });
 
+    it('counts accepted answers, and only those', () => {
+      acceptBooking.mockReturnValue(of(booking('b1', 'confirmed')));
+      declineBooking.mockReturnValue(of(booking('b2', 'declined')));
+      const { store } = setup();
+      expect(store.acceptedCount()).toBe(0);
+
+      store.decline('b2');
+      expect(store.acceptedCount()).toBe(0);
+
+      store.accept('b1');
+      expect(store.acceptedCount()).toBe(1);
+    });
+
+    it('does not count an accept that failed or came back as unavailable', () => {
+      acceptBooking.mockReturnValueOnce(throwError(() => problem(0)));
+      acceptBooking.mockReturnValueOnce(throwError(() => problem(409, 'booking-expired')));
+      const { store } = setup();
+
+      store.accept('b1');
+      store.accept('b2');
+
+      expect(acceptBooking).toHaveBeenCalledTimes(2);
+      expect(store.acceptedCount()).toBe(0);
+    });
+
     it('moves to declined on a decline', () => {
       const result = booking('b1', 'declined');
       declineBooking.mockReturnValue(of(result));

@@ -177,6 +177,49 @@ describe('SessionsStore', () => {
       expect(getSessions).toHaveBeenCalledTimes(1);
     });
 
+    it('refreshAfterAccept fetches at once when nothing is in flight', () => {
+      getSessions.mockReturnValueOnce(of(list([])));
+      getSessions.mockReturnValueOnce(of(list([session('s1', '2026-11-15T14:00:00Z')])));
+      const { store } = setup();
+
+      store.refreshAfterAccept();
+
+      expect(getSessions).toHaveBeenCalledTimes(2);
+      expect(ids(store.today())).toEqual(['s1']);
+    });
+
+    it('refreshAfterAccept waits for a request in flight and then fetches again', () => {
+      const first = new Subject<SessionList>();
+      getSessions.mockReturnValueOnce(first);
+      getSessions.mockReturnValueOnce(of(list([session('s1', '2026-11-15T14:00:00Z')])));
+      const { store } = setup();
+
+      store.refreshAfterAccept();
+      expect(getSessions).toHaveBeenCalledTimes(1);
+
+      first.next(list([]));
+      first.complete();
+
+      expect(getSessions).toHaveBeenCalledTimes(2);
+      expect(ids(store.today())).toEqual(['s1']);
+    });
+
+    it('still ignores a poll or a manual refresh while an after-accept fetch is waiting', () => {
+      const first = new Subject<SessionList>();
+      getSessions.mockReturnValueOnce(first);
+      getSessions.mockReturnValue(of(list([])));
+      const { store } = setup();
+      store.refreshAfterAccept();
+
+      store.refresh();
+      vi.advanceTimersByTime(REFRESH_INTERVAL_MS);
+      expect(getSessions).toHaveBeenCalledTimes(1);
+
+      first.next(list([]));
+      first.complete();
+      expect(getSessions).toHaveBeenCalledTimes(2);
+    });
+
     it('keeps the last list and flags the failure when a refresh fails', () => {
       getSessions.mockReturnValue(of(list([session('s1', '2026-11-15T14:00:00Z')])));
       const { store } = setup();
