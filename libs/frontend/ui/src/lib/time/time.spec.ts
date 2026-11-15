@@ -111,6 +111,24 @@ describe('FcTime', () => {
     });
   });
 
+  describe('a zone that is not valid', () => {
+    it('shows the time in UTC with the UTC label instead of throwing', async () => {
+      const { text } = await setup((host) => host.timeZone.set('Europe/Warsw'));
+
+      expect(text()).toBe('Tue 17 Nov, 09:00 UTC time');
+    });
+
+    it('still gives the Today and range forms in UTC', async () => {
+      const { text } = await setup((host) => {
+        host.timeZone.set('Europe/Warsw');
+        host.format.set('range');
+        host.durationMinutes.set(60);
+      });
+
+      expect(text()).toBe('09:00–10:00 UTC time');
+    });
+  });
+
   describe('inline', () => {
     it('is a block with emphasised text by default', async () => {
       const { root, time } = await setup();

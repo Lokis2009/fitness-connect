@@ -34,6 +34,12 @@ describe('FcDeadline', () => {
     expect(badge()?.textContent?.trim()).toBe('37 min left');
   });
 
+  it('shows the end time in UTC instead of throwing when the zone is not valid', async () => {
+    const { root } = await setup((host) => host.timeZone.set('Europe/Warsw'));
+
+    expect(root.querySelector('span')?.textContent?.trim()).toBe('Respond by 13:30 (UTC)');
+  });
+
   it('rounds the minutes left up', async () => {
     const { text } = await setup((host) => host.now.set(UNTIL_MS - 36 * MINUTE - 30_000));
 

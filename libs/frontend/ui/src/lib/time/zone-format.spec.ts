@@ -1,4 +1,4 @@
-import { UI_LOCALE, dayOffset, formatClock, formatShortDate } from './zone-format';
+import { isValidTimeZone, UI_LOCALE, dayOffset, formatClock, formatShortDate } from './zone-format';
 
 const WARSAW = 'Europe/Warsaw';
 
@@ -36,5 +36,19 @@ describe('zone-format', () => {
     const now = Date.parse('2026-11-15T12:00:00Z');
     // 23:30 UTC is already Monday 00:30 in Warsaw, so it is tomorrow.
     expect(dayOffset(Date.parse('2026-11-15T23:30:00Z'), now, WARSAW)).toBe(1);
+  });
+});
+
+describe('isValidTimeZone', () => {
+  it('accepts IANA zone ids', () => {
+    expect(isValidTimeZone('Europe/Warsaw')).toBe(true);
+    expect(isValidTimeZone('America/Argentina/Buenos_Aires')).toBe(true);
+    expect(isValidTimeZone('UTC')).toBe(true);
+  });
+
+  it('rejects a misspelt id, an empty string and text that is not a zone', () => {
+    expect(isValidTimeZone('Europe/Warsw')).toBe(false);
+    expect(isValidTimeZone('')).toBe(false);
+    expect(isValidTimeZone('not a zone')).toBe(false);
   });
 });
