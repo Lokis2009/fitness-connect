@@ -24,7 +24,10 @@ This log records confirmed owner choices separately from recommendations. The [P
 | PDR-013 | Exact venue address and meeting instructions are shown only after acceptance. | "Only after acceptance" | The public profile shows the venue name and area only. Address and instructions are hidden again after cancellation. |
 | PDR-014 | A trainer cannot save an availability change that conflicts with pending or confirmed bookings until they are resolved. | "Block until resolved" | No silent cancellation. |
 | PDR-015 | In first-release scope: client withdrawal of a pending request, cancellation of a confirmed booking, and trainer-recorded completion. | Selected "Client withdraws pending", "Cancel confirmed booking", "Record completion" | Reviews, rebooking and the "clients who return" metric are not in the first release (see below). |
-| PDR-016 | The word "pilot" is dropped. The document says "first release". Production authentication is required before any real user signs in. | "Drop 'pilot'" | Replaces the "public pilot" auth gate in PRD acceptance item 7. |
+| PDR-016 | The word "pilot" is dropped. The document says "first release". Production authentication is required before any real user signs in. | "Drop 'pilot'" | Replaces the "public pilot" auth gate in the PRD's production-authentication acceptance item. |
+| PDR-017 | A booking accepted less than 3 hours before start is flagged on any cancellation, and the cancellation terms shown to the client before submitting say so. | "Acceptable, disclose it" (review session, 2026-11-15) | A request submitted 3 to 4 hours before start can only be accepted after the cutoff. No grace period. Clarifies PDR-010. |
+| PDR-018 | When a trainer accepts a request, the client's other overlapping pending requests are withdrawn with a notice (first acceptance wins). | "First acceptance wins" (review session, 2026-11-15) | A client cannot hold overlapping confirmed sessions with different trainers. Clarifies PDR-008 (no cap on pending requests). |
+| PDR-019 | Times display in the venue's time zone, with the zone visible. | "Venue's time zone" (review session, 2026-11-15) | Each venue has a time zone. Consistent with Architecture section 9. |
 
 These decisions narrow first-release scope; they do not remove on-demand, video, or platform payments from the longer-term product vision.
 
@@ -38,9 +41,20 @@ These decisions narrow first-release scope; they do not remove on-demand, video,
 | Reminders before a session | Proposed; channels and timing remain open (O6). |
 | No-show reporting and its dispute handling | Open; not covered by PDR-011. |
 | Preserve the booking's agreed price, duration and venue after profile edits | Proposed; "material change" rule remains open. |
-| Keep a status history with actor, time and reason | Proposed. |
+| Record actor and reason on each status change | Proposed. A minimal history (status changes, timestamps, late-cancellation flag) is required by PDR-010 and PDR-011. |
+| Trainer request alerts are recorded as sent or failed | Proposed; needed to read the expiry rate (PDR-006, PDR-012). |
 
 Silence and agreement to a neighboring decision do not approve these recommendations. Exact open questions are maintained in PRD section 10.
+
+## Editor notes (not owner statements)
+
+Trade-offs noted during PRD review. They are not decisions, and the owner did not state them.
+
+- A 1-hour window (PDR-006) gives clients a fast answer. A trainer who misses the alert loses the request, so the expiry rate depends on alert delivery. A request made late in the evening can expire while the trainer sleeps; the owner accepted this for the first release.
+- A hold (PDR-008) gives certainty but lets one client block a trainer's slot for up to an hour. No cap was approved.
+- Admin approval without document upload (PDR-009) is less to build, but credentials are checked outside the app.
+- Showing the address only after acceptance (PDR-013) cannot revoke it from a client who already saw it.
+- Reviews and rebooking (PDR-015) are deferred, so return-booking behavior cannot be measured yet.
 
 ## Relationship to existing documents
 
