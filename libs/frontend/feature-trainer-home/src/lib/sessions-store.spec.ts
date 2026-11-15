@@ -286,6 +286,34 @@ describe('SessionsStore', () => {
       expect(ids(store.tomorrow())).toEqual(['tomorrow-noon']);
     });
 
+    it('keeps the same lists while the sessions on show do not change, as the clock ticks', () => {
+      getSessions.mockReturnValue(
+        of(list([session('s1', '2026-11-15T14:00:00Z'), session('s2', '2026-11-16T11:00:00Z')])),
+      );
+      const { store } = setup();
+      const today = store.today();
+      const tomorrow = store.tomorrow();
+
+      vi.advanceTimersByTime(5_000);
+
+      expect(store.today()).toBe(today);
+      expect(store.tomorrow()).toBe(tomorrow);
+    });
+
+    it('gives a new list when a session ends or a poll brings new data', () => {
+      getSessions.mockReturnValueOnce(of(list([session('s1', '2026-11-15T10:30:00Z', 30)])));
+      const { store } = setup();
+      const before = store.today();
+      expect(ids(before)).toEqual(['s1']);
+
+      vi.advanceTimersByTime(31 * MINUTE_MS);
+      expect(store.today()).toEqual([]);
+
+      getSessions.mockReturnValue(of(list([session('s9', '2026-11-15T14:00:00Z')])));
+      store.refresh();
+      expect(ids(store.today())).toEqual(['s9']);
+    });
+
     it('puts a 00:30 local session on the local day, not the UTC day', () => {
       // 23:30 UTC on the 15th is 00:30 on the 16th in Warsaw.
       getSessions.mockReturnValue(of(list([session('after-midnight', '2026-11-15T23:30:00Z')])));

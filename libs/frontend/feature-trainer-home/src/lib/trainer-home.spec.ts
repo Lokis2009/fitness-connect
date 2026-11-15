@@ -694,6 +694,20 @@ describe('TrainerHome', () => {
       expect(body).not.toContain(SESSIONS_EMPTY);
     });
 
+    it('uses the start of the venue day for the Today heading, so it does not change as the clock ticks', () => {
+      getSessions.mockImplementation(() => of(sessionList([session('s1', '2026-11-15T14:00:00Z')])));
+      const { fixture, root } = setup();
+      const heading = () => root.querySelector('h3 time')?.getAttribute('datetime');
+
+      // 15 Nov 2026 starts at 23:00 UTC on the 14th in Warsaw.
+      expect(heading()).toBe('2026-11-14T23:00:00.000Z');
+
+      vi.advanceTimersByTime(5_000);
+      fixture.detectChanges();
+
+      expect(heading()).toBe('2026-11-14T23:00:00.000Z');
+    });
+
     it('omits a day with no sessions', () => {
       getSessions.mockImplementation(() => of(sessionList([session('s2', '2026-11-16T11:00:00Z')])));
       const { root } = setup();
