@@ -1,5 +1,9 @@
 1. # Phase 1 plan: repo foundation for parallel development
 
+> Historical foundation plan: the login/API/database foundation is implemented. Starting-point inventories below describe the earlier repository state, not current missing work.
+>
+> Current product scope: [first-release PRD](../prd/scheduled-in-person-sessions.md) and [decision log](../decisions/first-release.md). Feature breakdown follows PRD review.
+
 Status: draft. Source decisions live in `Architecture.md`. This plan supersedes the "Phase 1: scaffold" step in `docs/plans/trainer-web.md` and the "Next steps" in `Architecture.md` section 11.
 
 ## 1. Goal

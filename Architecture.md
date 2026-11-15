@@ -1,6 +1,8 @@
-let'# Fitness Connect – Architecture
+# Fitness Connect – Architecture
 
 Source of truth for architecture decisions. Update this file whenever a decision changes.
+
+First-release product scope is defined in the [scheduled sessions PRD](docs/prd/scheduled-in-person-sessions.md) and [product decision log](docs/decisions/first-release.md). The diagrams and module catalog below include the longer-term vision; they are not a first-release checklist.
 
 Status legend: **Decided** = confirmed by the product owner. **Proposed** = recommendation, not yet confirmed. **Open** = needs a decision.
 
@@ -11,6 +13,7 @@ A marketplace connecting fitness trainers with clients ("Uber for fitness traine
 - Clients find trainers and either **request one on demand** or **book a scheduled slot**.
 - Sessions are **in person at a gym/venue** or **online by video**.
 - Launch scope: single city/country, one language, small team.
+- First release: scheduled, in-person sessions with trainer approval within 24 hours; clients pay trainers directly in person. On-demand dispatch, online sessions, and platform payments are deferred (PDR-001 to PDR-005).
 
 ## 2. Decisions
 
@@ -23,10 +26,10 @@ A marketplace connecting fitness trainers with clients ("Uber for fitness traine
 | D5 | Database | PostgreSQL + PostGIS | Decided |
 | D6 | Cloud | AWS | Decided |
 | D7 | Auth | Amazon Cognito, email and password for now, hosted login page acceptable. Chosen for lowest cost and simplest setup; paid usage starts only in production | Decided |
-| D8 | Matching | Both on-demand dispatch and scheduled booking | Decided |
-| D9 | Session types | In person at gym/venue, online video | Decided |
+| D8 | Matching | Long-term: on-demand dispatch and scheduled booking. First release: scheduled booking with trainer approval within 24 hours (PDR-001, PDR-003, PDR-005) | Decided |
+| D9 | Session types | Long-term: in person at gym/venue and online video. First release: in person only (PDR-002) | Decided |
 | D10 | Client apps at launch | Client web, Trainer web, Admin web (all Angular) | Decided |
-| D11 | Payments | Provider and model undecided; isolate behind a module boundary | Decided (provider: Open) |
+| D11 | Payments | First release: client pays trainer directly in person; platform payments deferred (PDR-004). Future provider/model undecided; isolate behind a module boundary when introduced | Decided (future provider/model: Open) |
 | D12 | Venues | Modelled as a simple location entity, extensible later | Decided (provisional) |
 | D13 | Scale/locale | Single city/country, one language | Decided |
 | D14 | Package manager / workspace | pnpm, Nx classic (path-alias) setup, no TS project references (`@nx/angular` does not support them) | Decided |
@@ -137,6 +140,8 @@ NestJS WebSocket gateway (Socket.IO proposed) with the Redis adapter so multiple
 - Revisit if phone or social login becomes required, or if a fully custom branded sign-in flow is needed. Those are Cognito's weak spots.
 
 ### 6.5 Payments (provider undecided)
+
+First-release override (PDR-004): platform payments are deferred. Clients pay trainers directly in person. The future design below does not require payment code, earnings accounting, or payment-provider onboarding for the first release.
 All payment logic sits behind a `PaymentProvider` interface in `payments`. Design constraints to keep either path open:
 - Store money as integer minor units plus currency code.
 - Keep a payment ledger independent of the provider.
@@ -207,19 +212,19 @@ Single list of unresolved decisions. When one is answered, move it to section 2 
 
 | # | Question | Blocks | Default if unanswered |
 |---|----------|--------|-----------------------|
-| 1 | Payment model and provider (marketplace payouts vs off-platform; Stripe Connect or other) | Trainer onboarding, earnings, `payments` module | Payments module behind an interface; earnings read-only; no payout setup |
+| 1 | Future platform payment model and provider | Future payment collection and payouts; not first-release booking | First release: pay trainer in person; platform payments deferred (PDR-004) |
 | 2 | ~~Identity provider~~ | | Resolved: Amazon Cognito (D7) |
-| 3 | Video provider (Daily, Twilio, LiveKit, Chime SDK) | Online sessions | Join button opens a provider-supplied URL |
+| 3 | Video provider (Daily, Twilio, LiveKit, Chime SDK) | Future online sessions; deferred from first release | No video integration in first release (PDR-002) |
 | 4 | Maps and geocoding provider | Service area, venue picker, geo search | Venue as text plus coordinates |
 | 5 | ~~ORM~~ | | Resolved: Drizzle (D18) |
 | 6 | IaC tool (Terraform or CDK). CI platform resolved: GitHub Actions (D19) | First deployment | Local only until needed |
 | 7 | Launch country (regulation, currency, payment provider availability, VAT) | Payments, privacy rules | Single currency, no tax handling |
 | 8 | Whether venues become first-class partners | `locations` data model | Venue is a simple location entity (D12) |
 | 9 | Trainer verification requirements (documents, background checks) | Onboarding, admin queue | Document upload plus manual admin review |
-| 10 | Cancellation, no-show, and commission policies | Booking lifecycle, payments | Not enforced |
+| 10 | Cancellation and no-show policies; future commission policy | Booking lifecycle; commission is deferred with platform payments | Open: resolve cancellation/no-show rules before implementation; see PRD |
 | 11 | On-demand dispatch: in person only or online too? How are offers ranked (distance, rating, price)? | `dispatch` module, trainer requests screen | In person only; offers shown as received |
 | 12 | Native mobile apps (out of scope at launch) | Nothing now | Revisit after launch |
-| 13 | API timeline: will the NestJS API exist before trainer-web work starts? | trainer-web data layer | Contract first (OpenAPI) with a mock server |
+| 13 | ~~API foundation availability~~ | | Resolved: API foundation exists; business-domain contracts remain to be designed |
 
 Related plan: `docs/plans/trainer-web.md` (its Q1 to Q7 map to items 2, 1, 9, 11, 4, 3, 13 above).
 
@@ -228,10 +233,11 @@ Related plan: `docs/plans/trainer-web.md` (its Q1 to Q7 map to items 2, 1, 9, 11
 Phase 1 (foundation and login) is done: the Nx workspace, the three Angular apps, the NestJS API, Postgres with PostGIS, the OpenAPI contract, and a login page in each app that signs in against the real API (development auth). Playwright runs 9 scenarios per app against the live stack (`pnpm nx e2e e2e`; Playwright starts the API and the apps and uses its own `fitness_connect_e2e` database).
 
 Next:
-1. Connect Cognito: a real `AuthService` implementation (hosted login, OIDC) and a Cognito JWKS verifier behind the existing JWT verifier abstraction (D7).
-2. Resolve the open questions that block the next features (section 10), payments first.
-3. Implement the walking skeleton: trainer profile, geo search, one scheduled booking end to end.
-4. Add dispatch and real-time after the booking flow works.
+1. Review the [first-release PRD](docs/prd/scheduled-in-person-sessions.md) and its open rules, including minimum booking notice, pending-slot holds, verification, and cancellation.
+2. Split the agreed journey into features and acceptance criteria after PRD review.
+3. Plan one approved trainer publishing availability and one client receiving trainer approval for a scheduled in-person booking; no platform payments.
+4. Connect Cognito (hosted login, OIDC, JWT verification) before a real-user launch.
+5. Keep on-demand dispatch, online/video sessions, and platform payments deferred until separately prioritized.
 
 ## 12. Known follow-ups from Phase 1
 
