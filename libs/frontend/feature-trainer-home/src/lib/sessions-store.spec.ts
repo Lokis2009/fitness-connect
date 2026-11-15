@@ -147,6 +147,24 @@ describe('SessionsStore', () => {
       expect(store.loadState()).toBe('error');
     });
 
+    it('treats a venue zone that is not valid like an unknown one, and keeps refreshing', () => {
+      user.set({ ...trainer, trainerVenueTimeZone: 'Europe/Warsw' });
+      const { store } = setup();
+
+      expect(getSessions).not.toHaveBeenCalled();
+      expect(store.loadState()).toBe('error');
+      expect(store.today()).toEqual([]);
+      expect(store.tomorrow()).toEqual([]);
+
+      // The pipeline is still alive: once the zone is corrected, a retry and the poll both work.
+      user.set(trainer);
+      store.retry();
+      expect(getSessions).toHaveBeenCalledTimes(1);
+      expect(store.loadState()).toBe('ready');
+      vi.advanceTimersByTime(REFRESH_INTERVAL_MS);
+      expect(getSessions).toHaveBeenCalledTimes(2);
+    });
+
     it('loads once the zone is known after a retry', () => {
       user.set({ ...trainer, trainerVenueTimeZone: null });
       const { store } = setup();

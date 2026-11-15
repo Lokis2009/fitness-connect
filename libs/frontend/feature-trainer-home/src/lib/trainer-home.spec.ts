@@ -646,6 +646,18 @@ describe('TrainerHome', () => {
       expect(text(root)).not.toContain(SESSIONS_EMPTY);
     });
 
+    it('shows the error state and no subtitle when the venue zone is not valid, without breaking the page', () => {
+      user.set({ ...trainer, trainerVenueTimeZone: 'Europe/Warsw' });
+      getBookingRequests.mockImplementation(() => of(requestList([request('b1', 30)])));
+      const { root } = setup();
+
+      expect(text(root)).toContain('Could not load sessions');
+      expect(text(root)).not.toContain('Times are shown in');
+      expect(root.querySelector('h1')?.textContent).toContain('Trainer home');
+      // The request card still renders; its zone is shown in UTC.
+      expect(requestCard(root, 'b1').textContent).toContain('UTC');
+    });
+
     it('"Try again" loads the sessions again', () => {
       getSessions.mockReturnValueOnce(throwError(() => problem(0)));
       const { fixture, root } = setup();
