@@ -1,0 +1,11 @@
+type: object
+required: [serverTime, items]
+properties:
+  serverTime:
+    type: string
+    format: date-time
+    description: Database time when the list was read.
+  items:
+    type: array
+    items:
+      $ref: './Session.yaml'

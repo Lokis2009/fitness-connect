@@ -11,3 +11,17 @@ properties:
     type: string
   role:
     $ref: './Role.yaml'
+  trainerStatus:
+    type: [string, 'null']
+    description: >
+      Admin approval status (see TrainerStatus). Set for trainers, `null` for
+      clients and admins.
+    enum: [incomplete, submitted, changes_requested, approved, null]
+  trainerStatusNote:
+    type: [string, 'null']
+    description: The admin's reason, set when changes are requested.
+  trainerVenueTimeZone:
+    type: [string, 'null']
+    description: >
+      IANA time zone of the trainer's venue, for example Europe/Warsaw. `null`
+      until a venue exists, and for clients and admins.

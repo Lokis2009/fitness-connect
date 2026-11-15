@@ -1,0 +1,21 @@
+get:
+  tags: [trainer]
+  operationId: listBookingRequests
+  summary: Booking requests waiting for the trainer's answer
+  description: >
+    Only requests with status pending and a deadline after the server's now,
+    soonest deadline first. An unapproved trainer gets 403 with code
+    `trainer-not-approved`.
+  responses:
+    '200':
+      description: Pending requests
+      content:
+        application/json:
+          schema:
+            $ref: '../schemas/BookingRequestList.yaml'
+    '401':
+      $ref: '../responses/Unauthorized.yaml'
+    '403':
+      $ref: '../responses/Forbidden.yaml'
+    '500':
+      $ref: '../responses/InternalError.yaml'

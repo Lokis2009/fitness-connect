@@ -1,0 +1,16 @@
+type: object
+description: A confirmed session. It has no price.
+required: [id, clientName, startsAt, durationMinutes, venue]
+properties:
+  id:
+    type: string
+    format: uuid
+  clientName:
+    type: string
+  startsAt:
+    type: string
+    format: date-time
+  durationMinutes:
+    type: integer
+  venue:
+    $ref: './VenueSummary.yaml'

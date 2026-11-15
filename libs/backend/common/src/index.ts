@@ -10,3 +10,4 @@ export * from './lib/auth/roles.guard';
 export * from './lib/auth/auth.module';
 export * from './lib/http/problem-details.filter';
 export * from './lib/http/configure-app';
+export * from './lib/http/coded-http-exception';

@@ -1,0 +1,34 @@
+post:
+  tags: [booking]
+  operationId: acceptBooking
+  summary: Accept a booking request
+  description: >
+    Idempotent for the same caller and action: a repeat returns 200 with the
+    current booking. 404 covers an unknown booking, another trainer's booking
+    and a malformed id. 409 carries the code `booking-expired`,
+    `booking-withdrawn` or `booking-not-pending`. An unapproved trainer gets
+    403 with code `trainer-not-approved`.
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+  responses:
+    '200':
+      description: The updated booking
+      content:
+        application/json:
+          schema:
+            $ref: '../schemas/Booking.yaml'
+    '401':
+      $ref: '../responses/Unauthorized.yaml'
+    '403':
+      $ref: '../responses/Forbidden.yaml'
+    '404':
+      $ref: '../responses/NotFound.yaml'
+    '409':
+      $ref: '../responses/Conflict.yaml'
+    '500':
+      $ref: '../responses/InternalError.yaml'

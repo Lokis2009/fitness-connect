@@ -35,7 +35,9 @@
       ],
       "@fitness-connect/feature-login": [
         "./libs/frontend/feature-login/src/index.ts"
-      ]
+      ],
+      "@fitness-connect/trainers": ["./libs/backend/trainers/src/index.ts"],
+      "@fitness-connect/booking": ["./libs/backend/booking/src/index.ts"]
     }
   },
   "exclude": ["node_modules", "tmp"]
