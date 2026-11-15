@@ -21,9 +21,20 @@ const APPEARANCE = {
       [disabled]="disabled() || loading()"
       [attr.aria-busy]="loading() ? 'true' : null"
     >
-      <span class="relative inline-flex items-center justify-center">
-        <span data-fc-label [class.opacity-0]="loading()"><ng-content /></span>
-        @if (loading()) {
+      <span class="relative inline-flex items-center justify-center gap-2">
+        @if (showLoadingLabel()) {
+          <mat-progress-spinner
+            class="[--mat-progress-spinner-active-indicator-color:currentColor]"
+            mode="indeterminate"
+            aria-hidden="true"
+            [diameter]="20"
+          />
+          <span data-fc-loading-label>{{ loadingLabel() }}</span>
+        }
+        <span data-fc-label [class.opacity-0]="loading() && !showLoadingLabel()" [class.hidden]="showLoadingLabel()">
+          <ng-content />
+        </span>
+        @if (loading() && !showLoadingLabel()) {
           <mat-progress-spinner
             class="absolute [--mat-progress-spinner-active-indicator-color:currentColor]"
             mode="indeterminate"
@@ -42,6 +53,9 @@ export class FcButton {
   readonly disabled = input(false);
   /** While true the button is disabled, shows a spinner, is marked busy and keeps its width. */
   readonly loading = input(false);
+  /** Label shown next to the spinner while loading. Without it the label stays in place under the spinner. */
+  readonly loadingLabel = input<string>();
 
   protected readonly appearance = computed(() => APPEARANCE[this.variant()]);
+  protected readonly showLoadingLabel = computed(() => this.loading() && !!this.loadingLabel());
 }
