@@ -1,11 +1,13 @@
 import { Client } from 'pg';
 import { createDatabase } from './client';
 import { runMigrations } from './migrate';
-import { seedDevUsers } from './seed';
+import { trainerProfiles } from './schema';
+import { seedDevTrainerData, seedDevUsers } from './seed';
 
 /**
  * Test support: creates throwaway databases next to the one in DATABASE_URL
- * (never the dev database itself), migrates them and seeds the dev users.
+ * (never the dev database itself), migrates them and seeds the dev users and
+ * the trainer data.
  */
 export const TEST_DATABASE_PREFIX = 'fitness_connect_test';
 
@@ -104,7 +106,7 @@ export async function ensureTestDatabase(
 
 /**
  * Creates the test database `name` if missing, runs migrations and seeds the
- * dev users. Safe to call from parallel test workers. Returns its URL.
+ * dev users and, on the first call, the trainer data. Safe to call from parallel test workers. Returns its URL.
  */
 export async function prepareTestDatabase(
   name: string,
@@ -120,6 +122,16 @@ export async function prepareTestDatabase(
     try {
       await runMigrations(db);
       await seedDevUsers(db);
+      // Only the first preparation seeds the trainer data. Seeding replaces the
+      // seeded trainers' bookings, which would delete the ones other specs of a
+      // shared database created since.
+      const [seeded] = await db
+        .select({ userId: trainerProfiles.userId })
+        .from(trainerProfiles)
+        .limit(1);
+      if (!seeded) {
+        await seedDevTrainerData(db, new Date());
+      }
     } finally {
       await pool.end();
     }
