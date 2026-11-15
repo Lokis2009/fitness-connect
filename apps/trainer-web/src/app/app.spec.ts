@@ -12,6 +12,9 @@ const trainer: User = {
   email: 'trainer@example.com',
   displayName: 'Tina Trainer',
   role: 'trainer',
+  trainerStatus: 'approved',
+  trainerStatusNote: null,
+  trainerVenueTimeZone: 'Europe/Warsaw',
 };
 
 describe('App', () => {
@@ -25,19 +28,27 @@ describe('App', () => {
           provide: AuthService,
           useValue: { user, isAuthenticated: computed(() => user() !== null) },
         },
-        { provide: ApiClient, useValue: { getMe: () => of(trainer) } },
+        {
+          provide: ApiClient,
+          useValue: {
+            getMe: () => of(trainer),
+            getBookingRequests: () =>
+              of({ serverTime: new Date().toISOString(), items: [] }),
+            getSessions: () =>
+              of({ serverTime: new Date().toISOString(), items: [] }),
+          },
+        },
       ],
     }).compileComponents();
   });
 
-  it('renders the signed-in home page from the shared UI library', async () => {
+  it('renders the trainer home from the shared UI library', async () => {
     const fixture = TestBed.createComponent(App);
     await TestBed.inject(Router).navigateByUrl('/');
     await fixture.whenStable();
     const compiled = fixture.nativeElement as HTMLElement;
-    expect(compiled.querySelector('fc-signed-in-home fc-heading')?.textContent).toContain(
-      'Tina Trainer',
-    );
-    expect(compiled.querySelectorAll('fc-signed-in-home fc-button').length).toBe(1);
+    expect(
+      compiled.querySelector('fc-trainer-home h1')?.textContent,
+    ).toContain('Trainer home');
   });
 });
