@@ -138,6 +138,9 @@ test('accepting a request confirms it and moves it to the sessions', async ({ pa
   await expect(card.getByText('Accepted', { exact: true })).toBeVisible();
   await expect(card.getByRole('button', { name: 'Accept' })).toHaveCount(0);
 
+  // The new session shows without a reload: the accepted card and the session row both name the client.
+  await expect(cardOf(page, client)).toHaveCount(2);
+
   await page.reload();
 
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('Trainer home');
