@@ -1,13 +1,15 @@
-import { Component, computed } from '@angular/core';
+import { Component } from '@angular/core';
 
-/** Small bordered pill for short labels. Projects its content. */
+/** Small bordered pill for short labels such as "Accepted" or "37 min left". Projects its content. */
 @Component({
   selector: 'fc-badge',
-  template: '<span>{{ classes() }}<ng-content /></span>',
+  template: `
+    <span
+      class="inline-flex items-center rounded-pill border border-line-input bg-surface px-3 py-1 text-pill text-ink"
+    >
+      <ng-content />
+    </span>
+  `,
   host: { class: 'inline-block' },
 })
-export class FcBadge {
-  protected readonly classes = computed((): string => {
-    throw new Error('not implemented');
-  });
-}
+export class FcBadge {}

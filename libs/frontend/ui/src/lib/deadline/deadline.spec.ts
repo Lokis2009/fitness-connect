@@ -28,9 +28,9 @@ describe('FcDeadline', () => {
   }
 
   it('shows the end time in the venue city and the minutes left', async () => {
-    const { text, badge } = await setup();
+    const { root, badge } = await setup();
 
-    expect(text()).toBe('Respond by 14:30 (Warsaw) 37 min left');
+    expect(root.querySelector('span')?.textContent?.trim()).toBe('Respond by 14:30 (Warsaw)');
     expect(badge()?.textContent?.trim()).toBe('37 min left');
   });
 
