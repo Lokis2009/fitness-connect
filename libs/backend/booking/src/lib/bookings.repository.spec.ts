@@ -344,6 +344,56 @@ describe('BookingsRepository (real database)', () => {
       ]);
     });
 
+    describe('a session that has already started', () => {
+      it('refuses to accept it, even though the response window is still open', async () => {
+        const trainer = await newTrainer();
+        const client = await newUser('client');
+        const id = await newBooking(trainer, client, {
+          startsAt: new Date(Date.now() - 10 * MINUTE),
+        });
+
+        await expectConflict(
+          repository.decide(trainer.id, id, 'accept'),
+          'booking-expired',
+        );
+
+        expect(await statusOf(id)).toBe('pending');
+        expect(await historyOf(id)).toEqual([]);
+      });
+
+      it('does not withdraw the other requests of the client when the accept is refused', async () => {
+        const trainer = await newTrainer();
+        const client = await newUser('client');
+        const started = await newBooking(trainer, client, {
+          startsAt: new Date(Date.now() - 10 * MINUTE),
+          durationMinutes: 120,
+        });
+        const other = await newBooking(trainer, client, {
+          startsAt: new Date(Date.now() - 5 * MINUTE),
+          durationMinutes: 60,
+        });
+
+        await expectConflict(
+          repository.decide(trainer.id, started, 'accept'),
+          'booking-expired',
+        );
+
+        expect(await statusOf(other)).toBe('pending');
+      });
+
+      it('still lets the trainer decline it, to clear a stale request', async () => {
+        const trainer = await newTrainer();
+        const client = await newUser('client');
+        const id = await newBooking(trainer, client, {
+          startsAt: new Date(Date.now() - 10 * MINUTE),
+        });
+
+        const result = await repository.decide(trainer.id, id, 'decline');
+
+        expect(result.booking).toMatchObject({ id, status: 'declined' });
+      });
+    });
+
     it('answers a repeated accept with the current booking and no new history', async () => {
       const trainer = await newTrainer();
       const client = await newUser('client');
