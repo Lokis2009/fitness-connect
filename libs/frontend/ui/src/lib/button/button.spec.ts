@@ -214,3 +214,29 @@ describe('FcButton loadingLabel', () => {
     expect(spinner()?.classList).toContain('absolute');
   });
 });
+
+@Component({
+  imports: [FcButton],
+  template: `
+    <fc-button [fullWidth]="true">Wide</fc-button>
+    <fc-button>Narrow</fc-button>
+  `,
+})
+class WidthHost {}
+
+describe('FcButton fullWidth', () => {
+  it('stretches the host and the inner button to the width of its container', async () => {
+    const fixture = TestBed.createComponent(WidthHost);
+    await fixture.whenStable();
+
+    const [wide, narrow] = Array.from<HTMLElement>(fixture.nativeElement.querySelectorAll('fc-button'));
+    expect(wide.classList.contains('w-full')).toBe(true);
+    expect(wide.classList.contains('flex')).toBe(true);
+    expect(wide.classList.contains('inline-flex')).toBe(false);
+    expect(wide.querySelector('button')?.classList.contains('w-full')).toBe(true);
+
+    expect(narrow.classList.contains('inline-flex')).toBe(true);
+    expect(narrow.classList.contains('w-full')).toBe(false);
+    expect(narrow.querySelector('button')?.classList.contains('w-full')).toBe(false);
+  });
+});
