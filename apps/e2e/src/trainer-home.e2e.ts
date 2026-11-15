@@ -177,7 +177,12 @@ test('a request that expired before the tap shows as no longer available', async
 
   await expect(card.getByText('No longer available', { exact: true })).toBeVisible();
   await expect(card).toContainText('This request expired before you answered.');
-  await expect(page.getByRole('heading', { level: 3, name: /^Today,/ })).toHaveCount(0);
+  await expect(card.getByRole('button', { name: 'Accept' })).toHaveCount(0);
+
+  await page.reload();
+
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('Trainer home');
+  await expect(cardOf(page, client)).toHaveCount(0);
 });
 
 test('the email link while signed out signs in and highlights the request', async ({ page }) => {
