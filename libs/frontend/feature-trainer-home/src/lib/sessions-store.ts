@@ -3,7 +3,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Router } from '@angular/router';
 import { AuthService } from '@fitness-connect/auth';
 import { ApiClient, ApiError, type Session, type SessionList } from '@fitness-connect/data-access';
-import { type Observable, Subject, catchError, exhaustMap, map, merge, of } from 'rxjs';
+import { type Observable, Subject, catchError, concatMap, filter, finalize, map, merge, of, tap } from 'rxjs';
 import { ClockService } from './clock.service';
 import { dayOf, dayWindow, hasEnded } from './day-window';
 import { isNotApproved, leaveWhenNotApproved } from './not-approved';
@@ -31,6 +31,9 @@ export class SessionsStore {
   private readonly updated = signal<number | null>(null);
   private readonly failed = signal(false);
   private readonly manualRefresh = new Subject<void>();
+  private readonly queuedRefresh = new Subject<void>();
+  /** Requests running or waiting. Polls and manual refreshes are dropped while it is above zero. */
+  private busy = 0;
 
   /** IANA zone of the trainer's venue, or `null` while it is unknown. */
   private readonly zone = computed(() => this.auth.user()?.trainerVenueTimeZone ?? null);
@@ -73,10 +76,14 @@ export class SessionsStore {
   readonly refreshFailed = this.failed.asReadonly();
 
   constructor() {
-    merge(refreshTrigger(), this.manualRefresh)
+    merge(
+      // A poll or a manual refresh while a request is in flight or waiting is ignored.
+      merge(refreshTrigger(), this.manualRefresh).pipe(filter(() => this.busy === 0)),
+      this.queuedRefresh,
+    )
       .pipe(
-        // A trigger while a request is in flight is ignored.
-        exhaustMap(() => this.fetch()),
+        tap(() => this.busy++),
+        concatMap(() => this.fetch().pipe(finalize(() => this.busy--))),
         takeUntilDestroyed(this.destroyRef),
       )
       .subscribe((result) => {
@@ -90,6 +97,14 @@ export class SessionsStore {
 
   refresh(): void {
     this.manualRefresh.next();
+  }
+
+  /**
+   * Fetches again after the request in flight, if any. The list on screen may predate the accept
+   * that created a session, so unlike a poll this trigger is never dropped.
+   */
+  refreshAfterAccept(): void {
+    this.queuedRefresh.next();
   }
 
   /** Loads again after a failed first load, showing the loading state meanwhile. */

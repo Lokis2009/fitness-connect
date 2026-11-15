@@ -1,4 +1,4 @@
-import { Component, computed, inject } from '@angular/core';
+import { Component, computed, effect, inject, untracked } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AuthService } from '@fitness-connect/auth';
@@ -283,6 +283,18 @@ export class TrainerHome {
   private readonly auth = inject(AuthService);
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
+
+  constructor() {
+    let seen = 0;
+    effect(() => {
+      const count = this.requests.acceptedCount();
+      if (count > seen) {
+        seen = count;
+        // An accepted request is a new confirmed session: load the list again right away.
+        untracked(() => this.sessions.refreshAfterAccept());
+      }
+    });
+  }
 
   protected readonly zone = computed(() => this.auth.user()?.trainerVenueTimeZone ?? null);
 

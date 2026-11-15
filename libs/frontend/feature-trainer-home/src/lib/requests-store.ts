@@ -46,6 +46,7 @@ export class RequestsStore {
   private readonly updated = signal<number | null>(null);
   private readonly failed = signal(false);
   private readonly firstIds = signal<ReadonlySet<string> | null>(null);
+  private readonly accepted = signal(0);
   private readonly manualRefresh = new Subject<void>();
 
   /** Open cards by deadline, then resolved cards by deadline. */
@@ -67,6 +68,9 @@ export class RequestsStore {
 
   /** Ids the first successful load returned, or `null` before it. Used by the deep link. */
   readonly firstLoadIds = this.firstIds.asReadonly();
+
+  /** Number of requests the server confirmed on this page. A confirmed request becomes a session. */
+  readonly acceptedCount = this.accepted.asReadonly();
 
   constructor() {
     merge(refreshTrigger(), this.manualRefresh)
@@ -154,7 +158,12 @@ export class RequestsStore {
 
     const call = action === 'accept' ? this.api.acceptBooking(id) : this.api.declineBooking(id);
     call.pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
-      next: (booking) => this.updateCard(id, (current) => resolveSuccess(current, booking)),
+      next: (booking) => {
+        this.updateCard(id, (current) => resolveSuccess(current, booking));
+        if (action === 'accept') {
+          this.accepted.update((count) => count + 1);
+        }
+      },
       error: (error: unknown) => void this.failAnswer(id, ApiError.from(error)),
     });
   }
