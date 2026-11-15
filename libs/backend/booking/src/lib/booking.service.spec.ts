@@ -1,3 +1,4 @@
+import type { UsersService } from '@fitness-connect/identity';
 import type { TrainersService } from '@fitness-connect/trainers';
 import { BookingService } from './booking.service';
 import type { BookingsRepository } from './bookings.repository';
@@ -6,6 +7,7 @@ describe('BookingService', () => {
   const service = new BookingService(
     {} as BookingsRepository,
     {} as TrainersService,
+    {} as UsersService,
   );
 
   it('listPendingRequests is not implemented yet', () => {

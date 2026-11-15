@@ -1,4 +1,6 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
+import { CodedHttpException } from '@fitness-connect/common';
+import { DATABASE, type Database } from '@fitness-connect/database';
 
 export type BookingStatus =
   | 'pending'
@@ -31,12 +33,29 @@ export interface DecisionResult {
   repeat: boolean;
 }
 
+/**
+ * A 409 that `decide` raises. Carries the booking as it was read under the
+ * lock, so the service can log the time left and the start of the session.
+ */
+export class BookingConflictException extends CodedHttpException {
+  constructor(
+    code: string,
+    message: string,
+    readonly booking: BookingRow,
+  ) {
+    super(409, code, message);
+  }
+}
+
 @Injectable()
 export class BookingsRepository {
+  constructor(@Inject(DATABASE) private readonly db: Database) {}
+
   /** Pending requests past `now()`, soonest deadline first, with the database time. */
   pendingForTrainer(
     trainerId: string,
   ): Promise<{ rows: BookingRow[]; serverTime: Date }> {
+    void this.db;
     void trainerId;
     throw new Error('not implemented');
   }

@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { UsersService } from '@fitness-connect/identity';
 import { TrainersService } from '@fitness-connect/trainers';
 import type {
   BookingDto,
@@ -9,16 +10,17 @@ import { BookingsRepository } from './bookings.repository';
 
 @Injectable()
 export class BookingService {
-  // Client names will come from `UsersService` once identity exports it (slice 3).
   constructor(
     private readonly bookings: BookingsRepository,
     private readonly trainers: TrainersService,
+    private readonly users: UsersService,
   ) {}
 
   listPendingRequests(trainerId: string): Promise<BookingRequestListDto> {
     void trainerId;
     void this.bookings;
     void this.trainers;
+    void this.users;
     throw new Error('not implemented');
   }
 
