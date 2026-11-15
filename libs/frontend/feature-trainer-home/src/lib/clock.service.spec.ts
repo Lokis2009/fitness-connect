@@ -28,6 +28,37 @@ describe('ClockService', () => {
     expect(clock.now()).toBe(Date.parse('2026-11-15T10:05:00Z'));
   });
 
+  it('deviceNow is the device clock, for stamping the moment a request is sent', () => {
+    const clock = TestBed.inject(ClockService);
+    clock.sync('2026-11-15T10:05:00Z');
+
+    expect(clock.deviceNow()).toBe(DEVICE_TIME);
+  });
+
+  it('assumes the server read its time in the middle of the round trip', () => {
+    const clock = TestBed.inject(ClockService);
+    const sentAt = clock.deviceNow();
+    vi.advanceTimersByTime(2000);
+
+    // The request took 2 s and the server time falls in its middle: the device clock is right.
+    clock.sync('2026-11-15T10:00:01Z', sentAt);
+
+    expect(clock.now()).toBe(DEVICE_TIME + 2000);
+    vi.advanceTimersByTime(1000);
+    expect(clock.now()).toBe(DEVICE_TIME + 3000);
+  });
+
+  it('keeps a fixed offset from the middle of the round trip when the device clock is off', () => {
+    const clock = TestBed.inject(ClockService);
+    const sentAt = clock.deviceNow();
+    vi.advanceTimersByTime(4000);
+
+    // The server says 10:05:02 at the middle (10:00:02 on the device): the device is 5 minutes slow.
+    clock.sync('2026-11-15T10:05:02Z', sentAt);
+
+    expect(clock.now()).toBe(Date.parse('2026-11-15T10:05:04Z'));
+  });
+
   it('ticks once a second and keeps the offset', () => {
     const clock = TestBed.inject(ClockService);
     clock.sync('2026-11-15T10:05:00Z');

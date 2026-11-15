@@ -4,6 +4,7 @@ import { Router, provideRouter } from '@angular/router';
 import { AuthService } from '@fitness-connect/auth';
 import { ApiClient, ApiError, type Session, type SessionList, type User } from '@fitness-connect/data-access';
 import { type Observable, Subject, of, throwError } from 'rxjs';
+import { ClockService } from './clock.service';
 import { REFRESH_INTERVAL_MS } from './refresh-trigger';
 import { SessionsStore } from './sessions-store';
 
@@ -54,7 +55,7 @@ describe('SessionsStore', () => {
       ],
     });
     const navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
-    return { store: TestBed.inject(SessionsStore), navigate };
+    return { store: TestBed.inject(SessionsStore), clock: TestBed.inject(ClockService), navigate };
   }
 
   function ids(sessions: Session[]): string[] {
@@ -129,6 +130,17 @@ describe('SessionsStore', () => {
       second.next(list([session('s1', '2026-11-15T14:00:00Z')]));
       expect(store.loadState()).toBe('ready');
       expect(ids(store.today())).toEqual(['s1']);
+    });
+
+    it('corrects the clock with the middle of the round trip, not the arrival time', () => {
+      const response = new Subject<SessionList>();
+      getSessions.mockReturnValue(response);
+      const { clock } = setup();
+      vi.advanceTimersByTime(2000);
+
+      response.next(list([], new Date(NOW + 1000).toISOString()));
+
+      expect(clock.now()).toBe(NOW + 2000);
     });
 
     it('records the time of the last successful load', () => {

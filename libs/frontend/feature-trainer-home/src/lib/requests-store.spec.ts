@@ -140,6 +140,18 @@ describe('RequestsStore', () => {
       expect(store.lastUpdated()).toBe(NOW + 5 * MINUTE_MS);
     });
 
+    it('corrects the clock with the middle of the round trip, not the arrival time', () => {
+      const response = new Subject<BookingRequestList>();
+      getBookingRequests.mockReturnValue(response);
+      const { clock } = setup();
+      vi.advanceTimersByTime(2000);
+
+      // 2 s of latency, and the server read its time in the middle: the device clock is right.
+      response.next(list([], new Date(NOW + 1000).toISOString()));
+
+      expect(clock.now()).toBe(NOW + 2000);
+    });
+
     it('has no update time before the first response', () => {
       getBookingRequests.mockReturnValue(new Subject<BookingRequestList>());
       const { store } = setup();
