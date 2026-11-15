@@ -69,12 +69,17 @@ Technical decisions: see the Decisions section of [Architecture.md](Architecture
 | client-web | application | scope:client, type:app | `apps/client-web` |
 | e2e | application | scope:shared, type:util | `apps/e2e` |
 | trainer-web | application | scope:trainer, type:app | `apps/trainer-web` |
+| booking | library | scope:api, type:api-lib | `libs/backend/booking` |
 | common | library | scope:api, type:api-lib | `libs/backend/common` |
 | database | library | scope:api, type:api-lib | `libs/backend/database` |
 | identity | library | scope:api, type:api-lib | `libs/backend/identity` |
+| trainers | library | scope:api, type:api-lib | `libs/backend/trainers` |
 | auth | library | scope:shared, type:data-access | `libs/frontend/auth` |
 | data-access | library | scope:shared, type:data-access | `libs/frontend/data-access` |
 | feature-home | library | scope:shared, type:feature | `libs/frontend/feature-home` |
 | feature-login | library | scope:shared, type:feature | `libs/frontend/feature-login` |
+| feature-trainer-home | library | scope:trainer, type:feature | `libs/frontend/feature-trainer-home` |
+| feature-trainer-setup | library | scope:trainer, type:feature | `libs/frontend/feature-trainer-setup` |
+| trainer-access | library | scope:trainer, type:data-access | `libs/frontend/trainer-access` |
 | ui | library | scope:shared, type:ui | `libs/frontend/ui` |
 | api-contract | library | scope:shared, type:util | `libs/shared/api-contract` |
