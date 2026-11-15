@@ -21,7 +21,7 @@ Edit `status/status.yaml` to change the workstreams. Run `pnpm status:generate` 
 
 ## Open questions
 
-From [Architecture.md](Architecture.md) section 10. Answer one there and it leaves this list.
+From the Open questions section of [Architecture.md](Architecture.md). Answer one there and it leaves this list.
 
 | # | Question | Blocks |
 |---|---|---|
@@ -38,20 +38,20 @@ From [Architecture.md](Architecture.md) section 10. Answer one there and it leav
 
 ## Documents
 
-Technical decisions: [Architecture.md](Architecture.md) section 2.
+Technical decisions: see the Decisions section of [Architecture.md](Architecture.md).
 
 ### Plans
 
 | Document | Status | Updated |
 |---|---|---|
-| [Phase 1 plan: repo foundation for parallel development](docs/plans/phase-1-repo-foundation.md) | done. | - |
-| [Implementation plan: trainer-web](docs/plans/trainer-web.md) | draft. | - |
+| [Phase 1 plan: repo foundation for parallel development](docs/plans/phase-1-repo-foundation.md) | done | - |
+| [Implementation plan: trainer-web](docs/plans/trainer-web.md) | draft | - |
 
 ### Product requirements
 
 | Document | Status | Updated |
 |---|---|---|
-| [PRD: scheduled, in-person sessions](docs/prd/scheduled-in-person-sessions.md) | draft for review. | 2026-11-15 |
+| [PRD: scheduled, in-person sessions](docs/prd/scheduled-in-person-sessions.md) | draft for review | 2026-11-15 |
 
 ### Product decisions
 

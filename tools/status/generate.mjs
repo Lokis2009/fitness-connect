@@ -43,11 +43,46 @@ function validateWorkstream(root, workstream, index, seen) {
   if (workstream.state === 'blocked' && !workstream.blockedBy) {
     fail(`${at} (${workstream.id}) is blocked and needs blockedBy`);
   }
+  if (workstream.links !== undefined && !Array.isArray(workstream.links)) {
+    fail(`${at} (${workstream.id}) links must be a list of repo paths`);
+  }
   for (const link of workstream.links ?? []) {
-    const target = String(link).split('#')[0];
-    if (!existsSync(join(root, target))) {
-      fail(`${at} (${workstream.id}) links to ${target}, which does not exist`);
-    }
+    validateLink(root, `${at} (${workstream.id})`, String(link));
+  }
+}
+
+// Same slug rule as GitHub: lowercase, drop punctuation, spaces to hyphens,
+// repeated headings get -1, -2, ...
+function headingSlugs(markdown) {
+  const seen = new Map();
+  const slugs = new Set();
+  for (const line of markdown.split('\n')) {
+    const heading = line.match(/^#{1,6}\s+(.+?)\s*#*\s*$/)?.[1];
+    if (!heading) continue;
+    const base = heading
+      .toLowerCase()
+      .replace(/[^\p{L}\p{N}\s_-]/gu, '')
+      .trim()
+      .replaceAll(' ', '-');
+    const count = seen.get(base) ?? 0;
+    seen.set(base, count + 1);
+    slugs.add(count === 0 ? base : `${base}-${count}`);
+  }
+  return slugs;
+}
+
+function validateLink(root, at, link) {
+  const hash = link.indexOf('#');
+  const target = hash === -1 ? link : link.slice(0, hash);
+  if (!existsSync(join(root, target))) {
+    fail(`${at} links to ${target}, which does not exist`);
+  }
+  if (hash === -1 || !target.endsWith('.md')) return;
+  const anchor = link.slice(hash + 1);
+  if (!headingSlugs(readFileSync(join(root, target), 'utf8')).has(anchor)) {
+    fail(
+      `${at} links to ${target}#${anchor}, but ${target} has no such heading`,
+    );
   }
 }
 
@@ -89,7 +124,7 @@ export function collectProjects(root) {
         tags: project.tags ?? [],
       };
     })
-    .sort((a, b) => a.path.localeCompare(b.path));
+    .sort((a, b) => (a.path < b.path ? -1 : a.path > b.path ? 1 : 0));
 }
 
 function readDoc(root, path) {
@@ -99,7 +134,11 @@ function readDoc(root, path) {
       .find((l) => l.startsWith(`${name}:`))
       ?.slice(name.length + 1)
       .trim();
-  const status = field('Status');
+  const text = field('Status');
+  const status = (text?.match(/^(.*?\.)(?:\s|$)/)?.[1] ?? text)?.replace(
+    /\.$/,
+    '',
+  );
   return {
     title:
       lines
@@ -107,7 +146,7 @@ function readDoc(root, path) {
         ?.slice(2)
         .trim() ?? basename(path, '.md'),
     path,
-    status: status?.match(/^(.*?\.)(?:\s|$)/)?.[1] ?? status,
+    status,
     updated: field('Updated'),
   };
 }
@@ -146,8 +185,13 @@ export function collectOpenQuestions(root) {
   for (const line of lines.slice(start + 1)) {
     if (line.startsWith('## ')) break;
     if (!line.startsWith('|')) continue;
-    const [id, question, blocks] = tableCells(line);
-    if (id === '#' || /^-+$/.test(id) || question.startsWith('~~')) continue;
+    const cells = tableCells(line);
+    if (cells.every((c) => /^:?-+:?$/.test(c)) || cells[0] === '#') continue;
+    if (cells.length < 3) {
+      fail(`Architecture.md open questions has a malformed row: ${line}`);
+    }
+    const [id, question, blocks] = cells;
+    if (question.startsWith('~~')) continue;
     rows.push({ id, question, blocks });
   }
   return rows;
@@ -194,7 +238,9 @@ export function render({ status, projects, docs, questions }) {
         w.name,
         w.state,
         w.owner,
-        w.state === 'blocked' ? `Blocked: ${w.blockedBy}` : w.next,
+        w.state === 'blocked'
+          ? `Blocked: ${w.blockedBy}${w.next ? `. Next: ${w.next}` : ''}`
+          : w.next,
         w.summary,
         w.links
           .map((l) => link(basename(l.split('#')[0], '.md'), l))
@@ -204,7 +250,7 @@ export function render({ status, projects, docs, questions }) {
     '',
     '## Open questions',
     '',
-    'From [Architecture.md](Architecture.md) section 10. Answer one there and it leaves this list.',
+    'From the Open questions section of [Architecture.md](Architecture.md). Answer one there and it leaves this list.',
     '',
     ...table(
       ['#', 'Question', 'Blocks'],
@@ -213,7 +259,7 @@ export function render({ status, projects, docs, questions }) {
     '',
     '## Documents',
     '',
-    'Technical decisions: [Architecture.md](Architecture.md) section 2.',
+    'Technical decisions: see the Decisions section of [Architecture.md](Architecture.md).',
     '',
     '### Plans',
     '',
