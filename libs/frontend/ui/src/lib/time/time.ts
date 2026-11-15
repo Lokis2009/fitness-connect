@@ -15,7 +15,7 @@ const MINUTE_MS = 60_000;
  * - `day`: "Today, Sun 15 Nov" or "Tomorrow, Mon 16 Nov" (the plain date without `now`).
  * - `range`: "17:30–18:30" with "Warsaw time" under it (needs `durationMinutes`).
  *
- * Angular's DatePipe takes no IANA zone, so this uses Intl.DateTimeFormat with the fixed `en-GB` locale.
+ * Set `inline` to put it inside a sentence. Angular's DatePipe takes no IANA zone, so this uses Intl.DateTimeFormat with the fixed `en-GB` locale.
  */
 @Component({
   selector: 'fc-time',
@@ -25,7 +25,7 @@ const MINUTE_MS = 60_000;
       <span class="block text-caption text-ink-muted">{{ zoneLabel() }}</span>
     }
   `,
-  host: { class: 'block' },
+  host: { '[class]': 'hostClass()' },
 })
 export class FcTime {
   /** The instant, an ISO 8601 date-time. */
@@ -37,11 +37,17 @@ export class FcTime {
   readonly now = input<number | undefined>(undefined);
   /** Session length for the `range` format. */
   readonly durationMinutes = input<number | undefined>(undefined);
+  /** Sits inside a line of text and takes its type, instead of being a bold block of its own. */
+  readonly inline = input(false);
+
+  protected readonly hostClass = computed(() => (this.inline() ? 'inline' : 'block'));
 
   protected readonly zoneLabel = computed(() => `${zoneCity(this.timeZone())} time`);
 
   /** `day` inherits the type of the heading it sits in. The other two are emphasised (600 weight). */
-  protected readonly timeClasses = computed(() => (this.format() === 'day' ? '' : 'block text-button text-ink'));
+  protected readonly timeClasses = computed(() =>
+    this.format() === 'day' || this.inline() ? '' : 'block text-button text-ink',
+  );
 
   protected readonly text = computed((): string => {
     const epoch = Date.parse(this.value());
