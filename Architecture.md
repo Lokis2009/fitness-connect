@@ -89,12 +89,17 @@ libs/
     feature-*/       Feature libs per app domain (search, booking, schedule...)
   backend/
     <domain>/        One lib per backend module (see section 5)
+status/
+  status.yaml        Hand-edited workstreams; the source for STATUS.md
+tools/
+  status/            Generator for STATUS.md (pnpm status:generate, status:check)
 ```
 
 Rules:
 - Nx module boundary tags enforced via ESLint (`scope:client`, `scope:trainer`, `scope:admin`, `scope:api`, `scope:shared`, and `type:feature|data-access|ui|util`).
 - Frontend apps never import backend libs. Shared code goes only through `libs/shared`.
 - Cross-module backend calls go through each module's public API (index barrel or events), never through another module's internals or tables.
+- `STATUS.md` is generated from `status/status.yaml`, the open questions in section 10, the plan, PRD and decision docs, and the Nx project list. Never edit it by hand. CI runs `pnpm status:check` and fails when it is stale.
 
 ## 5. Backend modules (NestJS)
 

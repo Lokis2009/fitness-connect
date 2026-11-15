@@ -1,7 +1,10 @@
 # Source of truth for the workstreams table in STATUS.md.
 # Edit this file in the same PR that changes a workstream, then run `pnpm status:generate`.
 #
+# Required: id, name, state, summary. Optional: owner, next, blockedBy, links.
 # state:      done | in-progress | planned | blocked | deferred
+# owner:      person or team responsible
+# next:       the next concrete step (also shown on blocked items)
 # blockedBy:  required when state is blocked
 # links:      repo-relative paths (an #anchor is allowed); checked to exist
 # Keep summaries to one sentence. Detail belongs in the linked plan, PRD or decision log.
