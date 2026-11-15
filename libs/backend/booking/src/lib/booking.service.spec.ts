@@ -130,28 +130,71 @@ describe('BookingService', () => {
       });
     });
 
-    it('fails when a client name is missing', async () => {
-      bookings.pendingForTrainer.mockResolvedValue({
-        rows: [row()],
-        serverTime: new Date(NOW),
+    describe('when a lookup misses one of the rows', () => {
+      const OTHER = 'b0000000-0000-4000-8000-000000000002';
+      let error: jest.SpyInstance;
+
+      beforeEach(() => {
+        error = jest.spyOn(Logger.prototype, 'error').mockImplementation();
       });
-      users.displayNames.mockResolvedValue(new Map());
 
-      await expect(service.listPendingRequests(TRAINER)).rejects.toThrow(
-        'client',
-      );
-    });
+      it('shows a request without a client name as "Unknown client", so it can still be answered', async () => {
+        bookings.pendingForTrainer.mockResolvedValue({
+          rows: [row(), row({ id: OTHER, clientUserId: CLIENT_B })],
+          serverTime: new Date(NOW),
+        });
+        users.displayNames.mockResolvedValue(new Map([[CLIENT_B, 'Robin Client']]));
 
-    it('fails when a venue is missing', async () => {
-      bookings.pendingForTrainer.mockResolvedValue({
-        rows: [row()],
-        serverTime: new Date(NOW),
+        const result = await service.listPendingRequests(TRAINER);
+
+        expect(result.items.map((item) => item.clientName)).toEqual([
+          'Unknown client',
+          'Robin Client',
+        ]);
+        expect(error).toHaveBeenCalledTimes(1);
+        expect(String(error.mock.calls[0][0])).toContain(
+          'b0000000-0000-4000-8000-000000000001',
+        );
       });
-      trainers.venuesByIds.mockResolvedValue(new Map());
 
-      await expect(service.listPendingRequests(TRAINER)).rejects.toThrow(
-        'venue',
-      );
+      it('leaves out a request without a venue, keeps the others and logs an error', async () => {
+        bookings.pendingForTrainer.mockResolvedValue({
+          rows: [row(), row({ id: OTHER, venueId: VENUE_B })],
+          serverTime: new Date(NOW),
+        });
+        trainers.venuesByIds.mockResolvedValue(new Map([[VENUE_B, VENUE]]));
+
+        const result = await service.listPendingRequests(TRAINER);
+
+        expect(result.items.map((item) => item.id)).toEqual([OTHER]);
+        expect(error).toHaveBeenCalledTimes(1);
+        expect(String(error.mock.calls[0][0])).toContain(
+          'b0000000-0000-4000-8000-000000000001',
+        );
+      });
+
+      it('does the same for sessions', async () => {
+        bookings.sessionsForTrainer.mockResolvedValue({
+          rows: [
+            row({ status: 'confirmed' }),
+            row({ id: OTHER, status: 'confirmed', clientUserId: CLIENT_B }),
+          ],
+          serverTime: new Date(NOW),
+        });
+        users.displayNames.mockResolvedValue(new Map([[CLIENT_B, 'Robin Client']]));
+        trainers.venuesByIds.mockResolvedValue(new Map([[VENUE_A, VENUE]]));
+
+        const result = await service.listSessions(
+          TRAINER,
+          new Date(NOW),
+          new Date(NOW + 60_000),
+        );
+
+        expect(result.items.map((item) => [item.id, item.clientName])).toEqual([
+          ['b0000000-0000-4000-8000-000000000001', 'Unknown client'],
+          [OTHER, 'Robin Client'],
+        ]);
+      });
     });
   });
 
