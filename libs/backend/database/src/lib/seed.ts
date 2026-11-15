@@ -1,4 +1,5 @@
 import { hashPassword, type Role } from '@fitness-connect/common';
+import { tomorrowNoon } from '@fitness-connect/venue-time';
 import { asc, eq, inArray } from 'drizzle-orm';
 import type { Database } from './client';
 import {
@@ -55,45 +56,6 @@ function assertDevEnvironment(what: string): void {
       `Refusing to seed ${what}: NODE_ENV must be "development" or "test" (got "${nodeEnv ?? ''}")`,
     );
   }
-}
-
-/** Offset of `zone` from UTC at the instant `at`, in milliseconds. */
-function zoneOffsetMs(zone: string, at: number): number {
-  const parts = new Intl.DateTimeFormat('en-US', {
-    timeZone: zone,
-    hourCycle: 'h23',
-    year: 'numeric',
-    month: 'numeric',
-    day: 'numeric',
-    hour: 'numeric',
-    minute: 'numeric',
-    second: 'numeric',
-  }).formatToParts(new Date(at));
-  const value = (type: string) =>
-    Number(parts.find((part) => part.type === type)?.value);
-  const asUtc = Date.UTC(
-    value('year'),
-    value('month') - 1,
-    value('day'),
-    value('hour'),
-    value('minute'),
-    value('second'),
-  );
-  return asUtc - Math.floor(at / 1000) * 1000;
-}
-
-/** The instant at which it is noon on the calendar day after `now` in `zone`. */
-function tomorrowNoon(now: Date, zone: string): Date {
-  const today = new Date(now.getTime() + zoneOffsetMs(zone, now.getTime()));
-  const wallClock = Date.UTC(
-    today.getUTCFullYear(),
-    today.getUTCMonth(),
-    today.getUTCDate() + 1,
-    12,
-  );
-  // The offset is read near the answer, so a daylight saving change in between is handled.
-  const approximate = wallClock - zoneOffsetMs(zone, wallClock);
-  return new Date(wallClock - zoneOffsetMs(zone, approximate));
 }
 
 /**
@@ -216,7 +178,7 @@ export async function seedDevTrainerData(
       pending(at(5 * HOUR_MS), 5),
       pending(at(2 * HOUR_MS), 10),
       confirmed(at(-15 * MINUTE_MS), at(-DAY_MS)),
-      confirmed(tomorrowNoon(now, VENUE_TIME_ZONE), at(-DAY_MS)),
+      confirmed(tomorrowNoon(VENUE_TIME_ZONE, now), at(-DAY_MS)),
     ]);
   });
 }
