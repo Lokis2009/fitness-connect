@@ -115,8 +115,14 @@ const UNAVAILABLE_TEXT = {
                       <fc-stack gap="sm">
                         <fc-heading level="3">{{ card.request.clientName }}</fc-heading>
                         <fc-badge>Accepted</fc-badge>
-                        <fc-text variant="muted">Accepted.</fc-text>
-                        <fc-time [value]="bookingStart(card)" [timeZone]="card.request.venue.timeZone" />
+                        <fc-text variant="muted">
+                          Accepted.
+                          <fc-time
+                            [inline]="true"
+                            [value]="bookingStart(card)"
+                            [timeZone]="card.request.venue.timeZone"
+                          />.
+                        </fc-text>
                       </fc-stack>
                     </fc-card>
                   }
