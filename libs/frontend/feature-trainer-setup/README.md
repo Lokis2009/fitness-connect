@@ -6,7 +6,7 @@ The read-only trainer setup page at `/setup`: the approval status, the admin's n
 
 | Export | Description |
 | --- | --- |
-| `TrainerSetup` | Selector `fc-trainer-setup`. A placeholder in the skeleton until slice 8. |
+| `TrainerSetup` | Selector `fc-trainer-setup`. Shows the status text and the admin's note, "Check again", and Sign out. On entry it refreshes the user, and it goes to `/` when the status is `approved`. |
 
 ## Running unit tests
 

@@ -6,15 +6,13 @@ The trainer home page: pending booking requests and today's and tomorrow's confi
 
 | Export | Description |
 | --- | --- |
-| `TrainerHome` | Selector `fc-trainer-home`. Provides `RequestsStore` and `SessionsStore`. A placeholder in the skeleton. |
+| `TrainerHome` | Selector `fc-trainer-home`. The page: header with Sign out, the deep-link notice, the booking requests with Accept and Decline, and the sessions of today and tomorrow. Provides `RequestsStore` and `SessionsStore`. |
 | `ClockService` | Server-corrected `now` signal and `sync(serverTime)`. |
-| `RequestsStore`, `SessionsStore` | Page state, provided by `TrainerHome`. |
+| `RequestsStore`, `SessionsStore` | Page state, provided by `TrainerHome`. `RequestsStore.acceptedCount` counts accepted answers, and `SessionsStore.refreshAfterAccept()` loads the sessions again after one, queued behind any request in flight. |
 | `RequestCard`, `CardState`, `startSubmit`, `resolveSuccess`, `resolveError`, `expireCard` | Per-card state machine (pure functions). |
 | `dayWindow`, `dayOf`, `hasEnded` | Day arithmetic in an IANA zone, on epoch milliseconds. |
 | `refreshTrigger()`, `REFRESH_INTERVAL_MS` | Refresh events (start, tab visible, every 30 s while visible). |
 | `LATE_WINDOW_MS` | 3-hour late-window constant (PDR-010). |
-
-Status: skeleton. Everything except the constants throws `not implemented` until slice 9.
 
 ## Running unit tests
 

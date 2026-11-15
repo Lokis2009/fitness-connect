@@ -47,8 +47,8 @@ workstreams:
   - id: trainer-home
     name: Trainer home screen
     state: in-progress
-    summary: Design for the approved trainer's home (pending booking requests and today's and tomorrow's sessions) and the read-only /setup page is reviewed; implementation has not started.
-    next: Build the contract and API skeleton on feat/trainer-home, then the database, frontend skeleton and the test and implementation slices.
+    summary: The approved trainer's home (pending booking requests and today's and tomorrow's sessions) and the read-only /setup page are implemented on feat/trainer-home, from the contract to the e2e tests.
+    next: Open the pull request, confirm the 960 px desktop column width with the design owner, and run the manual browser check.
     links:
       - docs/designs/trainer-home.md
 
