@@ -3,9 +3,10 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Router } from '@angular/router';
 import { AuthService } from '@fitness-connect/auth';
 import { ApiClient, ApiError, type BookingRequest, type BookingRequestList } from '@fitness-connect/data-access';
-import { type Observable, Subject, catchError, exhaustMap, map, merge, of } from 'rxjs';
+import { type Observable, catchError, map, of } from 'rxjs';
 import { ClockService } from './clock.service';
 import { isNotApproved, leaveWhenNotApproved } from './not-approved';
+import { RefreshQueue } from './refresh-queue';
 import { refreshTrigger } from './refresh-trigger';
 import {
   type CardAction,
@@ -47,7 +48,7 @@ export class RequestsStore {
   private readonly failed = signal(false);
   private readonly firstIds = signal<ReadonlySet<string> | null>(null);
   private readonly accepted = signal(0);
-  private readonly manualRefresh = new Subject<void>();
+  private readonly queue = new RefreshQueue(refreshTrigger(), () => this.fetch());
 
   /** Open cards by deadline, then resolved cards by deadline. */
   readonly cards = computed(() =>
@@ -73,12 +74,8 @@ export class RequestsStore {
   readonly acceptedCount = this.accepted.asReadonly();
 
   constructor() {
-    merge(refreshTrigger(), this.manualRefresh)
-      .pipe(
-        // A trigger while a request is in flight is ignored.
-        exhaustMap(() => this.fetch()),
-        takeUntilDestroyed(this.destroyRef),
-      )
+    this.queue.results
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((result) => {
         if (result.ok) {
           this.apply(result.list);
@@ -107,7 +104,7 @@ export class RequestsStore {
   }
 
   refresh(): void {
-    this.manualRefresh.next();
+    this.queue.refresh();
   }
 
   /** Loads again after a failed first load, showing the loading state meanwhile. */
@@ -174,8 +171,8 @@ export class RequestsStore {
     }
     this.updateCard(id, (current) => resolveError(current, error.status, error.code));
     if (this.cardMap().get(id)?.state.kind === 'unavailable') {
-      // The list on screen is out of date: fetch the real one once.
-      this.refresh();
+      // The list on screen is out of date: fetch the real one once, after any request in flight.
+      this.queue.refreshAfterInFlight();
     }
   }
 
@@ -193,7 +190,7 @@ export class RequestsStore {
       const expired = next;
       untracked(() => {
         this.cardMap.set(expired);
-        this.refresh();
+        this.queue.refreshAfterInFlight();
       });
     }
   }
