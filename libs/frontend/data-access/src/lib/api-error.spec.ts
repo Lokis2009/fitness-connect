@@ -23,6 +23,22 @@ describe('ApiError', () => {
     expect(error.name).toBe('ApiError');
   });
 
+  describe('code', () => {
+    it('reads the machine-readable code of the problem', () => {
+      expect(new ApiError(409, { ...problem, status: 409, code: 'booking-expired' }).code).toBe(
+        'booking-expired',
+      );
+    });
+
+    it('is undefined when the problem has no code', () => {
+      expect(new ApiError(401, problem).code).toBeUndefined();
+    });
+
+    it('is undefined for a synthesized problem', () => {
+      expect(ApiError.from(new HttpErrorResponse({ status: 0 })).code).toBeUndefined();
+    });
+  });
+
   describe('from', () => {
     it('maps an HTTP error with a problem body', () => {
       const cause = new HttpErrorResponse({ status: 401, error: problem });
