@@ -1,6 +1,6 @@
 # feature-trainer-home
 
-The trainer home page: pending booking requests and today's and tomorrow's confirmed sessions. Import path: `@fitness-connect/feature-trainer-home`. Tags: `scope:trainer`, `type:feature`. The template contains only `fc-*` components from `@fitness-connect/ui`. Design: `docs/designs/trainer-home.md`.
+The trainer home page: pending booking requests and today's and tomorrow's confirmed sessions. Import path: `@fitness-connect/feature-trainer-home`. Tags: `scope:trainer`, `type:feature`. The template contains only `fc-*` components from `@fitness-connect/ui`. Design: `docs/designs/trainer-home.md`. It reads data through `data-access`, user and sign-out through `auth`, and the approval status through `trainer-access`. It may not depend on other feature libs, and it takes every clock reading from `ClockService`, not from `Date.now()`.
 
 ## Public API
 
