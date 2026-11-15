@@ -98,7 +98,7 @@ export class BookingService {
     action: Action,
   ): Promise<BookingDto> {
     try {
-      const { booking, repeat } = await this.bookings.decide(
+      const { booking, repeat, serverTime } = await this.bookings.decide(
         trainerId,
         bookingId,
         action,
@@ -109,6 +109,7 @@ export class BookingService {
         action,
         repeat ? 'repeat' : 'ok',
         booking,
+        serverTime,
       );
       return toBookingDto(booking);
     } catch (error) {
@@ -119,9 +120,10 @@ export class BookingService {
           action,
           error.code,
           error.booking,
+          error.serverTime,
         );
       } else if (error instanceof NotFoundException) {
-        this.logDecision(trainerId, bookingId, action, 'not-found', null);
+        this.logDecision(trainerId, bookingId, action, 'not-found', null, null);
       }
       throw error;
     }
@@ -134,8 +136,10 @@ export class BookingService {
     action: Action,
     result: string,
     booking: BookingRow | null,
+    serverTime: Date | null,
   ): void {
-    const now = Date.now();
+    // The database time the decision was made at, not the device clock of the API host.
+    const now = serverTime?.getTime() ?? Date.now();
     this.logger.log(
       JSON.stringify({
         event: 'booking.decided',

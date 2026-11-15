@@ -33,21 +33,27 @@ export interface BookingRow {
   decidedAt: Date | null;
 }
 
-/** The outcome of `decide`: the updated row, and whether it was a repeat of the same action. */
+/**
+ * The outcome of `decide`: the updated row, whether it was a repeat of the same action, and the
+ * database time the decision was made at.
+ */
 export interface DecisionResult {
   booking: BookingRow;
   repeat: boolean;
+  serverTime: Date;
 }
 
 /**
  * A 409 that `decide` raises. Carries the booking as it was read under the
- * lock, so the service can log the time left and the start of the session.
+ * lock and the database time of the decision, so the service can log the time
+ * left and the start of the session.
  */
 export class BookingConflictException extends CodedHttpException {
   constructor(
     code: string,
     message: string,
     readonly booking: BookingRow,
+    readonly serverTime: Date,
   ) {
     super(409, code, message);
   }
@@ -214,12 +220,15 @@ export class BookingsRepository {
         current.expiresAt.getTime() <= now.getTime(),
         action,
       );
-      if (outcome === 'repeat') return { booking: current, repeat: true };
+      if (outcome === 'repeat') {
+        return { booking: current, repeat: true, serverTime: now };
+      }
       if (outcome !== 'apply') {
         throw new BookingConflictException(
           outcome.code,
           outcome.message,
           current,
+          now,
         );
       }
 
@@ -266,7 +275,7 @@ export class BookingsRepository {
         }
       }
 
-      return { booking, repeat: false };
+      return { booking, repeat: false, serverTime: now };
     });
   }
 
