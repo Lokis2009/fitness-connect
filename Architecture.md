@@ -13,7 +13,7 @@ A marketplace connecting fitness trainers with clients ("Uber for fitness traine
 - Clients find trainers and either **request one on demand** or **book a scheduled slot**.
 - Sessions are **in person at a gym/venue** or **online by video**.
 - Launch scope: single city/country, one language, small team.
-- First release: scheduled, in-person sessions with trainer approval within 24 hours; clients pay trainers directly in person. On-demand dispatch, online sessions, and platform payments are deferred (PDR-001 to PDR-005).
+- First release: scheduled, in-person sessions with trainer approval within 1 hour and at least 3 hours' notice; clients pay trainers directly in person. On-demand dispatch, online sessions, and platform payments are deferred (PDR-001 to PDR-004, PDR-006, PDR-007).
 
 ## 2. Decisions
 
@@ -26,7 +26,7 @@ A marketplace connecting fitness trainers with clients ("Uber for fitness traine
 | D5 | Database | PostgreSQL + PostGIS | Decided |
 | D6 | Cloud | AWS | Decided |
 | D7 | Auth | Amazon Cognito, email and password for now, hosted login page acceptable. Chosen for lowest cost and simplest setup; paid usage starts only in production | Decided |
-| D8 | Matching | Long-term: on-demand dispatch and scheduled booking. First release: scheduled booking with trainer approval within 24 hours (PDR-001, PDR-003, PDR-005) | Decided |
+| D8 | Matching | Long-term: on-demand dispatch and scheduled booking. First release: scheduled booking with trainer approval within 1 hour (PDR-001, PDR-003, PDR-006) | Decided |
 | D9 | Session types | Long-term: in person at gym/venue and online video. First release: in person only (PDR-002) | Decided |
 | D10 | Client apps at launch | Client web, Trainer web, Admin web (all Angular) | Decided |
 | D11 | Payments | First release: client pays trainer directly in person; platform payments deferred (PDR-004). Future provider/model undecided; isolate behind a module boundary when introduced | Decided (future provider/model: Open) |
