@@ -4,6 +4,7 @@ import { Router } from '@angular/router';
 import { AuthService } from '@fitness-connect/auth';
 import { ApiClient, ApiError, type Session, type SessionList } from '@fitness-connect/data-access';
 import { type Observable, catchError, map, of } from 'rxjs';
+import { isValidTimeZone } from '@fitness-connect/ui';
 import { ClockService } from './clock.service';
 import { dayOf, dayWindow, hasEnded } from './day-window';
 import { isNotApproved, leaveWhenNotApproved } from './not-approved';
@@ -33,8 +34,14 @@ export class SessionsStore {
   private readonly failed = signal(false);
   private readonly queue = new RefreshQueue(refreshTrigger(), () => this.fetch());
 
-  /** IANA zone of the trainer's venue, or `null` while it is unknown. */
-  private readonly zone = computed(() => this.auth.user()?.trainerVenueTimeZone ?? null);
+  /**
+   * IANA zone of the trainer's venue, or `null` while it is unknown or not a zone `Intl` knows.
+   * The zone is stored text, and a typo would make the day arithmetic throw.
+   */
+  private readonly zone = computed(() => {
+    const zone = this.auth.user()?.trainerVenueTimeZone ?? null;
+    return zone !== null && isValidTimeZone(zone) ? zone : null;
+  });
 
   /** Sessions that have not ended, split by day. Recomputed as the clock passes each end. */
   private readonly days = computed(() => {

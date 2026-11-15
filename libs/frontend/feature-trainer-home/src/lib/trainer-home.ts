@@ -18,6 +18,7 @@ import {
   FcText,
   FcTime,
   UI_LOCALE,
+  isValidTimeZone,
   zoneCity,
 } from '@fitness-connect/ui';
 import { map } from 'rxjs';
@@ -302,7 +303,11 @@ export class TrainerHome {
     });
   }
 
-  protected readonly zone = computed(() => this.auth.user()?.trainerVenueTimeZone ?? null);
+  /** The venue zone, or `null` while it is unknown or not a zone `Intl` knows. */
+  protected readonly zone = computed(() => {
+    const zone = this.auth.user()?.trainerVenueTimeZone ?? null;
+    return zone !== null && isValidTimeZone(zone) ? zone : null;
+  });
 
   protected readonly subtitle = computed(() => {
     const zone = this.zone();
