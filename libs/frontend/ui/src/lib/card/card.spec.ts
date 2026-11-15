@@ -27,8 +27,10 @@ describe('FcCard', () => {
 
     expect(card.classList).toContain('block');
     expect(card.classList).toContain('bg-surface');
-    expect(card.classList).toContain('text-on-surface');
+    expect(card.classList).toContain('text-ink');
     expect(card.classList).toContain('rounded-card');
     expect(card.classList).toContain('p-6');
+    expect(card.classList).toContain('border-line-card');
+    expect(card.classList).not.toContain('shadow-md');
   });
 });

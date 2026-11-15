@@ -3,9 +3,9 @@ import { Component, computed, input } from '@angular/core';
 export type FcTextVariant = 'body' | 'muted' | 'small';
 
 const VARIANT_CLASSES: Record<FcTextVariant, string> = {
-  body: 'text-base text-on-surface',
-  muted: 'text-base text-on-surface/70',
-  small: 'text-sm text-on-surface/70',
+  body: 'text-body text-ink',
+  muted: 'text-body text-ink-muted',
+  small: 'text-caption text-ink-muted',
 };
 
 /** Paragraph text with body, muted and small variants. */

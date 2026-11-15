@@ -177,6 +177,7 @@ Angular coding standards (signals, standalone defaults, native control flow, Sig
 - Material and Tailwind are implementation details of the shared library. Apps never import `@angular/material` components directly or use Tailwind classes in their templates.
 - A missing component is created in the shared library first, exported from `src/index.ts`, then used.
 - Styling setup (see `apps/client-web` as the reference): each app has `.postcssrc.json` with `@tailwindcss/postcss`, a `src/styles.css` that imports `tailwindcss`, `libs/frontend/ui/src/styles/tokens.css` (Tailwind `@theme` design tokens) and a `@source` pointing at the UI library, and lists `libs/frontend/ui/src/styles/material-theme.scss` (Material system tokens via `mat.theme`) in the `styles` array of its `build` target. Tailwind is not combined with Sass; the Material theme is a separate stylesheet.
+- Design tokens and typography: `libs/frontend/ui/src/styles/tokens.css` is the single source (neutrals, per-role accent set by `<html data-role>`, radius, spacing, and a semantic type scale where `text-title` sets size, line height and weight together). Tailwind's default palette, type sizes and shadows are cleared so only tokens exist. `material-theme.scss` points Material at the same tokens. Usage rules: `.claude/rules/design-system.md`.
 - Lint exceptions: `router-outlet` is allowed in templates, and `src/index.html` is not linted.
 - Known gap: the rule checks element names only. Raw elements created in TypeScript (for example `document.createElement`) are not caught.
 

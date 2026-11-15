@@ -32,22 +32,22 @@ describe('FcText', () => {
   it('uses the body style by default', async () => {
     const { paragraph } = await setup();
 
-    expect(paragraph('default').classList).toContain('text-base');
-    expect(paragraph('default').classList).toContain('text-on-surface');
+    expect(paragraph('default').classList).toContain('text-body');
+    expect(paragraph('default').classList).toContain('text-ink');
   });
 
   it('switches style when the variant changes', async () => {
     const { fixture, paragraph } = await setup();
 
-    expect(paragraph('bound').classList).toContain('text-on-surface/70');
+    expect(paragraph('bound').classList).toContain('text-ink-muted');
 
     fixture.componentInstance.variant.set('small');
     await fixture.whenStable();
-    expect(paragraph('bound').classList).toContain('text-sm');
-    expect(paragraph('bound').classList).not.toContain('text-base');
+    expect(paragraph('bound').classList).toContain('text-caption');
+    expect(paragraph('bound').classList).not.toContain('text-body');
 
     fixture.componentInstance.variant.set('body');
     await fixture.whenStable();
-    expect(paragraph('bound').classList).toContain('text-base');
+    expect(paragraph('bound').classList).toContain('text-body');
   });
 });

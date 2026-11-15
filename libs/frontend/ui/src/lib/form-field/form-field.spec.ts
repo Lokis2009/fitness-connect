@@ -64,6 +64,15 @@ describe('FcFormField', () => {
     expect(label.control).toBe(input);
   });
 
+  it('styles the label with the label type step', async () => {
+    const { parts } = await setup();
+    const { label } = parts('full');
+
+    expect(label.classList).toContain('text-label');
+    expect(label.classList).toContain('text-ink');
+    expect(label.classList).toContain('mb-label');
+  });
+
   it('gives every field its own control id', async () => {
     const { parts } = await setup();
 

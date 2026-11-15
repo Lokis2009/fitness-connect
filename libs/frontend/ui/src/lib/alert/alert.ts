@@ -4,14 +4,14 @@ export type FcAlertVariant = 'error' | 'info';
 
 const VARIANT_CLASSES: Record<FcAlertVariant, string> = {
   error: 'border-danger bg-danger/10 text-danger',
-  info: 'border-brand bg-brand/10 text-on-surface',
+  info: 'border-accent bg-accent/10 text-ink',
 };
 
 /** Message box for errors and information that projects its content. */
 @Component({
   selector: 'fc-alert',
   template: `
-    <div class="rounded-card border-l-4 px-4 py-3 text-sm" [class]="classes()" [attr.role]="role()">
+    <div class="rounded-card border-l-4 px-4 py-3 text-caption" [class]="classes()" [attr.role]="role()">
       <ng-content />
     </div>
   `,

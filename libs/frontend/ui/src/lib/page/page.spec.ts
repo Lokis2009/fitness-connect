@@ -28,6 +28,8 @@ describe('FcPage', () => {
     const main = root.querySelector('fc-page main') as HTMLElement;
 
     expect(main.classList).toContain('min-h-screen');
+    expect(main.classList).toContain('bg-page');
+    expect(main.classList).toContain('text-ink');
     expect(main.classList).toContain('items-center');
     expect(main.classList).toContain('justify-center');
   });

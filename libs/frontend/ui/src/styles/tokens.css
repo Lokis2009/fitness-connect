@@ -1,17 +1,116 @@
-@theme {
-  /*
-   * The single source of truth for the app font. Material reads it too (see material-theme.scss).
-   * To use a brand font, load it with @font-face (or an @fontsource package) and put it first here.
-   */
-  --font-sans:
-    system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+/*
+ * Fit-Connect design tokens. Source: the login-page design (neutrals, role accents, type scale, shape).
+ * Usage rules live in .claude/rules/design-system.md. Change values here only, never in components.
+ */
 
-  --color-brand: #0b57d0;
-  --color-brand-contrast: #ffffff;
+/* Raw role accents. Not utilities: components use `accent`, which follows the app's role. */
+:root {
+  --accent-client: #17694a;
+  --accent-trainer: #2b3fa8;
+  --accent-admin: #262b33;
+  --accent: var(--accent-client);
+}
+
+/* Each app sets <html data-role="...">. Only the accent changes per role; neutrals stay the same. */
+:root[data-role='client'] {
+  --accent: var(--accent-client);
+}
+:root[data-role='trainer'] {
+  --accent: var(--accent-trainer);
+}
+:root[data-role='admin'] {
+  --accent: var(--accent-admin);
+}
+
+/* static: always emit the variables, since material-theme.scss reads them without a Tailwind utility. */
+@theme static {
+  /* Tokens only: drop Tailwind's default palette and type sizes so text-sm or bg-red-500 cannot be used by accident. */
+  --color-*: initial;
+  --text-*: initial;
+
+  /* Fonts. Inter for all interface text, Space Grotesk for the wordmark only. Material reads --font-sans too. */
+  --font-sans: Inter, system-ui, sans-serif;
+  --font-brand: 'Space Grotesk', Inter, system-ui, sans-serif;
+
+  /* Neutrals. */
+  --color-page: #f6f7f4;
   --color-surface: #ffffff;
-  --color-surface-muted: #f4f6fa;
-  --color-on-surface: #1b1f24;
+  --color-ink: #14201a;
+  --color-ink-muted: #4a554f;
+  --color-line-input: #77817b;
+  --color-line-card: #d5dad6;
+  --color-on-accent: #ffffff;
+  /* Not in the design file: feedback color for errors. 6.5:1 on white and on page. */
   --color-danger: #b3261e;
 
-  --radius-card: 0.75rem;
+  /* Shape. */
+  --radius-control: 0.625rem;
+  --radius-pill: 999px;
+  --radius-card: 1rem;
+
+  /* Spacing and size. Used as p-panel, gap-form, h-control, min-h-touch and so on. */
+  --spacing-panel: 3.5rem;
+  --spacing-form: 1.25rem;
+  --spacing-text: 1rem;
+  --spacing-label: 0.375rem;
+  --spacing-control: 3rem;
+  --spacing-touch: 2.75rem;
+
+  /* The design is flat: no decorative shadows. Removes every shadow-* utility. */
+  --shadow-*: initial;
+  --drop-shadow-*: initial;
+
+  /*
+   * Type scale. Each step sets size, line height and weight at once: `text-title` is enough.
+   * Color is chosen separately (see the pairing table in .claude/rules/design-system.md).
+   */
+  --text-display: 2.5rem;
+  --text-display--line-height: 1.15;
+  --text-display--font-weight: 700;
+
+  --text-title: 2rem;
+  --text-title--line-height: normal;
+  --text-title--font-weight: 700;
+
+  --text-lead: 1.125rem;
+  --text-lead--line-height: 1.5;
+  --text-lead--font-weight: 400;
+
+  /* Not in the design file: h2 and h3 steps, derived from the scale. Adjust once the design defines them. */
+  --text-heading: 1.5rem;
+  --text-heading--line-height: 1.25;
+  --text-heading--font-weight: 600;
+
+  --text-subheading: 1.125rem;
+  --text-subheading--line-height: 1.4;
+  --text-subheading--font-weight: 600;
+
+  --text-body: 1rem;
+  --text-body--line-height: 1.5;
+  --text-body--font-weight: 400;
+
+  --text-button: 1rem;
+  --text-button--line-height: normal;
+  --text-button--font-weight: 600;
+
+  --text-label: 0.875rem;
+  --text-label--line-height: normal;
+  --text-label--font-weight: 500;
+
+  --text-caption: 0.875rem;
+  --text-caption--line-height: 1.5;
+  --text-caption--font-weight: 400;
+
+  --text-link: 0.875rem;
+  --text-link--line-height: normal;
+  --text-link--font-weight: 600;
+
+  --text-pill: 0.8125rem;
+  --text-pill--line-height: normal;
+  --text-pill--font-weight: 600;
+}
+
+/* Semantic aliases that follow the role accent at runtime, so they must be `inline`. */
+@theme static inline {
+  --color-accent: var(--accent);
 }

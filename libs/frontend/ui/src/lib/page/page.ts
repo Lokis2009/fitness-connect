@@ -4,7 +4,7 @@ import { Component } from '@angular/core';
 @Component({
   selector: 'fc-page',
   template: `
-    <main class="flex min-h-screen items-center justify-center bg-surface-muted p-4 text-on-surface">
+    <main class="flex min-h-screen items-center justify-center bg-page p-4 text-ink">
       <ng-content />
     </main>
   `,

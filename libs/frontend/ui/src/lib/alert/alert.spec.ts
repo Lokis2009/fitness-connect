@@ -47,13 +47,13 @@ describe('FcAlert', () => {
     const { fixture, box } = await setup();
 
     expect(box('bound').getAttribute('role')).toBe('status');
-    expect(box('bound').classList).toContain('border-brand');
+    expect(box('bound').classList).toContain('border-accent');
 
     fixture.componentInstance.variant.set('error');
     await fixture.whenStable();
 
     expect(box('bound').getAttribute('role')).toBe('alert');
     expect(box('bound').classList).toContain('border-danger');
-    expect(box('bound').classList).not.toContain('border-brand');
+    expect(box('bound').classList).not.toContain('border-accent');
   });
 });
