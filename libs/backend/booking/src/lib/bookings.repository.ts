@@ -1,21 +1,16 @@
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
-import { CodedHttpException } from '@fitness-connect/common';
+import { CodedHttpException, isUuid } from '@fitness-connect/common';
 import {
   bookings,
+  bookingStatus,
   bookingStatusChanges,
   DATABASE,
   type Database,
 } from '@fitness-connect/database';
 import { and, asc, eq, gt, inArray, lt, sql } from 'drizzle-orm';
 
-export type BookingStatus =
-  | 'pending'
-  | 'confirmed'
-  | 'declined'
-  | 'expired'
-  | 'withdrawn'
-  | 'cancelled'
-  | 'completed';
+/** The status of a booking, taken from the database enum so the two cannot differ. */
+export type BookingStatus = (typeof bookingStatus.enumValues)[number];
 
 /** A stored booking: the columns this module reads. */
 export interface BookingRow {
@@ -59,11 +54,11 @@ export class BookingConflictException extends CodedHttpException {
   }
 }
 
-type Action = 'accept' | 'decline';
+/** What the trainer decides on a pending request. */
+export type BookingAction = 'accept' | 'decline';
 /** The read-or-write handle of the database or of one of its transactions. */
 type Executor = Pick<Database, 'select' | 'update' | 'insert' | 'execute'>;
 
-const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const MINUTE_MS = 60_000;
 
 const COLUMNS = {
@@ -109,7 +104,7 @@ function outcomeOf(
   status: BookingStatus,
   pastDeadline: boolean,
   started: boolean,
-  action: Action,
+  action: BookingAction,
 ): 'apply' | 'repeat' | Conflict {
   switch (status) {
     case 'pending':
@@ -185,10 +180,10 @@ export class BookingsRepository {
   async decide(
     trainerId: string,
     bookingId: string,
-    action: Action,
+    action: BookingAction,
   ): Promise<DecisionResult> {
     // A malformed id is not found, like an unknown one.
-    if (!UUID.test(bookingId)) throw new NotFoundException();
+    if (!isUuid(bookingId)) throw new NotFoundException();
 
     return this.db.transaction(async (tx) => {
       // 1. The client of the booking, matched on the caller. No lock yet.

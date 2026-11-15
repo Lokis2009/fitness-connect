@@ -12,10 +12,9 @@ import {
 import {
   BookingConflictException,
   BookingsRepository,
+  type BookingAction,
   type BookingRow,
 } from './bookings.repository';
-
-type Action = 'accept' | 'decline';
 
 @Injectable()
 export class BookingService {
@@ -95,7 +94,7 @@ export class BookingService {
   private async decide(
     trainerId: string,
     bookingId: string,
-    action: Action,
+    action: BookingAction,
   ): Promise<BookingDto> {
     try {
       const { booking, repeat, serverTime } = await this.bookings.decide(
@@ -133,7 +132,7 @@ export class BookingService {
   private logDecision(
     trainerId: string,
     bookingId: string,
-    action: Action,
+    action: BookingAction,
     result: string,
     booking: BookingRow | null,
     serverTime: Date | null,

@@ -1,8 +1,8 @@
 import { Inject, Injectable } from '@nestjs/common';
+import { isUuid } from '@fitness-connect/common';
 import { DATABASE, users, type Database } from '@fitness-connect/database';
 import { inArray } from 'drizzle-orm';
 
-const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 /** The public lookups of the identity module, for other modules to call. */
 @Injectable()
@@ -11,7 +11,7 @@ export class UsersService {
 
   /** Display names for the given user ids, keyed by id. Unknown or malformed ids are left out. */
   async displayNames(ids: string[]): Promise<Map<string, string>> {
-    const valid = [...new Set(ids.filter((id) => UUID.test(id)))];
+    const valid = [...new Set(ids.filter((id) => isUuid(id)))];
     if (valid.length === 0) return new Map();
 
     const rows = await this.db

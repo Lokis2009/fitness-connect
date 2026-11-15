@@ -1,4 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
+import { isUuid } from '@fitness-connect/common';
 import {
   DATABASE,
   trainerProfiles,
@@ -23,7 +24,6 @@ export interface VenueRow {
   timeZone: string;
 }
 
-const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 const VENUE_COLUMNS = {
   id: venues.id,
@@ -39,7 +39,7 @@ export class TrainerProfilesRepository {
 
   /** The profile of a trainer, or null when there is no row yet (or the id is malformed). */
   async findProfile(userId: string): Promise<TrainerProfileRow | null> {
-    if (!UUID.test(userId)) return null;
+    if (!isUuid(userId)) return null;
 
     const [profile] = await this.db
       .select({
@@ -55,7 +55,7 @@ export class TrainerProfilesRepository {
 
   /** The trainer's oldest venue by `created_at`, or null when there is none. */
   async findOldestVenue(userId: string): Promise<VenueRow | null> {
-    if (!UUID.test(userId)) return null;
+    if (!isUuid(userId)) return null;
 
     const [venue] = await this.db
       .select(VENUE_COLUMNS)
@@ -68,7 +68,7 @@ export class TrainerProfilesRepository {
 
   /** The venues with the given ids. Ids that are not uuids match nothing. */
   async findVenuesByIds(ids: string[]): Promise<VenueRow[]> {
-    const valid = ids.filter((id) => UUID.test(id));
+    const valid = ids.filter((id) => isUuid(id));
     if (valid.length === 0) return [];
 
     return this.db
