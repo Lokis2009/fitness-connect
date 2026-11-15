@@ -1,6 +1,6 @@
 import { Component, computed, input } from '@angular/core';
 import { FcBadge } from '../badge/badge';
-import { formatClock } from '../time/zone-format';
+import { formatClock, usableTimeZone } from '../time/zone-format';
 import { zoneCity } from '../time/zone-city';
 
 const MINUTE_MS = 60_000;
@@ -31,8 +31,11 @@ export class FcDeadline {
 
   private readonly untilMs = computed(() => Date.parse(this.until()));
 
+  /** UTC when the id is not a valid zone, so the page still renders. */
+  private readonly zone = computed(() => usableTimeZone(this.timeZone()));
+
   protected readonly label = computed(
-    () => `Respond by ${formatClock(this.untilMs(), this.timeZone())} (${zoneCity(this.timeZone())})`,
+    () => `Respond by ${formatClock(this.untilMs(), this.zone())} (${zoneCity(this.zone())})`,
   );
 
   /** `null` once the deadline has been reached. */

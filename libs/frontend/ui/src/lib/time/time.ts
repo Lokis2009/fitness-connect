@@ -1,5 +1,5 @@
 import { Component, computed, input } from '@angular/core';
-import { UI_LOCALE, dayOffset, formatClock, formatShortDate } from './zone-format';
+import { UI_LOCALE, dayOffset, formatClock, formatShortDate, usableTimeZone } from './zone-format';
 import { zoneCity } from './zone-city';
 
 export { UI_LOCALE };
@@ -42,7 +42,10 @@ export class FcTime {
 
   protected readonly hostClass = computed(() => (this.inline() ? 'inline' : 'block'));
 
-  protected readonly zoneLabel = computed(() => `${zoneCity(this.timeZone())} time`);
+  /** The zone to format in: UTC when the id is not a valid zone, so the page still renders. */
+  private readonly zone = computed(() => usableTimeZone(this.timeZone()));
+
+  protected readonly zoneLabel = computed(() => `${zoneCity(this.zone())} time`);
 
   /** `day` inherits the type of the heading it sits in. The other two are emphasised (600 weight). */
   protected readonly timeClasses = computed(() =>
@@ -51,7 +54,7 @@ export class FcTime {
 
   protected readonly text = computed((): string => {
     const epoch = Date.parse(this.value());
-    const zone = this.timeZone();
+    const zone = this.zone();
     const now = this.now();
     const offset = now === undefined ? null : dayOffset(epoch, now, zone);
     const dayWord = offset === 0 ? 'Today' : offset === 1 ? 'Tomorrow' : null;

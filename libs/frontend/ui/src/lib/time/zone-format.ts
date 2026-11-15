@@ -2,6 +2,30 @@
 export const UI_LOCALE = 'en-GB';
 
 const formatters = new Map<string, Intl.DateTimeFormat>();
+const validity = new Map<string, boolean>();
+
+/**
+ * Whether `zone` is a time zone id that `Intl` knows. Zones come from stored text, so a typo can
+ * reach the browser, and `Intl` throws a RangeError for it.
+ */
+export function isValidTimeZone(zone: string): boolean {
+  let known = validity.get(zone);
+  if (known === undefined) {
+    try {
+      new Intl.DateTimeFormat(UI_LOCALE, { timeZone: zone });
+      known = true;
+    } catch {
+      known = false;
+    }
+    validity.set(zone, known);
+  }
+  return known;
+}
+
+/** `zone` when it is valid, UTC otherwise, so that formatting never throws. */
+export function usableTimeZone(zone: string): string {
+  return isValidTimeZone(zone) ? zone : 'UTC';
+}
 
 function formatter(zone: string, kind: 'label' | 'numeric'): Intl.DateTimeFormat {
   const key = `${kind}|${zone}`;
