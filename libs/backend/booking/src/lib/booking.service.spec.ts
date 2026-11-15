@@ -200,6 +200,8 @@ describe('BookingService', () => {
           decidedAt,
         }),
         repeat: false,
+        // The database time, 5 minutes after the device clock that Date.now is mocked to.
+        serverTime: new Date(NOW + 5 * 60_000),
       });
 
       const result = await service[action](TRAINER, id);
@@ -219,8 +221,8 @@ describe('BookingService', () => {
           trainerId: TRAINER,
           action,
           result: 'ok',
-          secondsToDeadline: 55 * 60,
-          minutesToStart: 90,
+          secondsToDeadline: 50 * 60,
+          minutesToStart: 85,
         },
       ]);
     });
@@ -232,6 +234,7 @@ describe('BookingService', () => {
           decidedAt: new Date(NOW - 1000),
         }),
         repeat: true,
+        serverTime: new Date(NOW),
       });
 
       await service[action](TRAINER, id);
@@ -244,6 +247,7 @@ describe('BookingService', () => {
         'booking-expired',
         'The request has expired.',
         row({ expiresAt: new Date(NOW - 30_000) }),
+        new Date(NOW + 60_000),
       );
       bookings.decide.mockRejectedValue(conflict);
 
@@ -256,8 +260,8 @@ describe('BookingService', () => {
           trainerId: TRAINER,
           action,
           result: 'booking-expired',
-          secondsToDeadline: -30,
-          minutesToStart: 90,
+          secondsToDeadline: -90,
+          minutesToStart: 89,
         },
       ]);
     });
