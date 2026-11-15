@@ -23,6 +23,7 @@ import {
 } from '@fitness-connect/ui';
 import { map } from 'rxjs';
 import { ClockService } from './clock.service';
+import { dayWindow } from './day-window';
 import { LATE_WINDOW_MS } from './late-window';
 import { RequestsStore, isOpenCard } from './requests-store';
 import type { CardAction, RequestCard } from './request-card-state';
@@ -338,12 +339,22 @@ export class TrainerHome {
     () => this.link() === 'missing' && !this.requests.cards().some((card) => this.isAnswered(card)),
   );
 
+  /**
+   * An instant on today's venue date for the "Today" heading: the start of the day, which stays
+   * the same all day, unlike the clock, which changes every second.
+   */
+  private readonly todayValue = computed(() => {
+    const zone = this.zone();
+    const instant = zone === null ? this.clock.now() : dayWindow(this.clock.now(), zone).from;
+    return new Date(instant).toISOString();
+  });
+
   protected readonly groups = computed((): DayGroup[] => {
     const today = this.sessions.today();
     const tomorrow = this.sessions.tomorrow();
     const groups: DayGroup[] = [];
     if (today.length > 0) {
-      groups.push({ key: 'today', value: new Date(this.clock.now()).toISOString(), sessions: today });
+      groups.push({ key: 'today', value: this.todayValue(), sessions: today });
     }
     if (tomorrow.length > 0) {
       groups.push({ key: 'tomorrow', value: tomorrow[0].startsAt, sessions: tomorrow });

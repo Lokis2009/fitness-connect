@@ -12,6 +12,14 @@ import { RefreshQueue } from './refresh-queue';
 import { refreshTrigger } from './refresh-trigger';
 import type { LoadState } from './requests-store';
 
+type Days = { today: Session[]; tomorrow: Session[] };
+
+/** Same sessions, same objects. The clock ticks every second, and the lists must not change with it. */
+function sameDays(a: Days, b: Days): boolean {
+  const same = (x: Session[], y: Session[]) => x.length === y.length && x.every((item, i) => item === y[i]);
+  return same(a.today, b.today) && same(a.tomorrow, b.tomorrow);
+}
+
 type SessionsResult =
   | { ok: true; list: SessionList; sentAt: number }
   | { ok: false; error: ApiError | null };
@@ -68,7 +76,7 @@ export class SessionsStore {
       }
     }
     return { today, tomorrow };
-  });
+  }, { equal: sameDays });
 
   readonly today = computed(() => this.days().today);
   readonly tomorrow = computed(() => this.days().tomorrow);
