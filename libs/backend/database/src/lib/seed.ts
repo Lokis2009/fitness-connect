@@ -22,6 +22,19 @@ export const SEED_USERS: readonly SeedUser[] = [
 ];
 
 /**
+ * Inserts the trainer profiles, the venue and the bookings used for manual work
+ * with the trainer home. Skeleton: not implemented yet.
+ */
+export async function seedDevTrainerData(
+  db: Database,
+  now: Date,
+): Promise<void> {
+  void db;
+  void now;
+  throw new Error('not implemented');
+}
+
+/**
  * Inserts one user per role with the dev password. Idempotent: users are
  * matched by email and keep their id, and an existing password hash is kept.
  * Runs only when `NODE_ENV` is explicitly `development` or `test`, so an unset
