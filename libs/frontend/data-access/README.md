@@ -12,11 +12,11 @@ Types come from the OpenAPI contract (`@fitness-connect/api-contract`, generated
 | `ApiClient.getHealth(): Observable<HealthStatus>` | `GET /v1/health` |
 | `ApiClient.getMe(): Observable<User>` | `GET /v1/me` (needs a bearer token) |
 | `ApiClient.devLogin(body: DevLoginRequest): Observable<DevLoginResponse>` | `POST /v1/dev/login` (development only) |
-| `ApiClient.getBookingRequests(): Observable<BookingRequestList>` | `GET /v1/trainers/me/booking-requests` (approved trainers). Skeleton: throws `not implemented` until slice 6. |
-| `ApiClient.getSessions(from: string, to: string): Observable<SessionList>` | `GET /v1/trainers/me/sessions?from=&to=` (approved trainers). Skeleton. |
-| `ApiClient.acceptBooking(id: string): Observable<Booking>` | `POST /v1/bookings/{id}/accept`. Skeleton. |
-| `ApiClient.declineBooking(id: string): Observable<Booking>` | `POST /v1/bookings/{id}/decline`. Skeleton. |
-| `ApiError` | Error thrown by every failed call. `status` (0 when no response), `problem` (RFC 9457 `Problem`), `message` (problem `detail`, else `title`), `cause` (original `HttpErrorResponse`). `ApiError.from(unknown)` converts any thrown value. |
+| `ApiClient.getBookingRequests(): Observable<BookingRequestList>` | `GET /v1/trainers/me/booking-requests` (approved trainers). |
+| `ApiClient.getSessions(from: string, to: string): Observable<SessionList>` | `GET /v1/trainers/me/sessions?from=&to=` (approved trainers). `from` and `to` are ISO instants. |
+| `ApiClient.acceptBooking(id: string): Observable<Booking>` | `POST /v1/bookings/{id}/accept` (approved trainers). |
+| `ApiClient.declineBooking(id: string): Observable<Booking>` | `POST /v1/bookings/{id}/decline` (approved trainers). |
+| `ApiError` | Error thrown by every failed call. `status` (0 when no response), `problem` (RFC 9457 `Problem`), `message` (problem `detail`, else `title`), `cause` (original `HttpErrorResponse`), `code` (the problem's machine-readable `code`, for example `booking-expired`, or `undefined`). `ApiError.from(unknown)` converts any thrown value. |
 | `API_BASE_URL` | `InjectionToken<string>`, default `/api/v1`. Override only when the API is not behind the dev proxy. |
 | `Role`, `User`, `HealthStatus`, `DevLoginRequest`, `DevLoginResponse`, `Problem`, `TrainerStatus`, `BookingRequest`, `BookingRequestList`, `Session`, `SessionList`, `Booking` | Type aliases of the contract schemas. |
 

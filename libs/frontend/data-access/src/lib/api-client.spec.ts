@@ -4,7 +4,14 @@ import { TestBed } from '@angular/core/testing';
 import { firstValueFrom } from 'rxjs';
 import { API_BASE_URL, ApiClient } from './api-client';
 import { ApiError } from './api-error';
-import type { DevLoginResponse, Problem, User } from './api-types';
+import type {
+  Booking,
+  BookingRequestList,
+  DevLoginResponse,
+  Problem,
+  SessionList,
+  User,
+} from './api-types';
 
 const user: User = {
   id: '6f1c1d4e-7a52-4a39-9d52-1f3c2f6f5a10',
@@ -65,23 +72,97 @@ describe('ApiClient', () => {
     expect(await result).toEqual(response);
   });
 
-  describe('trainer home methods (stubs)', () => {
-    it('getBookingRequests is not implemented yet', () => {
-      expect(() => api.getBookingRequests()).toThrow('not implemented');
+  describe('trainer home methods', () => {
+    const requests: BookingRequestList = { serverTime: '2026-11-15T10:00:00.000Z', items: [] };
+    const sessions: SessionList = { serverTime: '2026-11-15T10:00:00.000Z', items: [] };
+    const booking = { id: 'b1', status: 'confirmed' } as unknown as Booking;
+    const expired: Problem = {
+      type: 'about:blank',
+      title: 'Conflict',
+      status: 409,
+      code: 'booking-expired',
+    };
+
+    it('getBookingRequests calls GET /api/v1/trainers/me/booking-requests', async () => {
+      const result = firstValueFrom(api.getBookingRequests());
+      const req = http.expectOne('/api/v1/trainers/me/booking-requests');
+      expect(req.request.method).toBe('GET');
+      req.flush(requests);
+      expect(await result).toEqual(requests);
     });
 
-    it('getSessions is not implemented yet', () => {
-      expect(() => api.getSessions('2026-11-15T00:00:00Z', '2026-11-17T00:00:00Z')).toThrow(
-        'not implemented',
+    it('getBookingRequests maps a 403 problem to an ApiError with its code', async () => {
+      const result = firstValueFrom(api.getBookingRequests());
+      http.expectOne('/api/v1/trainers/me/booking-requests').flush(
+        { type: 'about:blank', title: 'Forbidden', status: 403, code: 'trainer-not-approved' },
+        { status: 403, statusText: 'Forbidden' },
       );
+
+      const error = await result.catch((e: unknown) => e);
+      expect(error).toBeInstanceOf(ApiError);
+      expect((error as ApiError).status).toBe(403);
+      expect((error as ApiError).code).toBe('trainer-not-approved');
     });
 
-    it('acceptBooking is not implemented yet', () => {
-      expect(() => api.acceptBooking('b1')).toThrow('not implemented');
+    it('getSessions calls GET /api/v1/trainers/me/sessions with from and to', async () => {
+      const from = '2026-11-14T23:00:00.000Z';
+      const to = '2026-11-16T23:00:00.000Z';
+
+      const result = firstValueFrom(api.getSessions(from, to));
+      const req = http.expectOne((r) => r.url === '/api/v1/trainers/me/sessions');
+      expect(req.request.method).toBe('GET');
+      expect(req.request.params.get('from')).toBe(from);
+      expect(req.request.params.get('to')).toBe(to);
+      req.flush(sessions);
+      expect(await result).toEqual(sessions);
     });
 
-    it('declineBooking is not implemented yet', () => {
-      expect(() => api.declineBooking('b1')).toThrow('not implemented');
+    it('getSessions maps a failure to an ApiError', async () => {
+      const result = firstValueFrom(api.getSessions('a', 'b'));
+      http
+        .expectOne((r) => r.url === '/api/v1/trainers/me/sessions')
+        .flush(null, { status: 500, statusText: 'Server Error' });
+
+      const error = await result.catch((e: unknown) => e);
+      expect(error).toBeInstanceOf(ApiError);
+      expect((error as ApiError).status).toBe(500);
+    });
+
+    it('acceptBooking calls POST /api/v1/bookings/{id}/accept', async () => {
+      const result = firstValueFrom(api.acceptBooking('b1'));
+      const req = http.expectOne('/api/v1/bookings/b1/accept');
+      expect(req.request.method).toBe('POST');
+      req.flush(booking);
+      expect(await result).toEqual(booking);
+    });
+
+    it('declineBooking calls POST /api/v1/bookings/{id}/decline', async () => {
+      const result = firstValueFrom(api.declineBooking('b1'));
+      const req = http.expectOne('/api/v1/bookings/b1/decline');
+      expect(req.request.method).toBe('POST');
+      req.flush(booking);
+      expect(await result).toEqual(booking);
+    });
+
+    it('acceptBooking maps a 409 problem to an ApiError with its code', async () => {
+      const result = firstValueFrom(api.acceptBooking('b1'));
+      http
+        .expectOne('/api/v1/bookings/b1/accept')
+        .flush(expired, { status: 409, statusText: 'Conflict' });
+
+      const error = await result.catch((e: unknown) => e);
+      expect(error).toBeInstanceOf(ApiError);
+      expect((error as ApiError).status).toBe(409);
+      expect((error as ApiError).code).toBe('booking-expired');
+    });
+
+    it('declineBooking maps a network failure to status 0', async () => {
+      const result = firstValueFrom(api.declineBooking('b1'));
+      http.expectOne('/api/v1/bookings/b1/decline').error(new ProgressEvent('error'));
+
+      const error = await result.catch((e: unknown) => e);
+      expect(error).toBeInstanceOf(ApiError);
+      expect((error as ApiError).status).toBe(0);
     });
   });
 

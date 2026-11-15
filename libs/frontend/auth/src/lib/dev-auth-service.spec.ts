@@ -237,9 +237,70 @@ describe('DevAuthService', () => {
     );
   });
 
-  describe('refreshUser (stub)', () => {
-    it('is not implemented yet', async () => {
-      await expect(auth.refreshUser()).rejects.toThrow('not implemented');
+  describe('refreshUser', () => {
+    async function signInAs(user: User, token = 'jwt'): Promise<void> {
+      const result = auth.login(user.email, 'secret');
+      http.expectOne('/api/v1/dev/login').flush(loginResponse(user, token));
+      await result;
+    }
+
+    it('reloads the user with GET /v1/me into the user signal', async () => {
+      await signInAs(trainer);
+      const updated: User = { ...trainer, trainerStatus: 'approved' };
+
+      const done = auth.refreshUser();
+      const req = http.expectOne('/api/v1/me');
+      expect(req.request.method).toBe('GET');
+      req.flush(updated);
+      await expect(done).resolves.toBeUndefined();
+
+      expect(auth.user()).toEqual(updated);
+      expect(auth.isAuthenticated()).toBe(true);
+    });
+
+    it('rejects with the ApiError and keeps the user and token on a server error', async () => {
+      await signInAs(trainer);
+
+      const done = auth.refreshUser();
+      http
+        .expectOne('/api/v1/me')
+        .flush(
+          { ...problem, status: 500, title: 'Internal Server Error' },
+          { status: 500, statusText: 'Server Error' },
+        );
+
+      const error = await done.catch((e: unknown) => e);
+      expect(error).toBeInstanceOf(ApiError);
+      expect((error as ApiError).status).toBe(500);
+      expect(auth.user()).toEqual(trainer);
+      expect(auth.accessToken()).toBe('jwt');
+    });
+
+    it('rejects and keeps the user when the API is unreachable', async () => {
+      await signInAs(trainer);
+
+      const done = auth.refreshUser();
+      http.expectOne('/api/v1/me').error(new ProgressEvent('error'));
+
+      const error = await done.catch((e: unknown) => e);
+      expect(error).toBeInstanceOf(ApiError);
+      expect((error as ApiError).status).toBe(0);
+      expect(auth.user()).toEqual(trainer);
+    });
+
+    it('only rethrows a 401: the interceptor signs out, not this method', async () => {
+      await signInAs(trainer);
+
+      const done = auth.refreshUser();
+      http
+        .expectOne('/api/v1/me')
+        .flush(problem, { status: 401, statusText: 'Unauthorized' });
+
+      const error = await done.catch((e: unknown) => e);
+      expect(error).toBeInstanceOf(ApiError);
+      expect((error as ApiError).status).toBe(401);
+      expect(auth.user()).toEqual(trainer);
+      expect(auth.accessToken()).toBe('jwt');
     });
   });
 });

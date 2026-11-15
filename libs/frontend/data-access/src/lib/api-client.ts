@@ -34,7 +34,9 @@ export class ApiClient {
 
   /** `GET /v1/health` */
   getHealth(): Observable<HealthStatus> {
-    return this.#request(this.#http.get<HealthStatus>(`${this.#baseUrl}/health`));
+    return this.#request(
+      this.#http.get<HealthStatus>(`${this.#baseUrl}/health`),
+    );
   }
 
   /** `GET /v1/me`: the signed-in user. Errors with status 401 without a valid token. */
@@ -44,12 +46,18 @@ export class ApiClient {
 
   /** `POST /v1/dev/login`: development only. Errors with status 401 on bad credentials. */
   devLogin(body: DevLoginRequest): Observable<DevLoginResponse> {
-    return this.#request(this.#http.post<DevLoginResponse>(`${this.#baseUrl}/dev/login`, body));
+    return this.#request(
+      this.#http.post<DevLoginResponse>(`${this.#baseUrl}/dev/login`, body),
+    );
   }
 
   /** `GET /v1/trainers/me/booking-requests`: the trainer's pending requests. */
   getBookingRequests(): Observable<BookingRequestList> {
-    throw new Error('not implemented');
+    return this.#request(
+      this.#http.get<BookingRequestList>(
+        `${this.#baseUrl}/trainers/me/booking-requests`,
+      ),
+    );
   }
 
   /**
@@ -57,24 +65,36 @@ export class ApiClient {
    * `from` and `to` are ISO instants.
    */
   getSessions(from: string, to: string): Observable<SessionList> {
-    void from;
-    void to;
-    throw new Error('not implemented');
+    return this.#request(
+      this.#http.get<SessionList>(`${this.#baseUrl}/trainers/me/sessions`, {
+        params: { from, to },
+      }),
+    );
   }
 
   /** `POST /v1/bookings/{id}/accept`: accepts a pending request. */
   acceptBooking(id: string): Observable<Booking> {
-    void id;
-    throw new Error('not implemented');
+    return this.#request(
+      this.#http.post<Booking>(
+        `${this.#baseUrl}/bookings/${encodeURIComponent(id)}/accept`,
+        null,
+      ),
+    );
   }
 
   /** `POST /v1/bookings/{id}/decline`: declines a pending request. */
   declineBooking(id: string): Observable<Booking> {
-    void id;
-    throw new Error('not implemented');
+    return this.#request(
+      this.#http.post<Booking>(
+        `${this.#baseUrl}/bookings/${encodeURIComponent(id)}/decline`,
+        null,
+      ),
+    );
   }
 
   #request<T>(request: Observable<T>): Observable<T> {
-    return request.pipe(catchError((error: unknown) => throwError(() => ApiError.from(error))));
+    return request.pipe(
+      catchError((error: unknown) => throwError(() => ApiError.from(error))),
+    );
   }
 }
