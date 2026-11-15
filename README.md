@@ -1,7 +1,7 @@
 # Fitness Connect
 
 Nx monorepo (pnpm): a NestJS API and three Angular web apps (client, trainer, admin) sharing a UI library.
-Architecture decisions are in [`Architecture.md`](Architecture.md).
+Architecture decisions are in [`Architecture.md`](Architecture.md). Current status and next steps are in [`STATUS.md`](STATUS.md).
 
 ## Product planning
 

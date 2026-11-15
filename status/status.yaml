@@ -1,0 +1,72 @@
+# Source of truth for the workstreams table in STATUS.md.
+# Edit this file in the same PR that changes a workstream, then run `pnpm status:generate`.
+#
+# state:      done | in-progress | planned | blocked | deferred
+# blockedBy:  required when state is blocked
+# links:      repo-relative paths (an #anchor is allowed); checked to exist
+# Keep summaries to one sentence. Detail belongs in the linked plan, PRD or decision log.
+
+focus: Deliver the first release, scheduled in-person sessions with trainer approval and in-person payment.
+
+workstreams:
+  - id: phase-1-foundation
+    name: Phase 1 foundation
+    state: done
+    summary: Nx workspace, three Angular apps, NestJS API, Postgres with PostGIS, OpenAPI contract and a login page per app against the real API (development auth).
+    links:
+      - docs/plans/phase-1-repo-foundation.md
+
+  - id: design-tokens
+    name: Design tokens and type scale
+    state: done
+    summary: Shared UI library uses one set of design tokens, Material is mapped to them, and Inter and Space Grotesk are loaded.
+    links:
+      - .claude/rules/design-system.md
+      - libs/frontend/ui/src/styles/tokens.css
+
+  - id: first-release-prd
+    name: First-release PRD review
+    state: in-progress
+    summary: PRD and confirmed product decisions are drafted; several booking rules are still proposals.
+    next: Decide minimum booking notice, pending-slot holds, trainer verification and cancellation rules (PRD section 10).
+    links:
+      - docs/prd/scheduled-in-person-sessions.md
+      - docs/decisions/first-release.md
+
+  - id: feature-breakdown
+    name: Feature breakdown
+    state: planned
+    summary: Split the agreed journey into features with acceptance criteria and contract entries.
+    next: Starts after PRD review.
+    links:
+      - docs/prd/scheduled-in-person-sessions.md
+
+  - id: first-booking-journey
+    name: First booking journey
+    state: planned
+    summary: One approved trainer publishes availability and one client requests a scheduled in-person booking that the trainer approves within 24 hours; no platform payments.
+    next: Plan it once the feature breakdown exists.
+    links:
+      - docs/prd/scheduled-in-person-sessions.md
+
+  - id: cognito-login
+    name: Cognito hosted login
+    state: planned
+    summary: Replace development auth with hosted login (OIDC) and JWT verification before a real-user launch.
+    next: Plan alongside the first booking journey.
+    links:
+      - Architecture.md#6-key-design-areas
+
+  - id: phase-1-follow-ups
+    name: Phase 1 follow-ups
+    state: planned
+    summary: Bundle budgets, sign-out flash, contract-versus-Nest check, axe-core, shared commit guard and Prettier consistency.
+    links:
+      - Architecture.md#12-known-follow-ups-from-phase-1
+
+  - id: deferred-capabilities
+    name: On-demand dispatch, online sessions and platform payments
+    state: deferred
+    summary: Kept in the long-term vision and out of first-release scope until separately prioritized.
+    links:
+      - docs/decisions/first-release.md

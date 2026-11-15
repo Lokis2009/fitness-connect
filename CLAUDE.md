@@ -2,9 +2,11 @@
 
 Architecture decisions live in `Architecture.md`. Read it before making structural changes, and update it when a decision changes.
 
+Current status, open questions and next steps live in `STATUS.md`, generated from `status/status.yaml` (rule `do-update-status`). Read it first when picking up work.
+
 ## Workflow (mandatory)
 
-Rules in `.claude/rules/workflow.md` apply to all work: skeleton first, tests first (red and green in separate commits), commit every logical step in Angular-style messages on a branch per workstream. You may commit locally without asking; never push unless asked.
+Rules in `.claude/rules/workflow.md` apply to all work: skeleton first, tests first (red and green in separate commits), commit every logical step in Angular-style messages on a branch per workstream, and keep `STATUS.md` current. You may commit locally without asking; never push unless asked.
 
 ## Frontend UI rule (mandatory)
 

@@ -31,6 +31,13 @@ Apply to every task in this repo. Order of work for anything new: **skeleton, th
 - Stage files by name, never `git add -A`. Do not amend, force-push or skip hooks (`--no-verify`). Check what is staged for secrets before committing.
 - Pass the message with `-m` or a heredoc so the commit guard can read it.
 
+## do-update-status
+
+- `STATUS.md` is generated from `status/status.yaml`. Never edit `STATUS.md` by hand.
+- A change that starts, finishes, blocks or re-scopes a workstream, or that adds or answers an open question in `Architecture.md` section 10, edits `status/status.yaml` (when needed), runs `pnpm status:generate`, and commits both files in the same PR.
+- Run `pnpm status:check` before opening a PR. CI runs it on every PR and on `main`, so a stale `STATUS.md` fails the build.
+- Keep detail in the linked plan, PRD or decision log. A workstream summary is one sentence.
+
 ## Enforcement
 
 - `.claude/hooks/commit-guard.mjs`, run by a `PreToolUse` hook on Bash (configured in `.claude/settings.json`), blocks a `git commit` when the header is not in the format above, when lint fails for affected projects, or (except for `test`, `docs`, `ci` commits) when tests or coverage fail.
