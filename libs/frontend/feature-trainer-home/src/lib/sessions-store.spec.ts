@@ -7,6 +7,8 @@ describe('SessionsStore (stub)', () => {
     expect(() => store.today).toThrow('not implemented');
     expect(() => store.tomorrow).toThrow('not implemented');
     expect(() => store.loadState).toThrow('not implemented');
+    expect(() => store.lastUpdated).toThrow('not implemented');
+    expect(() => store.refreshFailed).toThrow('not implemented');
     expect(() => store.refresh()).toThrow('not implemented');
     expect(() => store.retry()).toThrow('not implemented');
   });

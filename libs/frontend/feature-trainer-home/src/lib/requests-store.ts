@@ -23,12 +23,28 @@ export class RequestsStore {
     throw new Error('not implemented');
   }
 
+  /** `true` when the last refresh failed and the list on screen is from an earlier load. */
+  get refreshFailed(): Signal<boolean> {
+    throw new Error('not implemented');
+  }
+
+  /** Ids the first successful load returned, or `null` before it. Used by the deep link. */
+  get firstLoadIds(): Signal<ReadonlySet<string> | null> {
+    throw new Error('not implemented');
+  }
+
   accept(id: string): void {
     void id;
     throw new Error('not implemented');
   }
 
   decline(id: string): void {
+    void id;
+    throw new Error('not implemented');
+  }
+
+  /** Sends the kept action of a failed card again. */
+  retryAnswer(id: string): void {
     void id;
     throw new Error('not implemented');
   }

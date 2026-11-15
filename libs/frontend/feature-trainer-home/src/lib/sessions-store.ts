@@ -20,6 +20,16 @@ export class SessionsStore {
     throw new Error('not implemented');
   }
 
+  /** Epoch milliseconds of the last successful load, or `null` before the first one. */
+  get lastUpdated(): Signal<number | null> {
+    throw new Error('not implemented');
+  }
+
+  /** `true` when the last refresh failed and the list on screen is from an earlier load. */
+  get refreshFailed(): Signal<boolean> {
+    throw new Error('not implemented');
+  }
+
   refresh(): void {
     throw new Error('not implemented');
   }
