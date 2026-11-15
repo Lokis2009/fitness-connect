@@ -1,5 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import { expect, test, type Locator, type Page } from '@playwright/test';
+import { tomorrowNoon } from '@fitness-connect/venue-time';
 import { DEV_PASSWORD, type AppUnderTest } from './apps';
 import { createBooking, expireBooking } from './db';
 
@@ -20,43 +21,6 @@ test.beforeEach(({}, testInfo) => {
 /** A name no other test uses, so a card can be found by its client. */
 function uniqueClientName(label: string): string {
   return `${label} ${randomUUID().slice(0, 8)}`;
-}
-
-function offsetMs(zone: string, at: number): number {
-  const parts = new Intl.DateTimeFormat('en-US', {
-    timeZone: zone,
-    hourCycle: 'h23',
-    year: 'numeric',
-    month: 'numeric',
-    day: 'numeric',
-    hour: 'numeric',
-    minute: 'numeric',
-    second: 'numeric',
-  }).formatToParts(new Date(at));
-  const value = (type: string) => Number(parts.find((part) => part.type === type)?.value);
-  const asUtc = Date.UTC(
-    value('year'),
-    value('month') - 1,
-    value('day'),
-    value('hour'),
-    value('minute'),
-    value('second'),
-  );
-  return asUtc - Math.floor(at / 1000) * 1000;
-}
-
-/** Noon on the calendar day after today in the venue zone. Noon is never inside a DST gap. */
-function tomorrowNoon(zone: string): Date {
-  const local = new Date(Date.now() + offsetMs(zone, Date.now()));
-  const wallClock = Date.UTC(
-    local.getUTCFullYear(),
-    local.getUTCMonth(),
-    local.getUTCDate() + 1,
-    12,
-  );
-  // The offset is read near the answer, so a DST change between now and then is handled.
-  const approximate = wallClock - offsetMs(zone, wallClock);
-  return new Date(wallClock - offsetMs(zone, approximate));
 }
 
 /** A session that is in progress whenever the test runs: it started 5 minutes ago and lasts 60. */
@@ -103,7 +67,7 @@ test('an approved trainer sees pending requests and the sessions of today and to
   });
   await createBooking({
     clientName: tomorrowClient,
-    startsAt: tomorrowNoon(VENUE_TIME_ZONE),
+    startsAt: tomorrowNoon(VENUE_TIME_ZONE, new Date()),
     status: 'confirmed',
   });
 
@@ -129,7 +93,7 @@ test('an approved trainer sees pending requests and the sessions of today and to
 
 test('accepting a request confirms it and moves it to the sessions', async ({ page }) => {
   const client = uniqueClientName('Accept');
-  await createBooking({ clientName: client, startsAt: tomorrowNoon(VENUE_TIME_ZONE) });
+  await createBooking({ clientName: client, startsAt: tomorrowNoon(VENUE_TIME_ZONE, new Date()) });
   await openHome(page);
   const card = cardOf(page, client);
 
