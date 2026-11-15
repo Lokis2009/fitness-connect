@@ -2,6 +2,10 @@ import { Component, computed, input } from '@angular/core';
 
 export type FcStackDirection = 'vertical' | 'horizontal';
 export type FcStackGap = 'none' | 'xs' | 'sm' | 'md' | 'lg' | 'xl';
+/** Placement of the children along the stack direction. */
+export type FcStackJustify = 'start' | 'end' | 'between';
+/** Placement of the children across the stack direction. */
+export type FcStackAlign = 'start' | 'center' | 'end' | 'stretch';
 
 const GAP_CLASSES: Record<FcStackGap, string> = {
   none: 'gap-0',
@@ -12,6 +16,19 @@ const GAP_CLASSES: Record<FcStackGap, string> = {
   xl: 'gap-8',
 };
 
+const JUSTIFY_CLASSES: Record<FcStackJustify, string> = {
+  start: 'justify-start',
+  end: 'justify-end',
+  between: 'justify-between',
+};
+
+const ALIGN_CLASSES: Record<FcStackAlign, string> = {
+  start: 'items-start',
+  center: 'items-center',
+  end: 'items-end',
+  stretch: 'items-stretch',
+};
+
 @Component({
   selector: 'fc-stack',
   template: '<ng-content />',
@@ -20,8 +37,21 @@ const GAP_CLASSES: Record<FcStackGap, string> = {
 export class FcStack {
   readonly direction = input<FcStackDirection>('vertical');
   readonly gap = input<FcStackGap>('md');
+  /** Without it the children keep the browser default, so existing stacks do not change. */
+  readonly justify = input<FcStackJustify>();
+  readonly align = input<FcStackAlign>();
 
-  protected readonly classes = computed(
-    () => `flex ${this.direction() === 'vertical' ? 'flex-col' : 'flex-row'} ${GAP_CLASSES[this.gap()]}`,
-  );
+  protected readonly classes = computed(() => {
+    const justify = this.justify();
+    const align = this.align();
+    return [
+      'flex',
+      this.direction() === 'vertical' ? 'flex-col' : 'flex-row',
+      GAP_CLASSES[this.gap()],
+      justify ? JUSTIFY_CLASSES[justify] : '',
+      align ? ALIGN_CLASSES[align] : '',
+    ]
+      .filter(Boolean)
+      .join(' ');
+  });
 }

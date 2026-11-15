@@ -17,6 +17,7 @@ const APPEARANCE = {
   template: `
     <button
       [matButton]="appearance()"
+      [class.w-full]="fullWidth()"
       [type]="type()"
       [disabled]="disabled() || loading()"
       [attr.aria-busy]="loading() ? 'true' : null"
@@ -45,7 +46,7 @@ const APPEARANCE = {
       </span>
     </button>
   `,
-  host: { class: 'inline-flex' },
+  host: { '[class]': 'hostClasses()' },
 })
 export class FcButton {
   readonly variant = input<FcButtonVariant>('primary');
@@ -55,7 +56,10 @@ export class FcButton {
   readonly loading = input(false);
   /** Label shown next to the spinner while loading. Without it the label stays in place under the spinner. */
   readonly loadingLabel = input<string>();
+  /** Fills the width of its container, for example to put two buttons at equal width in a row. */
+  readonly fullWidth = input(false);
 
   protected readonly appearance = computed(() => APPEARANCE[this.variant()]);
+  protected readonly hostClasses = computed(() => (this.fullWidth() ? 'flex w-full' : 'inline-flex'));
   protected readonly showLoadingLabel = computed(() => this.loading() && !!this.loadingLabel());
 }
