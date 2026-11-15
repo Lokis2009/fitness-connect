@@ -67,7 +67,7 @@ const UNAVAILABLE_TEXT = {
   template: `
     <fc-page align="top">
       <fc-stack gap="xl">
-        <fc-stack direction="horizontal" gap="lg">
+        <fc-stack direction="horizontal" gap="lg" justify="between" align="start">
           <fc-stack gap="xs">
             <fc-heading>Trainer home</fc-heading>
             @if (subtitle(); as text) {
@@ -187,6 +187,7 @@ const UNAVAILABLE_TEXT = {
                         <fc-stack direction="horizontal" gap="md">
                           <fc-button
                             variant="primary"
+                            [fullWidth]="true"
                             loadingLabel="Accepting"
                             [loading]="isSubmitting(card, 'accept')"
                             [disabled]="isLocked(card)"
@@ -196,6 +197,7 @@ const UNAVAILABLE_TEXT = {
                           </fc-button>
                           <fc-button
                             variant="secondary"
+                            [fullWidth]="true"
                             loadingLabel="Declining"
                             [loading]="isSubmitting(card, 'decline')"
                             [disabled]="isLocked(card)"
@@ -247,14 +249,14 @@ const UNAVAILABLE_TEXT = {
                   </fc-heading>
                   @for (session of group.sessions; track session.id) {
                     <fc-card size="full">
-                      <fc-stack direction="horizontal" gap="lg">
+                      <fc-stack direction="horizontal" gap="lg" justify="between">
                         <fc-time
                           format="range"
                           [value]="session.startsAt"
                           [timeZone]="session.venue.timeZone"
                           [durationMinutes]="session.durationMinutes"
                         />
-                        <fc-stack gap="xs">
+                        <fc-stack gap="xs" align="end">
                           <fc-text>{{ session.clientName }}</fc-text>
                           <fc-text variant="muted">{{ session.venue.name }}</fc-text>
                         </fc-stack>
