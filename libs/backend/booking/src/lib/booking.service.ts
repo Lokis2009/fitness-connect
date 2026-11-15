@@ -8,6 +8,7 @@ import {
   type BookingDto,
   type BookingRequestListDto,
   type SessionListDto,
+  type VenueSummaryDto,
 } from './booking.dto';
 import {
   BookingConflictException,
@@ -29,13 +30,10 @@ export class BookingService {
   async listPendingRequests(trainerId: string): Promise<BookingRequestListDto> {
     const { rows, serverTime } =
       await this.bookings.pendingForTrainer(trainerId);
-    const { clientName, venueOf } = await this.lookups(rows);
 
     return {
       serverTime: serverTime.toISOString(),
-      items: rows.map((row) =>
-        toBookingRequestDto(row, clientName(row), venueOf(row)),
-      ),
+      items: await this.present(rows, toBookingRequestDto),
     };
   }
 
@@ -49,13 +47,10 @@ export class BookingService {
       from,
       to,
     );
-    const { clientName, venueOf } = await this.lookups(rows);
 
     return {
       serverTime: serverTime.toISOString(),
-      items: rows.map((row) =>
-        toSessionDto(row, clientName(row), venueOf(row)),
-      ),
+      items: await this.present(rows, toSessionDto),
     };
   }
 
@@ -67,28 +62,39 @@ export class BookingService {
     return this.decide(trainerId, bookingId, 'decline');
   }
 
-  /** Client names and venues of the rows, one batched call to each owner module. */
-  private async lookups(rows: BookingRow[]) {
+  /**
+   * Builds a list item for each row with its client name and venue, from one batched call to each
+   * owner module. A row the lookups miss must not fail the whole list, because the trainer would
+   * see nothing on every poll: a missing client name shows as "Unknown client", so the request
+   * can still be answered, and a row without a venue is left out. Both are logged as errors.
+   */
+  private async present<T>(
+    rows: BookingRow[],
+    build: (row: BookingRow, clientName: string, venue: VenueSummaryDto) => T,
+  ): Promise<T[]> {
     const [names, venues] = await Promise.all([
       this.users.displayNames([...new Set(rows.map((r) => r.clientUserId))]),
       this.trainers.venuesByIds([...new Set(rows.map((r) => r.venueId))]),
     ]);
-    return {
-      clientName: (row: BookingRow): string => {
-        const name = names.get(row.clientUserId);
-        if (name === undefined) {
-          throw new Error(`The client of booking ${row.id} was not found`);
-        }
-        return name;
-      },
-      venueOf: (row: BookingRow) => {
-        const venue = venues.get(row.venueId);
-        if (venue === undefined) {
-          throw new Error(`The venue of booking ${row.id} was not found`);
-        }
-        return venue;
-      },
-    };
+    const items: T[] = [];
+    for (const row of rows) {
+      const venue = venues.get(row.venueId);
+      if (venue === undefined) {
+        this.logger.error(
+          `Booking ${row.id} is left out of the list: its venue ${row.venueId} was not found`,
+        );
+        continue;
+      }
+      let clientName = names.get(row.clientUserId);
+      if (clientName === undefined) {
+        this.logger.error(
+          `Booking ${row.id} shows "Unknown client": client ${row.clientUserId} was not found`,
+        );
+        clientName = 'Unknown client';
+      }
+      items.push(build(row, clientName, venue));
+    }
+    return items;
   }
 
   private async decide(
