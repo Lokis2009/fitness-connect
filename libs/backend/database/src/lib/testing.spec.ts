@@ -94,7 +94,42 @@ describe('prepareTestDatabase', () => {
     expect(users.map((u) => u.email)).toEqual([
       'admin@example.com',
       'client@example.com',
+      'pat.pending@example.com',
       'trainer@example.com',
     ]);
+  });
+
+  it('also seeds the trainer profiles, the venue and the bookings', async () => {
+    await ensureTestDatabase(NAME, { recreate: true });
+
+    const url = await prepareTestDatabase(NAME);
+
+    await expect(
+      query<{ status: string }>(
+        url,
+        'select status from trainer_profiles order by status',
+      ),
+    ).resolves.toEqual([{ status: 'approved' }, { status: 'submitted' }]);
+    await expect(
+      query<{ name: string }>(url, 'select name from venues'),
+    ).resolves.toEqual([{ name: 'Iron Hall Gym' }]);
+    await expect(
+      query<{ count: string }>(url, 'select count(*) from bookings'),
+    ).resolves.toEqual([{ count: '4' }]);
+  });
+
+  it('keeps bookings created by tests when it is called again', async () => {
+    await ensureTestDatabase(NAME, { recreate: true });
+    const url = await prepareTestDatabase(NAME);
+    await query(url, 'delete from bookings');
+
+    await Promise.all([prepareTestDatabase(NAME), prepareTestDatabase(NAME)]);
+
+    await expect(
+      query<{ count: string }>(url, 'select count(*) from bookings'),
+    ).resolves.toEqual([{ count: '0' }]);
+    await expect(
+      query<{ count: string }>(url, 'select count(*) from venues'),
+    ).resolves.toEqual([{ count: '1' }]);
   });
 });
