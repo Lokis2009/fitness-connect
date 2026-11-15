@@ -6,7 +6,7 @@ Current status, open questions and next steps live in `STATUS.md`, generated fro
 
 ## Workflow (mandatory)
 
-Rules in `.claude/rules/workflow.md` apply to all work: skeleton first, tests first (red and green in separate commits), commit every logical step in Angular-style messages on a branch per workstream, and keep `STATUS.md` current. You may commit locally without asking; never push unless asked.
+Rules in `.claude/rules/workflow.md` apply to all work: skeleton first, tests first (red and green in separate commits), commit every logical step in Angular-style messages on a branch per workstream (never commit on `main` unless the user specifically asks), and keep `STATUS.md` current. You may commit locally without asking; never push unless asked.
 
 ## Frontend UI rule (mandatory)
 

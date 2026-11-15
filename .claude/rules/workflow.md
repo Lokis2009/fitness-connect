@@ -26,7 +26,8 @@ Apply to every task in this repo. Order of work for anything new: **skeleton, th
   - Scope: the Nx project name (`ui`, `client-web`, `trainer-web`, `api`, `api-contract`, ...) or `repo` for root tooling and docs.
   - Subject: imperative, lowercase first letter, no trailing period, header at most 100 characters.
   - Optional body explains why. End with the attribution trailer given in the session context.
-- Work on a branch per workstream, named `<type>/<short-topic>` (for example `feat/shared-ui-login`), merged by pull request. Do not commit to `main` directly.
+- Work on a branch per workstream, named `<type>/<short-topic>` (for example `feat/shared-ui-login`), merged by pull request.
+- **Never commit on `main`** unless the user specifically asks for it in that request. Before any commit, check the current branch (`git branch --show-current`). If it is `main`, create a workstream branch first and commit there. A general permission to commit does not count as asking to commit on `main`.
 - A `test` commit may leave tests red. Every other commit type that touches code must leave lint and tests green for the affected projects.
 - Stage files by name, never `git add -A`. Do not amend, force-push or skip hooks (`--no-verify`). Check what is staged for secrets before committing.
 - Pass the message with `-m` or a heredoc so the commit guard can read it.
