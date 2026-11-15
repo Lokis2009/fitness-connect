@@ -200,6 +200,51 @@ describe('TrainerHome', () => {
     });
   });
 
+  describe('layout', () => {
+    it('puts the title block on the left and Sign out at the right end of the same row', () => {
+      const { root } = setup();
+
+      const row = root.querySelector<HTMLElement>('fc-stack[justify="between"]');
+      expect(row).not.toBeNull();
+      expect(row?.classList.contains('justify-between')).toBe(true);
+      expect(row?.classList.contains('flex-row')).toBe(true);
+      const [title, signOutButton] = Array.from(row?.children ?? []);
+      expect(title.querySelector('h1')?.textContent).toContain('Trainer home');
+      expect(signOutButton.tagName.toLowerCase()).toBe('fc-button');
+      expect(signOutButton.textContent).toContain('Sign out');
+    });
+
+    it('puts Accept and Decline in one row at equal width', () => {
+      getBookingRequests.mockImplementation(() => of(requestList([request('b1', 30)])));
+      const { root } = setup();
+
+      const card = requestCard(root, 'b1');
+      const [accept, decline] = Array.from(card.querySelectorAll<HTMLElement>('fc-button')).filter((host) =>
+        ['Accept', 'Decline'].includes(host.textContent?.trim() ?? ''),
+      );
+      expect(accept.parentElement).toBe(decline.parentElement);
+      expect(accept.parentElement?.classList.contains('flex-row')).toBe(true);
+      expect(accept.classList.contains('w-full')).toBe(true);
+      expect(decline.classList.contains('w-full')).toBe(true);
+    });
+
+    it('puts the time range on the left and the client and venue right aligned on a session row', () => {
+      getSessions.mockImplementation(() => of(sessionList([session('s1', '2026-11-15T14:00:00Z')])));
+      const { root } = setup();
+
+      const client = Array.from(root.querySelectorAll<HTMLElement>('fc-text')).find((el) =>
+        el.textContent?.includes('Trainee s1'),
+      );
+      const right = client?.parentElement as HTMLElement;
+      const row = right.parentElement as HTMLElement;
+      expect(right.classList.contains('items-end')).toBe(true);
+      expect(right.textContent).toContain('Studio One');
+      expect(row.classList.contains('justify-between')).toBe(true);
+      expect(row.firstElementChild?.tagName.toLowerCase()).toBe('fc-time');
+      expect(row.lastElementChild).toBe(right);
+    });
+  });
+
   describe('booking requests', () => {
     it('shows loading skeletons while the list loads', () => {
       getBookingRequests.mockReturnValue(new Subject<BookingRequestList>());
