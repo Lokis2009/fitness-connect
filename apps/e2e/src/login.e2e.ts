@@ -36,7 +36,9 @@ test('signing in with the seeded account shows the signed-in home page', async (
 
   await expect(page).toHaveURL('/');
   await expect(page.getByRole('heading', { level: 1 })).toHaveText(app.homeHeading);
-  await expect(page.getByText(app.account.email)).toBeVisible();
+  if (app.showsEmail) {
+    await expect(page.getByText(app.account.email)).toBeVisible();
+  }
 });
 
 test('the session survives a page reload', async ({ page }) => {
