@@ -46,6 +46,10 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - name: Test the commit guard
         run: pnpm test:hooks
+      - name: Test the status generator
+        run: pnpm test:tools
+      - name: Check STATUS.md is up to date
+        run: pnpm status:check
       - name: Lint the OpenAPI contract
         run: pnpm contract:lint
       - name: Check generated contract types are up to date
