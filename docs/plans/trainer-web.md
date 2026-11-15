@@ -1,6 +1,6 @@
 # Implementation plan: trainer-web
 
-> Broader trainer roadmap: its starting-point inventory is historical. First-release scope is scheduled, in-person sessions with trainer approval within 24 hours and direct in-person payment. Dispatch, video, and platform payments are deferred; the phases below are not a first-release backlog.
+> Broader trainer roadmap: its starting-point inventory is historical. First-release scope is scheduled, in-person sessions with trainer approval within 1 hour and direct in-person payment. Dispatch, video, and platform payments are deferred; the phases below are not a first-release backlog.
 >
 > Current product scope: [first-release PRD](../prd/scheduled-in-person-sessions.md) and [decision log](../decisions/first-release.md). Feature breakdown follows PRD review.
 
