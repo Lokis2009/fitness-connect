@@ -13,12 +13,21 @@ export interface TrainerUserFields {
   trainerVenueTimeZone: string | null;
 }
 
+/** The fields of a user who is not a trainer. */
+export const NO_TRAINER_FIELDS: TrainerUserFields = {
+  trainerStatus: null,
+  trainerStatusNote: null,
+  trainerVenueTimeZone: null,
+};
+
 /** Maps a stored profile and venue to the fields on `User`. A missing profile reads as `incomplete`. */
 export function toTrainerUserFields(
   profile: TrainerProfileRow | null,
   venue: VenueRow | null,
 ): TrainerUserFields {
-  void profile;
-  void venue;
-  throw new Error('not implemented');
+  return {
+    trainerStatus: profile?.status ?? 'incomplete',
+    trainerStatusNote: profile?.statusNote ?? null,
+    trainerVenueTimeZone: venue?.timeZone ?? null,
+  };
 }
