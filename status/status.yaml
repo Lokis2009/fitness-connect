@@ -44,6 +44,14 @@ workstreams:
     links:
       - docs/prd/scheduled-in-person-sessions.md
 
+  - id: trainer-home
+    name: Trainer home screen
+    state: in-progress
+    summary: Design for the approved trainer's home (pending booking requests and today's and tomorrow's sessions) and the read-only /setup page is reviewed; implementation has not started.
+    next: Build the contract and API skeleton on feat/trainer-home, then the database, frontend skeleton and the test and implementation slices.
+    links:
+      - docs/designs/trainer-home.md
+
   - id: first-booking-journey
     name: First booking journey
     state: planned
