@@ -648,7 +648,8 @@ describe('TrainerHome', () => {
 
     it('shows the error state and no subtitle when the venue zone is not valid, without breaking the page', () => {
       user.set({ ...trainer, trainerVenueTimeZone: 'Europe/Warsw' });
-      getBookingRequests.mockImplementation(() => of(requestList([request('b1', 30)])));
+      const badZone = { ...request('b1', 30), venue: { ...request('b1', 30).venue, timeZone: 'Europe/Warsw' } };
+      getBookingRequests.mockImplementation(() => of(requestList([badZone])));
       const { root } = setup();
 
       expect(text(root)).toContain('Could not load sessions');
