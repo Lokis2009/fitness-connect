@@ -236,4 +236,10 @@ describe('DevAuthService', () => {
       },
     );
   });
+
+  describe('refreshUser (stub)', () => {
+    it('is not implemented yet', async () => {
+      await expect(auth.refreshUser()).rejects.toThrow('not implemented');
+    });
+  });
 });

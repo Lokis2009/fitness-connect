@@ -65,6 +65,26 @@ describe('ApiClient', () => {
     expect(await result).toEqual(response);
   });
 
+  describe('trainer home methods (stubs)', () => {
+    it('getBookingRequests is not implemented yet', () => {
+      expect(() => api.getBookingRequests()).toThrow('not implemented');
+    });
+
+    it('getSessions is not implemented yet', () => {
+      expect(() => api.getSessions('2026-11-15T00:00:00Z', '2026-11-17T00:00:00Z')).toThrow(
+        'not implemented',
+      );
+    });
+
+    it('acceptBooking is not implemented yet', () => {
+      expect(() => api.acceptBooking('b1')).toThrow('not implemented');
+    });
+
+    it('declineBooking is not implemented yet', () => {
+      expect(() => api.declineBooking('b1')).toThrow('not implemented');
+    });
+  });
+
   it('maps a 401 problem response to an ApiError', async () => {
     const result = firstValueFrom(api.getMe());
     http

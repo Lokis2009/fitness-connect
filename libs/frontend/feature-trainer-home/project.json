@@ -1,0 +1,10 @@
+{
+  "name": "feature-trainer-home",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/frontend/feature-trainer-home/src",
+  "prefix": "fc",
+  "projectType": "library",
+  "tags": ["scope:trainer", "type:feature"],
+  "// targets": "to see all targets run: nx show project feature-trainer-home --web",
+  "targets": {}
+}
