@@ -53,6 +53,11 @@ export class DevAuthService extends AuthService {
     }
   }
 
+  /** Reloads the user with `GET /v1/me`. Skeleton: implemented in slice 6. */
+  async refreshUser(): Promise<void> {
+    throw new Error('not implemented');
+  }
+
   /**
    * Signs in with a seeded dev account and resolves with the user.
    *

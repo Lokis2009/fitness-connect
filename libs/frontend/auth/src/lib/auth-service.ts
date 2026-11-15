@@ -35,4 +35,11 @@ export abstract class AuthService {
    * user signed out.
    */
   abstract restoreSession(): Promise<void>;
+
+  /**
+   * Reloads the signed-in user (`GET /v1/me`) into `user`, for example to pick up a changed
+   * trainer approval status. Rejects when the reload fails and then keeps the last user; it never
+   * signs out by itself (a 401 is handled by the auth interceptor).
+   */
+  abstract refreshUser(): Promise<void>;
 }
