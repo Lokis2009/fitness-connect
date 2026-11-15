@@ -4,6 +4,10 @@ import { TrainerApprovedGuard } from '@fitness-connect/trainers';
 import type { BookingDto } from './booking.dto';
 import { BookingService } from './booking.service';
 
+/**
+ * Accept and decline. A malformed id is not found, like an unknown one: the
+ * repository answers 404 before it queries, so ids cannot be probed.
+ */
 @Controller('bookings')
 @Roles('trainer')
 @UseGuards(TrainerApprovedGuard)
@@ -16,10 +20,7 @@ export class BookingsController {
     @CurrentUser() caller: AuthUser,
     @Param('id') id: string,
   ): Promise<BookingDto> {
-    void caller;
-    void id;
-    void this.bookings;
-    throw new Error('not implemented');
+    return this.bookings.accept(caller.id, id);
   }
 
   @Post(':id/decline')
@@ -28,8 +29,6 @@ export class BookingsController {
     @CurrentUser() caller: AuthUser,
     @Param('id') id: string,
   ): Promise<BookingDto> {
-    void caller;
-    void id;
-    throw new Error('not implemented');
+    return this.bookings.decline(caller.id, id);
   }
 }
