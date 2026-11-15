@@ -10,7 +10,7 @@ Trainer approval status helpers and route guards for the trainer app. Import pat
 | `trainerApprovedGuard` | Child guard for approved-only routes. Redirects other trainers to `/setup`. |
 | `trainerSetupGuard` | Guard of `/setup`. Redirects an approved trainer to `/`. |
 
-Status: skeleton. Every export throws `not implemented` until slice 7 of `docs/designs/trainer-home.md`.
+Both guards are synchronous and read `AuthService.user()`. A signed-out user or a non-trainer goes to `/login?returnUrl=<requested url>`, as `authGuard` does. Design: `docs/designs/trainer-home.md`.
 
 ## Running unit tests
 
