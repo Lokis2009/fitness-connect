@@ -8,6 +8,7 @@ import {
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
+import { CodedHttpException } from './coded-http-exception';
 import {
   PROBLEM_CONTENT_TYPE,
   ProblemDetailsFilter,
@@ -87,6 +88,49 @@ describe('ProblemDetailsFilter', () => {
     expect(body.detail).toBe(
       'email must be an email; password should not be empty',
     );
+  });
+
+  it('copies the code of a coded exception into the problem', () => {
+    const { status, body } = run(
+      new CodedHttpException(409, 'booking-expired', 'The request expired'),
+    );
+
+    expect(status).toBe(409);
+    expect(body).toEqual({
+      type: 'about:blank',
+      title: 'Conflict',
+      status: 409,
+      detail: 'The request expired',
+      instance: '/v1/thing',
+      code: 'booking-expired',
+    });
+  });
+
+  it('copies a string code from any HttpException response body', () => {
+    const { body } = run(
+      new HttpException(
+        { statusCode: 403, message: 'No', code: 'some-code' },
+        403,
+      ),
+    );
+
+    expect(body.code).toBe('some-code');
+  });
+
+  it('leaves the code out when the response body has none', () => {
+    expect('code' in run(new ForbiddenException('No')).body).toBe(false);
+    expect('code' in run(new Error('boom')).body).toBe(false);
+    expect('code' in run(new HttpException('plain text', 400)).body).toBe(
+      false,
+    );
+  });
+
+  it('ignores a code that is not a string', () => {
+    const { body } = run(
+      new HttpException({ statusCode: 400, message: 'Bad', code: 42 }, 400),
+    );
+
+    expect('code' in body).toBe(false);
   });
 
   it('turns an unknown error into a 500 without leaking its message', () => {
