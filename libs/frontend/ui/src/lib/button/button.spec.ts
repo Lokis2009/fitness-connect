@@ -138,3 +138,79 @@ describe('FcButton loading', () => {
     expect(host.clicks()).toBe(1);
   });
 });
+
+@Component({
+  imports: [FcButton],
+  template: `<fc-button [loading]="loading()" [loadingLabel]="loadingLabel()">Accept</fc-button>`,
+})
+class LoadingLabelHost {
+  readonly loading = signal(false);
+  readonly loadingLabel = signal<string | undefined>('Accepting');
+}
+
+describe('FcButton loadingLabel', () => {
+  async function setup() {
+    const fixture = TestBed.createComponent(LoadingLabelHost);
+    await fixture.whenStable();
+    const root = fixture.nativeElement as HTMLElement;
+    const update = async (change: () => void) => {
+      change();
+      await fixture.whenStable();
+    };
+    return {
+      host: fixture.componentInstance,
+      update,
+      button: () => root.querySelector('button') as HTMLButtonElement,
+      spinner: () => root.querySelector('mat-progress-spinner') as HTMLElement | null,
+      label: () => root.querySelector('button [data-fc-label]') as HTMLElement,
+      loadingText: () => root.querySelector('button [data-fc-loading-label]') as HTMLElement | null,
+    };
+  }
+
+  it('shows the normal label and no loading label while idle', async () => {
+    const { button, loadingText, label } = await setup();
+
+    expect(button().textContent).toContain('Accept');
+    expect(label().classList).not.toContain('hidden');
+    expect(loadingText()).toBeNull();
+  });
+
+  it('shows the spinner next to the loading label while loading', async () => {
+    const { host, update, button, spinner, loadingText, label } = await setup();
+
+    await update(() => host.loading.set(true));
+
+    expect(loadingText()?.textContent).toContain('Accepting');
+    expect(spinner()).not.toBeNull();
+    expect(spinner()?.classList).not.toContain('absolute');
+    expect(label().classList).toContain('hidden');
+    expect(button().disabled).toBe(true);
+    expect(button().getAttribute('aria-busy')).toBe('true');
+  });
+
+  it('returns to the normal label when loading ends', async () => {
+    const { host, update, button, spinner, loadingText, label } = await setup();
+
+    await update(() => host.loading.set(true));
+    await update(() => host.loading.set(false));
+
+    expect(loadingText()).toBeNull();
+    expect(spinner()).toBeNull();
+    expect(label().classList).not.toContain('hidden');
+    expect(button().disabled).toBe(false);
+  });
+
+  it('behaves as before when no loading label is set', async () => {
+    const { host, update, spinner, loadingText, label } = await setup();
+
+    await update(() => {
+      host.loadingLabel.set(undefined);
+      host.loading.set(true);
+    });
+
+    expect(loadingText()).toBeNull();
+    expect(label().classList).toContain('opacity-0');
+    expect(label().classList).not.toContain('hidden');
+    expect(spinner()?.classList).toContain('absolute');
+  });
+});
