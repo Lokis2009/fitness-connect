@@ -44,10 +44,7 @@ export class ApiError extends Error {
       if (isProblem(error.error)) {
         return new ApiError(error.status, error.error, { cause: error });
       }
-      const title =
-        error.status === 0
-          ? 'Network error'
-          : error.statusText || 'Request failed';
+      const title = error.status === 0 ? 'Network error' : error.statusText || 'Request failed';
       return new ApiError(
         error.status,
         { type: 'about:blank', title, status: error.status },

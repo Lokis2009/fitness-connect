@@ -34,9 +34,7 @@ export class ApiClient {
 
   /** `GET /v1/health` */
   getHealth(): Observable<HealthStatus> {
-    return this.#request(
-      this.#http.get<HealthStatus>(`${this.#baseUrl}/health`),
-    );
+    return this.#request(this.#http.get<HealthStatus>(`${this.#baseUrl}/health`));
   }
 
   /** `GET /v1/me`: the signed-in user. Errors with status 401 without a valid token. */
@@ -46,9 +44,7 @@ export class ApiClient {
 
   /** `POST /v1/dev/login`: development only. Errors with status 401 on bad credentials. */
   devLogin(body: DevLoginRequest): Observable<DevLoginResponse> {
-    return this.#request(
-      this.#http.post<DevLoginResponse>(`${this.#baseUrl}/dev/login`, body),
-    );
+    return this.#request(this.#http.post<DevLoginResponse>(`${this.#baseUrl}/dev/login`, body));
   }
 
   /** `GET /v1/trainers/me/booking-requests`: the trainer's pending requests. */
@@ -93,8 +89,6 @@ export class ApiClient {
   }
 
   #request<T>(request: Observable<T>): Observable<T> {
-    return request.pipe(
-      catchError((error: unknown) => throwError(() => ApiError.from(error))),
-    );
+    return request.pipe(catchError((error: unknown) => throwError(() => ApiError.from(error))));
   }
 }
