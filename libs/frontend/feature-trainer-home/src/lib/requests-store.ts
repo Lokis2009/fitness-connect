@@ -21,7 +21,7 @@ import {
 export type LoadState = 'loading' | 'ready' | 'error';
 
 type ListResult =
-  | { ok: true; list: BookingRequestList }
+  | { ok: true; list: BookingRequestList; sentAt: number }
   | { ok: false; error: ApiError };
 
 /** A card the trainer can still answer or is answering: idle, submitting or failed. */
@@ -78,7 +78,7 @@ export class RequestsStore {
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((result) => {
         if (result.ok) {
-          this.apply(result.list);
+          this.apply(result.list, result.sentAt);
         } else {
           void this.failRefresh(result.error);
         }
@@ -116,14 +116,15 @@ export class RequestsStore {
   }
 
   private fetch(): Observable<ListResult> {
+    const sentAt = this.clock.deviceNow();
     return this.api.getBookingRequests().pipe(
-      map((list): ListResult => ({ ok: true, list })),
+      map((list): ListResult => ({ ok: true, list, sentAt })),
       catchError((error: unknown) => of<ListResult>({ ok: false, error: ApiError.from(error) })),
     );
   }
 
-  private apply(list: BookingRequestList): void {
-    this.clock.sync(list.serverTime);
+  private apply(list: BookingRequestList, sentAt: number): void {
+    this.clock.sync(list.serverTime, sentAt);
     this.updated.set(this.clock.now());
     this.failed.set(false);
     this.load.set('ready');

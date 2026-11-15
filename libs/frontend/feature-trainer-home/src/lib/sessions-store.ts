@@ -13,7 +13,7 @@ import { refreshTrigger } from './refresh-trigger';
 import type { LoadState } from './requests-store';
 
 type SessionsResult =
-  | { ok: true; list: SessionList }
+  | { ok: true; list: SessionList; sentAt: number }
   | { ok: false; error: ApiError | null };
 
 /**
@@ -85,7 +85,7 @@ export class SessionsStore {
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((result) => {
         if (result.ok) {
-          this.apply(result.list);
+          this.apply(result.list, result.sentAt);
         } else {
           void this.failRefresh(result.error);
         }
@@ -119,14 +119,15 @@ export class SessionsStore {
       return of<SessionsResult>({ ok: false, error: null });
     }
     const range = dayWindow(this.clock.now(), zone);
+    const sentAt = this.clock.deviceNow();
     return this.api.getSessions(new Date(range.from).toISOString(), new Date(range.to).toISOString()).pipe(
-      map((list): SessionsResult => ({ ok: true, list })),
+      map((list): SessionsResult => ({ ok: true, list, sentAt })),
       catchError((error: unknown) => of<SessionsResult>({ ok: false, error: ApiError.from(error) })),
     );
   }
 
-  private apply(list: SessionList): void {
-    this.clock.sync(list.serverTime);
+  private apply(list: SessionList, sentAt: number): void {
+    this.clock.sync(list.serverTime, sentAt);
     this.updated.set(this.clock.now());
     this.failed.set(false);
     this.load.set('ready');

@@ -19,14 +19,25 @@ export class ClockService {
     inject(DestroyRef).onDestroy(() => clearInterval(timer));
   }
 
-  /** Sets the offset: `Date.parse(serverTime) - Date.now()`. A value that is not a date is ignored. */
-  sync(serverTime: string): void {
+  /** The device clock, to stamp the moment a request is sent. Pass it to `sync` with the response. */
+  deviceNow(): number {
+    return Date.now();
+  }
+
+  /**
+   * Sets the offset from a server time. The server read its time somewhere between the moment the
+   * request was sent (`sentAt`, from `deviceNow()`) and the moment the response arrived, so the
+   * middle of that round trip is the best guess. Without `sentAt` the arrival time is used.
+   * A value that is not a date is ignored.
+   */
+  sync(serverTime: string, sentAt?: number): void {
     const server = Date.parse(serverTime);
     if (Number.isNaN(server)) {
       return;
     }
-    const device = Date.now();
-    this.offset = server - device;
-    this.current.set(server);
+    const received = Date.now();
+    const readAt = sentAt === undefined ? received : (sentAt + received) / 2;
+    this.offset = server - readAt;
+    this.current.set(received + this.offset);
   }
 }
