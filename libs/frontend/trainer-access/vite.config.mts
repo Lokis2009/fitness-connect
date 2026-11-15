@@ -21,7 +21,6 @@ export default defineConfig(() => ({
     include: ['{src,tests}/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
     setupFiles: ['src/test-setup.ts'],
     reporters: ['default'],
-    passWithNoTests: true,
     coverage: {
       reportsDirectory: '../../../coverage/libs/frontend/trainer-access',
       provider: 'v8' as const,
