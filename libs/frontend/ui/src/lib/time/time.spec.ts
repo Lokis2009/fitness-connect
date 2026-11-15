@@ -11,6 +11,7 @@ import { FcTime, FcTimeFormat, UI_LOCALE } from './time';
       [format]="format()"
       [now]="now()"
       [durationMinutes]="durationMinutes()"
+      [inline]="inline()"
     />
   `,
 })
@@ -20,6 +21,7 @@ class Host {
   readonly format = signal<FcTimeFormat>('datetime');
   readonly now = signal<number | undefined>(undefined);
   readonly durationMinutes = signal<number | undefined>(undefined);
+  readonly inline = signal(false);
 }
 
 describe('FcTime', () => {
@@ -106,6 +108,27 @@ describe('FcTime', () => {
       await fixture.whenStable();
 
       expect(text()).toBe('Wed 18 Nov, 13:30 Warsaw time');
+    });
+  });
+
+  describe('inline', () => {
+    it('is a block with emphasised text by default', async () => {
+      const { root, time } = await setup();
+
+      expect(root.querySelector('fc-time')?.classList.contains('block')).toBe(true);
+      expect(time().classList.contains('block')).toBe(true);
+      expect(time().classList.contains('text-button')).toBe(true);
+    });
+
+    it('sits inside a sentence and inherits its type when inline', async () => {
+      const { root, time, text } = await setup((host) => host.inline.set(true));
+
+      const host = root.querySelector('fc-time') as HTMLElement;
+      expect(host.classList.contains('inline')).toBe(true);
+      expect(host.classList.contains('block')).toBe(false);
+      expect(time().classList.contains('block')).toBe(false);
+      expect(time().classList.contains('text-button')).toBe(false);
+      expect(text()).toBe('Tue 17 Nov, 10:00 Warsaw time');
     });
   });
 
