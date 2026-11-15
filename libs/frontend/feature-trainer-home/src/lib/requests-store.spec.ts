@@ -625,6 +625,59 @@ describe('RequestsStore', () => {
     });
   });
 
+  describe('a refresh that follows a change on the server', () => {
+    it('waits for a poll in flight and then fetches again after an unavailable answer', () => {
+      const poll = new Subject<BookingRequestList>();
+      getBookingRequests.mockReturnValueOnce(of(list([request('b1', 30)])));
+      getBookingRequests.mockReturnValueOnce(poll);
+      getBookingRequests.mockReturnValue(of(list([])));
+      acceptBooking.mockReturnValue(throwError(() => problem(409, 'booking-expired')));
+      const { store } = setup();
+      vi.advanceTimersByTime(REFRESH_INTERVAL_MS);
+      expect(getBookingRequests).toHaveBeenCalledTimes(2);
+
+      store.accept('b1');
+      expect(stateOf(store, 'b1')).toEqual({ kind: 'unavailable', reason: 'expired' });
+      expect(getBookingRequests).toHaveBeenCalledTimes(2);
+
+      // The poll started before the 409 was known, so its list may still show the request.
+      poll.next(list([request('b1', 30)]));
+      poll.complete();
+
+      expect(getBookingRequests).toHaveBeenCalledTimes(3);
+    });
+
+    it('waits for a poll in flight and then fetches again when a card reaches its deadline', () => {
+      const poll = new Subject<BookingRequestList>();
+      getBookingRequests.mockReturnValueOnce(of(list([request('b1', 1)])));
+      getBookingRequests.mockReturnValueOnce(poll);
+      getBookingRequests.mockReturnValue(of(list([])));
+      const { store } = setup();
+
+      vi.advanceTimersByTime(60_000);
+      TestBed.tick();
+      expect(stateOf(store, 'b1')).toEqual({ kind: 'expired' });
+      expect(getBookingRequests).toHaveBeenCalledTimes(2);
+
+      poll.next(list([request('b1', 0.5)]));
+      poll.complete();
+
+      expect(getBookingRequests).toHaveBeenCalledTimes(3);
+    });
+
+    it('still drops a poll or a manual refresh while a fetch is in flight or waiting', () => {
+      const poll = new Subject<BookingRequestList>();
+      getBookingRequests.mockReturnValueOnce(poll);
+      getBookingRequests.mockReturnValue(of(list([])));
+      const { store } = setup();
+
+      store.refresh();
+      vi.advanceTimersByTime(REFRESH_INTERVAL_MS);
+
+      expect(getBookingRequests).toHaveBeenCalledTimes(1);
+    });
+  });
+
   describe('deadline', () => {
     /** A server that answers every poll with the same list and its current time. */
     function serve(items: BookingRequest[]): void {
