@@ -4,6 +4,7 @@ import {
   type Env,
 } from '@fitness-connect/common';
 import type { UserRow } from '@fitness-connect/database';
+import type { TrainersService } from '@fitness-connect/trainers';
 import { UnauthorizedException } from '@nestjs/common';
 import type { UsersRepository } from '../users.repository';
 import { DevAuthService } from './dev-auth.service';
@@ -29,7 +30,15 @@ const user: UserRow = {
   createdAt: new Date('2026-01-01T00:00:00Z'),
 };
 
+const clientFields = {
+  trainerStatus: null,
+  trainerStatusNote: null,
+  trainerVenueTimeZone: null,
+};
+
 describe('DevAuthService', () => {
+  const getUserTrainerFields = jest.fn().mockResolvedValue(clientFields);
+  const trainers = { getUserTrainerFields } as unknown as TrainersService;
   const tokens = new DevTokenService({
     JWT_DEV_SECRET: 'unit-test-secret-of-sufficient-length',
   } as Env);
@@ -44,6 +53,7 @@ describe('DevAuthService', () => {
     service = new DevAuthService(
       { findWithDevCredentials } as unknown as UsersRepository,
       tokens,
+      trainers,
     );
   });
 
@@ -62,12 +72,52 @@ describe('DevAuthService', () => {
       email: user.email,
       displayName: user.displayName,
       role: 'client',
+      trainerStatus: null,
+      trainerStatusNote: null,
+      trainerVenueTimeZone: null,
+    });
+    expect(getUserTrainerFields).toHaveBeenCalledWith({
+      id: user.id,
+      role: 'client',
     });
     await expect(tokens.verify(result.accessToken)).resolves.toEqual({
       id: user.id,
       email: user.email,
       role: 'client',
     });
+  });
+
+  it('returns the trainer fields of a trainer', async () => {
+    const trainer: UserRow = {
+      ...user,
+      email: 'trainer@example.com',
+      role: 'trainer',
+    };
+    const passwordHash = await hashPassword('password');
+    const fields = {
+      trainerStatus: 'submitted',
+      trainerStatusNote: null,
+      trainerVenueTimeZone: 'Europe/Warsaw',
+    };
+    const trainerService = new DevAuthService(
+      {
+        findWithDevCredentials: jest.fn().mockResolvedValue({
+          user: trainer,
+          passwordHash,
+        }),
+      } as unknown as UsersRepository,
+      tokens,
+      {
+        getUserTrainerFields: jest.fn().mockResolvedValue(fields),
+      } as unknown as TrainersService,
+    );
+
+    const result = await trainerService.login({
+      email: trainer.email,
+      password: 'password',
+    });
+
+    expect(result.user).toMatchObject({ role: 'trainer', ...fields });
   });
 
   it('answers 401 for a wrong password', async () => {
@@ -99,6 +149,7 @@ describe('DevAuthService', () => {
     const fresh = new DevAuthService(
       { findWithDevCredentials } as unknown as UsersRepository,
       tokens,
+      trainers,
     );
     jest.mocked(hashPassword).mockRejectedValueOnce(new Error('scrypt failed'));
 

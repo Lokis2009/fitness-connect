@@ -1,4 +1,8 @@
 import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
+import {
+  CodedHttpException,
+  type AuthenticatedRequest,
+} from '@fitness-connect/common';
 import { TrainersService } from './trainers.service';
 
 /**
@@ -9,9 +13,16 @@ import { TrainersService } from './trainers.service';
 export class TrainerApprovedGuard implements CanActivate {
   constructor(private readonly trainers: TrainersService) {}
 
-  canActivate(context: ExecutionContext): Promise<boolean> {
-    void context;
-    void this.trainers;
-    throw new Error('not implemented');
+  async canActivate(context: ExecutionContext): Promise<boolean> {
+    const request = context.switchToHttp().getRequest<AuthenticatedRequest>();
+    const userId = request.user?.id;
+    if (!userId || !(await this.trainers.isApproved(userId))) {
+      throw new CodedHttpException(
+        403,
+        'trainer-not-approved',
+        'Your trainer profile has not been approved yet.',
+      );
+    }
+    return true;
   }
 }
