@@ -1,4 +1,5 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
+import { DATABASE, type Database } from '@fitness-connect/database';
 
 /** A trainer's stored profile. The columns come with the database schema. */
 export interface TrainerProfileRow {
@@ -18,6 +19,8 @@ export interface VenueRow {
 
 @Injectable()
 export class TrainerProfilesRepository {
+  constructor(@Inject(DATABASE) private readonly db: Database) {}
+
   /** The profile of a trainer, or null when there is no row yet. */
   findProfile(userId: string): Promise<TrainerProfileRow | null> {
     void userId;
@@ -27,6 +30,12 @@ export class TrainerProfilesRepository {
   /** The trainer's oldest venue by `created_at`, or null when there is none. */
   findOldestVenue(userId: string): Promise<VenueRow | null> {
     void userId;
+    throw new Error('not implemented');
+  }
+
+  /** The venues with the given ids. Ids that are not uuids match nothing. */
+  findVenuesByIds(ids: string[]): Promise<VenueRow[]> {
+    void ids;
     throw new Error('not implemented');
   }
 }
