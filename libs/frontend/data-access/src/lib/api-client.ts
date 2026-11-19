@@ -3,9 +3,12 @@ import { InjectionToken, Service, inject } from '@angular/core';
 import { type Observable, catchError, throwError } from 'rxjs';
 import { ApiError } from './api-error';
 import type {
+  Booking,
+  BookingRequestList,
   DevLoginRequest,
   DevLoginResponse,
   HealthStatus,
+  SessionList,
   User,
 } from './api-types';
 
@@ -42,6 +45,47 @@ export class ApiClient {
   /** `POST /v1/dev/login`: development only. Errors with status 401 on bad credentials. */
   devLogin(body: DevLoginRequest): Observable<DevLoginResponse> {
     return this.#request(this.#http.post<DevLoginResponse>(`${this.#baseUrl}/dev/login`, body));
+  }
+
+  /** `GET /v1/trainers/me/booking-requests`: the trainer's pending requests. */
+  getBookingRequests(): Observable<BookingRequestList> {
+    return this.#request(
+      this.#http.get<BookingRequestList>(
+        `${this.#baseUrl}/trainers/me/booking-requests`,
+      ),
+    );
+  }
+
+  /**
+   * `GET /v1/trainers/me/sessions`: the trainer's confirmed sessions that overlap `[from, to)`.
+   * `from` and `to` are ISO instants.
+   */
+  getSessions(from: string, to: string): Observable<SessionList> {
+    return this.#request(
+      this.#http.get<SessionList>(`${this.#baseUrl}/trainers/me/sessions`, {
+        params: { from, to },
+      }),
+    );
+  }
+
+  /** `POST /v1/bookings/{id}/accept`: accepts a pending request. */
+  acceptBooking(id: string): Observable<Booking> {
+    return this.#request(
+      this.#http.post<Booking>(
+        `${this.#baseUrl}/bookings/${encodeURIComponent(id)}/accept`,
+        null,
+      ),
+    );
+  }
+
+  /** `POST /v1/bookings/{id}/decline`: declines a pending request. */
+  declineBooking(id: string): Observable<Booking> {
+    return this.#request(
+      this.#http.post<Booking>(
+        `${this.#baseUrl}/bookings/${encodeURIComponent(id)}/decline`,
+        null,
+      ),
+    );
   }
 
   #request<T>(request: Observable<T>): Observable<T> {

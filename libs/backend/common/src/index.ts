@@ -1,6 +1,7 @@
 export * from './lib/config/env';
 export * from './lib/config/app-config.module';
 export * from './lib/security/password-hash';
+export * from './lib/security/uuid';
 export * from './lib/auth/roles';
 export * from './lib/auth/auth-user';
 export * from './lib/auth/token-verifier';
@@ -10,3 +11,4 @@ export * from './lib/auth/roles.guard';
 export * from './lib/auth/auth.module';
 export * from './lib/http/problem-details.filter';
 export * from './lib/http/configure-app';
+export * from './lib/http/coded-http-exception';

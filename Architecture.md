@@ -40,6 +40,10 @@ A marketplace connecting fitness trainers with clients ("Uber for fitness traine
 | D19 | CI | GitHub Actions running `nx affected` | Decided |
 | D20 | Local dev auth | API issues dev-only JWTs via `POST /v1/dev/login` for seeded users; same JWT guard later validates Cognito tokens. Dev module and the frontend `/dev-login` route never exist in production builds: the API needs an explicit `NODE_ENV` (no default) and mounts the dev module only outside production, and each app's production build replaces `provide-app-auth.ts` and `dev-login-routes.ts` (`fileReplacements`), checked in CI by `pnpm check:prod-bundles`. Until the Cognito implementation exists, production builds use `UnconfiguredAuthService` | Decided |
 | D21 | Local infrastructure | Docker Compose: Postgres with PostGIS, Redis | Decided |
+| D22 | Trainer approval status | The approval status is part of the signed-in user: `GET /v1/me` returns flat optional fields `trainerStatus`, `trainerStatusNote` and `trainerVenueTimeZone` (all `null` for clients and admins). Frontend route guards read `auth.user().trainerStatus` synchronously, and the API enforces approval on its own with a guard that answers 403 `trainer-not-approved`. A separate trainer resource and a Cognito group claim were rejected (see `docs/designs/trainer-home.md`) | Decided |
+| D23 | In-app alert | In the first release, polling is the in-app alert for new booking requests (PDR-012): the trainer home refreshes every 30 seconds while the tab is visible and when it becomes visible. Email stays the primary alert. WebSockets are a later option (section 6.3) | Decided |
+| D24 | Problem details | Problem details (RFC 9457) carry an optional `code` extension member, so a client can tell one 403 or 409 from another (for example `trainer-not-approved`, `booking-expired`). The contract describes the codes in text and does not make them an enum | Decided |
+| D25 | Cross-module reads | A module that needs another module's data calls that module's public lookup, in one batched call, and merges the result in memory. It does not query the other module's tables. Example: `booking` gets client names from `identity` (`UsersService.displayNames`) and venues from `trainers` (`TrainersService.venuesByIds`) | Decided |
 
 ## 3. High-level architecture
 
@@ -110,7 +114,7 @@ Rules:
 | `clients` | Client profiles, goals, preferences |
 | `locations` | Venues/locations, geocoding, PostGIS queries, service radius |
 | `availability` | Trainer working hours, time off, slot generation |
-| `booking` | Scheduled bookings, lifecycle (requested, confirmed, completed, cancelled), cancellation rules |
+| `booking` | Scheduled bookings, lifecycle (pending, confirmed, declined, expired, withdrawn, cancelled, completed; PRD section 6), cancellation rules |
 | `dispatch` | On-demand requests: find nearby available trainers, offer, accept/decline, timeouts |
 | `sessions` | Session lifecycle for both in-person and online, check-in/out |
 | `video` | Video room creation and tokens (provider behind an interface) |
@@ -134,7 +138,7 @@ Both flows end in the same `sessions` entity so downstream logic (payments, revi
 PostGIS `geography` columns with GiST indexes. Nearest-trainer and radius queries run in the database. Geocoding and place search via an external maps provider (**Open**).
 
 ### 6.3 Real-time
-NestJS WebSocket gateway (Socket.IO proposed) with the Redis adapter so multiple API tasks can broadcast to each other. Status: **Proposed**.
+Polling first; WebSockets proposed. The first release uses polling for the trainer's in-app alert (D23). Later real-time features would use a NestJS WebSocket gateway (Socket.IO proposed) with the Redis adapter so multiple API tasks can broadcast to each other. Status: **Proposed**.
 
 ### 6.4 Authentication and authorization
 - Managed identity provider issues JWTs; the API validates them and maps them to internal users and roles.
@@ -236,6 +240,8 @@ Related plan: `docs/plans/trainer-web.md` (its Q1 to Q7 map to items 2, 1, 9, 11
 ## 11. Status and next steps
 
 Current status and next steps live in [STATUS.md](STATUS.md), generated from `status/status.yaml`. Do not list them here.
+
+The current step is the trainer home: the approved trainer's pending booking requests and today's and tomorrow's sessions, plus a read-only `/setup` page for trainers who are not approved. Design: [docs/designs/trainer-home.md](docs/designs/trainer-home.md).
 
 Phase 1 (foundation and login) is done: the Nx workspace, the three Angular apps, the NestJS API, Postgres with PostGIS, the OpenAPI contract, and a login page in each app that signs in against the real API (development auth). Playwright runs 9 scenarios per app against the live stack (`pnpm nx e2e e2e`; Playwright starts the API and the apps and uses its own `fitness_connect_e2e` database).
 

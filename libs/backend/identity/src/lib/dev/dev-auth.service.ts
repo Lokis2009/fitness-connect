@@ -1,5 +1,6 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { hashPassword, verifyPassword } from '@fitness-connect/common';
+import { TrainersService } from '@fitness-connect/trainers';
 import { randomUUID } from 'node:crypto';
 import { toUserDto } from '../user.dto';
 import { UsersRepository } from '../users.repository';
@@ -14,6 +15,7 @@ export class DevAuthService {
   constructor(
     private readonly users: UsersRepository,
     private readonly tokens: DevTokenService,
+    private readonly trainers: TrainersService,
   ) {}
 
   /** Checks the dev credentials and issues a token. Throws 401 on any mismatch. */
@@ -33,7 +35,11 @@ export class DevAuthService {
       email: user.email,
       role: user.role,
     });
-    return { accessToken, user: toUserDto(user) };
+    const trainerFields = await this.trainers.getUserTrainerFields({
+      id: user.id,
+      role: user.role,
+    });
+    return { accessToken, user: toUserDto(user, trainerFields) };
   }
 
   /** Computed once; a failed attempt is discarded so a later login can retry it. */

@@ -13,6 +13,7 @@ Authentication for the client, trainer and admin apps. Import path: `@fitness-co
 | `AuthService.signIn(returnUrl?: string): void` | Starts sign-in. Production will redirect to the Cognito hosted login, so do not assume a password form. |
 | `AuthService.signOut(): void` | Clears the session. Does not navigate. |
 | `AuthService.restoreSession(): Promise<void>` | Restores a session after a reload. Never rejects. `DevAuthService` discards the stored token only on a 401; a network or server failure keeps it so the next reload can retry. |
+| `AuthService.refreshUser(): Promise<void>` | Reloads `GET /v1/me` into `user`; rejects with the `ApiError` on failure and keeps the last user and token. It never signs out by itself: a 401 is handled by the auth interceptor, so `DevAuthService` only rethrows it. `UnconfiguredAuthService` resolves with nothing (there is no session). |
 | `DevAuthService` (from `@fitness-connect/auth/dev`) | Development implementation (see below). |
 | `DevAuthService.login(email, password, expectedRole?): Promise<User>` | Signs in via `POST /v1/dev/login`. Throws `InvalidCredentialsError` (401), `WrongRoleError` (role differs from `expectedRole`; the rejected account is not stored and an existing session is left alone), or `ApiError`. |
 | `provideDevAuth(): EnvironmentProviders` (from `@fitness-connect/auth/dev`) | Provides `DevAuthService` as `AuthService` and restores the session at startup. |

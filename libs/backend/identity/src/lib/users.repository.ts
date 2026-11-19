@@ -1,4 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
+import { isUuid } from '@fitness-connect/common';
 import {
   DATABASE,
   devCredentials,
@@ -13,7 +14,6 @@ export interface UserWithPasswordHash {
   passwordHash: string;
 }
 
-const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 @Injectable()
 export class UsersRepository {
@@ -21,7 +21,7 @@ export class UsersRepository {
 
   async findById(id: string): Promise<UserRow | null> {
     // A malformed id is simply "not found" instead of a database type error.
-    if (!UUID.test(id)) return null;
+    if (!isUuid(id)) return null;
 
     const [user] = await this.db
       .select()

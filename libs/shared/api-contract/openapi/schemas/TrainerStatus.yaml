@@ -1,0 +1,3 @@
+type: string
+description: Where a trainer is in admin approval. Only `approved` trainers can use the booking operations.
+enum: [incomplete, submitted, changes_requested, approved]

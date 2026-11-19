@@ -26,5 +26,6 @@ describe('UnconfiguredAuthService', () => {
   it('signs out and restores nothing without error', async () => {
     expect(() => auth.signOut()).not.toThrow();
     await expect(auth.restoreSession()).resolves.toBeUndefined();
+    await expect(auth.refreshUser()).resolves.toBeUndefined();
   });
 });

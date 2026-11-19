@@ -1,0 +1,11 @@
+type: object
+description: Where a session takes place. It has no street address, which is shared only after acceptance (PDR-013).
+required: [name, area, timeZone]
+properties:
+  name:
+    type: string
+  area:
+    type: string
+  timeZone:
+    type: string
+    description: IANA time zone of the venue, for example Europe/Warsaw.

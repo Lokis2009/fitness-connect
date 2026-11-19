@@ -1,0 +1,39 @@
+type: object
+description: A pending booking request that the trainer can accept or decline.
+required:
+  - id
+  - clientName
+  - startsAt
+  - durationMinutes
+  - priceMinor
+  - currency
+  - venue
+  - requestedAt
+  - expiresAt
+properties:
+  id:
+    type: string
+    format: uuid
+  clientName:
+    type: string
+  startsAt:
+    type: string
+    format: date-time
+  durationMinutes:
+    type: integer
+  priceMinor:
+    type: integer
+    description: Price in minor units, for example 12000 for 120 PLN.
+  currency:
+    type: string
+    description: ISO 4217 currency code.
+    minLength: 3
+    maxLength: 3
+  venue:
+    $ref: './VenueSummary.yaml'
+  requestedAt:
+    type: string
+    format: date-time
+  expiresAt:
+    type: string
+    format: date-time

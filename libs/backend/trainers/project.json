@@ -1,0 +1,9 @@
+{
+  "name": "trainers",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/backend/trainers/src",
+  "projectType": "library",
+  "tags": ["scope:api", "type:api-lib"],
+  "// targets": "to see all targets run: nx show project trainers --web",
+  "targets": {}
+}

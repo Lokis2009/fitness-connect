@@ -25,4 +25,8 @@ export class UnconfiguredAuthService extends AuthService {
   async restoreSession(): Promise<void> {
     // Nothing to restore.
   }
+
+  async refreshUser(): Promise<void> {
+    // Nothing to refresh: there is never a session.
+  }
 }

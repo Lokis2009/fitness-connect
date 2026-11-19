@@ -1,0 +1,8 @@
+{
+  "name": "booking",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/backend/booking/src",
+  "projectType": "library",
+  "tags": ["scope:api", "type:api-lib"],
+  "// targets": "to see all targets run: nx show project booking --web"
+}

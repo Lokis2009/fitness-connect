@@ -54,6 +54,15 @@ export class DevAuthService extends AuthService {
   }
 
   /**
+   * Reloads the user with `GET /v1/me` into the `user` signal. Any failure rejects with the
+   * `ApiError` and keeps the last user and token. It never signs out by itself: a 401 is handled
+   * by the auth interceptor.
+   */
+  async refreshUser(): Promise<void> {
+    this.#user.set(await firstValueFrom(this.#api.getMe()));
+  }
+
+  /**
    * Signs in with a seeded dev account and resolves with the user.
    *
    * @throws InvalidCredentialsError on HTTP 401

@@ -1,0 +1,38 @@
+get:
+  tags: [trainer]
+  operationId: listSessions
+  summary: Confirmed sessions that overlap a time range
+  description: >
+    Confirmed bookings that overlap `[from, to)`, soonest first. A session that
+    started before `from` and is still running is returned. The span is at most
+    7 days. An unapproved trainer gets 403 with code `trainer-not-approved`.
+  parameters:
+    - name: from
+      in: query
+      required: true
+      description: Start of the range, a full ISO 8601 date-time with `Z` or an offset.
+      schema:
+        type: string
+        format: date-time
+    - name: to
+      in: query
+      required: true
+      description: End of the range (exclusive), a full ISO 8601 date-time with `Z` or an offset. Must be after `from`.
+      schema:
+        type: string
+        format: date-time
+  responses:
+    '200':
+      description: Confirmed sessions
+      content:
+        application/json:
+          schema:
+            $ref: '../schemas/SessionList.yaml'
+    '400':
+      $ref: '../responses/BadRequest.yaml'
+    '401':
+      $ref: '../responses/Unauthorized.yaml'
+    '403':
+      $ref: '../responses/Forbidden.yaml'
+    '500':
+      $ref: '../responses/InternalError.yaml'

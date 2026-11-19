@@ -15,6 +15,10 @@ tags:
     description: Liveness and service information.
   - name: identity
     description: The signed-in user and roles.
+  - name: trainer
+    description: Trainer home, the lists a signed-in trainer works from.
+  - name: booking
+    description: Answering booking requests.
   - name: dev
     description: Development only. Not available in production.
 security:
@@ -24,6 +28,14 @@ paths:
     $ref: './paths/health.yaml'
   /me:
     $ref: './paths/me.yaml'
+  /trainers/me/booking-requests:
+    $ref: './paths/trainer-booking-requests.yaml'
+  /trainers/me/sessions:
+    $ref: './paths/trainer-sessions.yaml'
+  /bookings/{id}/accept:
+    $ref: './paths/booking-accept.yaml'
+  /bookings/{id}/decline:
+    $ref: './paths/booking-decline.yaml'
   /dev/login:
     $ref: './paths/dev-login.yaml'
 components:
@@ -45,3 +57,19 @@ components:
       $ref: './schemas/DevLoginResponse.yaml'
     Problem:
       $ref: './schemas/Problem.yaml'
+    TrainerStatus:
+      $ref: './schemas/TrainerStatus.yaml'
+    BookingStatus:
+      $ref: './schemas/BookingStatus.yaml'
+    VenueSummary:
+      $ref: './schemas/VenueSummary.yaml'
+    BookingRequest:
+      $ref: './schemas/BookingRequest.yaml'
+    BookingRequestList:
+      $ref: './schemas/BookingRequestList.yaml'
+    Session:
+      $ref: './schemas/Session.yaml'
+    SessionList:
+      $ref: './schemas/SessionList.yaml'
+    Booking:
+      $ref: './schemas/Booking.yaml'

@@ -1,0 +1,15 @@
+type: object
+description: The result of accepting or declining a booking.
+required: [id, status, startsAt, decidedAt]
+properties:
+  id:
+    type: string
+    format: uuid
+  status:
+    $ref: './BookingStatus.yaml'
+  startsAt:
+    type: string
+    format: date-time
+  decidedAt:
+    type: [string, 'null']
+    format: date-time

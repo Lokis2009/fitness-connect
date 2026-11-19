@@ -56,6 +56,9 @@
   --spacing-control: 3rem;
   --spacing-touch: 2.75rem;
 
+  /* Width of the single content column of list pages (fc-page align="top"), used as max-w-column. 960 px, pending design owner confirmation. */
+  --container-column: 60rem;
+
   /* The design is flat: no decorative shadows. Removes every shadow-* utility. */
   --shadow-*: initial;
   --drop-shadow-*: initial;

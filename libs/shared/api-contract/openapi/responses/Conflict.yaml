@@ -1,0 +1,7 @@
+description: >
+  The request conflicts with the current state. The problem `code` says why,
+  for example `booking-expired`, `booking-withdrawn` or `booking-not-pending`.
+content:
+  application/problem+json:
+    schema:
+      $ref: '../schemas/Problem.yaml'

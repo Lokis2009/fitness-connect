@@ -1,11 +1,15 @@
 import { Controller, Get, UnauthorizedException } from '@nestjs/common';
 import { CurrentUser, type AuthUser } from '@fitness-connect/common';
+import { TrainersService } from '@fitness-connect/trainers';
 import { UsersRepository } from './users.repository';
 import { toUserDto, type UserDto } from './user.dto';
 
 @Controller('me')
 export class MeController {
-  constructor(private readonly users: UsersRepository) {}
+  constructor(
+    private readonly users: UsersRepository,
+    private readonly trainers: TrainersService,
+  ) {}
 
   @Get()
   async me(@CurrentUser() caller: AuthUser): Promise<UserDto> {
@@ -14,6 +18,10 @@ export class MeController {
       // The token is valid but its user is gone.
       throw new UnauthorizedException();
     }
-    return toUserDto(user);
+    const trainerFields = await this.trainers.getUserTrainerFields({
+      id: user.id,
+      role: user.role,
+    });
+    return toUserDto(user, trainerFields);
   }
 }

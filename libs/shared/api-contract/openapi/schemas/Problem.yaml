@@ -12,3 +12,10 @@ properties:
     type: string
   instance:
     type: string
+  code:
+    type: string
+    description: >
+      Machine-readable reason, an extension member allowed by RFC 9457. Known
+      codes are `trainer-not-approved` (403), `booking-expired` (409),
+      `booking-withdrawn` (409) and `booking-not-pending` (409). It is not an
+      enum, so a new code needs no contract change.

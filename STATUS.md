@@ -14,6 +14,7 @@ Edit `status/status.yaml` to change the workstreams. Run `pnpm status:generate` 
 | Design tokens and type scale | done | - | - | Shared UI library uses one set of design tokens, Material is mapped to them, and Inter and Space Grotesk are loaded. | [design-system](.claude/rules/design-system.md), [tokens.css](libs/frontend/ui/src/styles/tokens.css) |
 | First-release PRD review | in-progress | - | Decide minimum booking notice, pending-slot holds, trainer verification and cancellation rules (PRD section 10). | PRD and confirmed product decisions are drafted; several booking rules are still proposals. | [scheduled-in-person-sessions](docs/prd/scheduled-in-person-sessions.md), [first-release](docs/decisions/first-release.md) |
 | Feature breakdown | planned | - | Starts after PRD review. | Split the agreed journey into features with acceptance criteria and contract entries. | [scheduled-in-person-sessions](docs/prd/scheduled-in-person-sessions.md) |
+| Trainer home screen | in-progress | - | Open the pull request, confirm the 960 px desktop column width with the design owner, and run the manual browser check. | The approved trainer's home (pending booking requests and today's and tomorrow's sessions) and the read-only /setup page are implemented on feat/trainer-home, from the contract to the e2e tests. | [trainer-home](docs/designs/trainer-home.md) |
 | First booking journey | planned | - | Plan it once the feature breakdown exists. | One approved trainer publishes availability and one client requests a scheduled in-person booking that the trainer approves within 24 hours; no platform payments. | [scheduled-in-person-sessions](docs/prd/scheduled-in-person-sessions.md) |
 | Cognito hosted login | planned | - | Plan alongside the first booking journey. | Replace development auth with hosted login (OIDC) and JWT verification before a real-user launch. | [Architecture](Architecture.md#6-key-design-areas) |
 | Phase 1 follow-ups | planned | - | - | Bundle budgets, sign-out flash, contract-versus-Nest check, axe-core, shared commit guard and Prettier consistency. | [Architecture](Architecture.md#12-known-follow-ups-from-phase-1) |
@@ -68,12 +69,18 @@ Technical decisions: see the Decisions section of [Architecture.md](Architecture
 | client-web | application | scope:client, type:app | `apps/client-web` |
 | e2e | application | scope:shared, type:util | `apps/e2e` |
 | trainer-web | application | scope:trainer, type:app | `apps/trainer-web` |
+| booking | library | scope:api, type:api-lib | `libs/backend/booking` |
 | common | library | scope:api, type:api-lib | `libs/backend/common` |
 | database | library | scope:api, type:api-lib | `libs/backend/database` |
 | identity | library | scope:api, type:api-lib | `libs/backend/identity` |
+| trainers | library | scope:api, type:api-lib | `libs/backend/trainers` |
 | auth | library | scope:shared, type:data-access | `libs/frontend/auth` |
 | data-access | library | scope:shared, type:data-access | `libs/frontend/data-access` |
 | feature-home | library | scope:shared, type:feature | `libs/frontend/feature-home` |
 | feature-login | library | scope:shared, type:feature | `libs/frontend/feature-login` |
+| feature-trainer-home | library | scope:trainer, type:feature | `libs/frontend/feature-trainer-home` |
+| feature-trainer-setup | library | scope:trainer, type:feature | `libs/frontend/feature-trainer-setup` |
+| trainer-access | library | scope:trainer, type:data-access | `libs/frontend/trainer-access` |
 | ui | library | scope:shared, type:ui | `libs/frontend/ui` |
 | api-contract | library | scope:shared, type:util | `libs/shared/api-contract` |
+| venue-time | library | scope:shared, type:util | `libs/shared/venue-time` |

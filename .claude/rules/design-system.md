@@ -38,6 +38,7 @@ Tailwind's default palette and type sizes are cleared, so only these exist.
 | | `mb-label` / `mt-label` | 6 px | Label to input, hint and error under input |
 | | `h-control` | 48 px | Inputs and buttons |
 | | `min-h-touch` | 44 px | Checkbox rows, links |
+| Width | `max-w-column` (`--container-column`) | 960 px (`60rem`) | The single content column of list pages (`fc-page align="top"`). Pending design owner confirmation |
 
 Use `border` (1 px) for inputs, pills and cards.
 
@@ -89,6 +90,9 @@ Use `border` (1 px) for inputs, pills and cards.
 
 - Text, headings, labels and hints: `fc-text` (`body`, `muted`, `small` variants), `fc-heading`, `fc-form-field`. Reuse them instead of styling text yourself.
 - Buttons: `fc-button` (48 px, 10 px radius, 16 px / 600) through the Material overrides in `material-theme.scss`.
+- Short labels: `fc-badge`, a bordered pill in the `text-pill` step with the `rounded-pill` radius. Use it for status labels and counts, not for body text.
+- Loading placeholders: `fc-skeleton` (`line-card` bars in a card-shaped box). Use it instead of a spinner for lists.
+- Empty, error and notice panels: `fc-state` (`empty`, `error`, `info`). `fc-alert` stays for form feedback.
 
 ## Adding or changing a token
 

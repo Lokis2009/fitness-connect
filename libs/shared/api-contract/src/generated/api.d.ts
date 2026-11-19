@@ -38,6 +38,86 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/trainers/me/booking-requests": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Booking requests waiting for the trainer's answer
+         * @description Only requests with status pending and a deadline after the server's now, soonest deadline first. An unapproved trainer gets 403 with code `trainer-not-approved`.
+         */
+        get: operations["listBookingRequests"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/trainers/me/sessions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Confirmed sessions that overlap a time range
+         * @description Confirmed bookings that overlap `[from, to)`, soonest first. A session that started before `from` and is still running is returned. The span is at most 7 days. An unapproved trainer gets 403 with code `trainer-not-approved`.
+         */
+        get: operations["listSessions"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/bookings/{id}/accept": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Accept a booking request
+         * @description Idempotent for the same caller and action: a repeat returns 200 with the current booking. 404 covers an unknown booking, another trainer's booking and a malformed id. 409 carries the code `booking-expired`, `booking-withdrawn` or `booking-not-pending`. An unapproved trainer gets 403 with code `trainer-not-approved`.
+         */
+        post: operations["acceptBooking"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/bookings/{id}/decline": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Decline a booking request
+         * @description Idempotent for the same caller and action: a repeat returns 200 with the current booking. 404 covers an unknown booking, another trainer's booking and a malformed id. 409 carries the code `booking-expired`, `booking-withdrawn` or `booking-not-pending`. An unapproved trainer gets 403 with code `trainer-not-approved`.
+         */
+        post: operations["declineBooking"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/dev/login": {
         parameters: {
             query?: never;
@@ -71,6 +151,15 @@ export interface components {
             email: string;
             displayName: string;
             role: components["schemas"]["Role"];
+            /**
+             * @description Admin approval status (see TrainerStatus). Set for trainers, `null` for clients and admins.
+             * @enum {string|null}
+             */
+            trainerStatus?: "incomplete" | "submitted" | "changes_requested" | "approved" | null;
+            /** @description The admin's reason, set when changes are requested. */
+            trainerStatusNote?: string | null;
+            /** @description IANA time zone of the trainer's venue, for example Europe/Warsaw. `null` until a venue exists, and for clients and admins. */
+            trainerVenueTimeZone?: string | null;
         };
         HealthStatus: {
             /** @enum {string} */
@@ -92,6 +181,79 @@ export interface components {
             status: number;
             detail?: string;
             instance?: string;
+            /** @description Machine-readable reason, an extension member allowed by RFC 9457. Known codes are `trainer-not-approved` (403), `booking-expired` (409), `booking-withdrawn` (409) and `booking-not-pending` (409). It is not an enum, so a new code needs no contract change. */
+            code?: string;
+        };
+        /**
+         * @description Where a trainer is in admin approval. Only `approved` trainers can use the booking operations.
+         * @enum {string}
+         */
+        TrainerStatus: "incomplete" | "submitted" | "changes_requested" | "approved";
+        /**
+         * @description Lifecycle of a booking, as in the first-release PRD.
+         * @enum {string}
+         */
+        BookingStatus: "pending" | "confirmed" | "declined" | "expired" | "withdrawn" | "cancelled" | "completed";
+        /** @description Where a session takes place. It has no street address, which is shared only after acceptance (PDR-013). */
+        VenueSummary: {
+            name: string;
+            area: string;
+            /** @description IANA time zone of the venue, for example Europe/Warsaw. */
+            timeZone: string;
+        };
+        /** @description A pending booking request that the trainer can accept or decline. */
+        BookingRequest: {
+            /** Format: uuid */
+            id: string;
+            clientName: string;
+            /** Format: date-time */
+            startsAt: string;
+            durationMinutes: number;
+            /** @description Price in minor units, for example 12000 for 120 PLN. */
+            priceMinor: number;
+            /** @description ISO 4217 currency code. */
+            currency: string;
+            venue: components["schemas"]["VenueSummary"];
+            /** Format: date-time */
+            requestedAt: string;
+            /** Format: date-time */
+            expiresAt: string;
+        };
+        BookingRequestList: {
+            /**
+             * Format: date-time
+             * @description Database time when the list was read. Clients use it, not their own clock, for deadlines.
+             */
+            serverTime: string;
+            items: components["schemas"]["BookingRequest"][];
+        };
+        /** @description A confirmed session. It has no price. */
+        Session: {
+            /** Format: uuid */
+            id: string;
+            clientName: string;
+            /** Format: date-time */
+            startsAt: string;
+            durationMinutes: number;
+            venue: components["schemas"]["VenueSummary"];
+        };
+        SessionList: {
+            /**
+             * Format: date-time
+             * @description Database time when the list was read.
+             */
+            serverTime: string;
+            items: components["schemas"]["Session"][];
+        };
+        /** @description The result of accepting or declining a booking. */
+        Booking: {
+            /** Format: uuid */
+            id: string;
+            status: components["schemas"]["BookingStatus"];
+            /** Format: date-time */
+            startsAt: string;
+            /** Format: date-time */
+            decidedAt: string | null;
         };
     };
     responses: {
@@ -133,6 +295,15 @@ export interface components {
         };
         /** @description The request body or parameters failed validation */
         BadRequest: {
+            headers: {
+                [name: string]: unknown;
+            };
+            content: {
+                "application/problem+json": components["schemas"]["Problem"];
+            };
+        };
+        /** @description The request conflicts with the current state. The problem `code` says why, for example `booking-expired`, `booking-withdrawn` or `booking-not-pending`. */
+        Conflict: {
             headers: {
                 [name: string]: unknown;
             };
@@ -190,6 +361,112 @@ export interface operations {
             401: components["responses"]["Unauthorized"];
             403: components["responses"]["Forbidden"];
             404: components["responses"]["NotFound"];
+            500: components["responses"]["InternalError"];
+        };
+    };
+    listBookingRequests: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Pending requests */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BookingRequestList"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            500: components["responses"]["InternalError"];
+        };
+    };
+    listSessions: {
+        parameters: {
+            query: {
+                /** @description Start of the range, a full ISO 8601 date-time with `Z` or an offset. */
+                from: string;
+                /** @description End of the range (exclusive), a full ISO 8601 date-time with `Z` or an offset. Must be after `from`. */
+                to: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Confirmed sessions */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SessionList"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            500: components["responses"]["InternalError"];
+        };
+    };
+    acceptBooking: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The updated booking */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Booking"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            500: components["responses"]["InternalError"];
+        };
+    };
+    declineBooking: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The updated booking */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Booking"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
             500: components["responses"]["InternalError"];
         };
     };

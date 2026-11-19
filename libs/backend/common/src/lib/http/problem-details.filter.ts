@@ -15,6 +15,8 @@ export interface ProblemDetails {
   status: number;
   detail?: string;
   instance?: string;
+  /** Machine-readable problem code, copied from an exception body that carries a string `code`. */
+  code?: string;
 }
 
 export const PROBLEM_CONTENT_TYPE = 'application/problem+json';
@@ -56,6 +58,10 @@ export class ProblemDetailsFilter implements ExceptionFilter {
     // Unexpected errors never expose their message.
     if (exception instanceof HttpException) {
       problem.detail = detailOf(exception);
+      const code = codeOf(exception);
+      if (code !== undefined) {
+        problem.code = code;
+      }
     } else if (platformError?.expose) {
       problem.detail = platformError.message;
     }
@@ -92,6 +98,15 @@ function clientErrorOf(exception: unknown): ClientError | null {
     return null;
   }
   return { status, expose: expose === true, message: exception.message };
+}
+
+function codeOf(exception: HttpException): string | undefined {
+  const body = exception.getResponse();
+  if (typeof body === 'object' && body !== null && 'code' in body) {
+    const { code } = body as { code: unknown };
+    if (typeof code === 'string') return code;
+  }
+  return undefined;
 }
 
 function detailOf(exception: HttpException): string {

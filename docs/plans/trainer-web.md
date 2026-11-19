@@ -46,7 +46,7 @@ libs/shared/api-contract         DTO types and OpenAPI-generated client types
 Rules for this app:
 - Pages are thin. They compose `fc-*` components and read signal stores. No raw HTML, no Material imports, no Tailwind classes in app or feature templates.
 - Feature libs are lazy-loaded through `loadComponent` or `loadChildren`.
-- Nx tags: apps `scope:trainer,type:app`; feature libs `scope:trainer,type:feature`; data-access `scope:shared,type:data-access`; auth `scope:shared,type:util`.
+- Nx tags: apps `scope:trainer,type:app`; feature libs `scope:trainer,type:feature`; data-access `scope:shared,type:data-access`; auth `scope:shared,type:data-access`.
 - Constraints to add to `eslint.config.mjs` in Phase 1:
   - `type:app` may depend on feature, data-access, ui, util.
   - `type:feature` may depend on data-access, ui, util, but not on other features.
@@ -131,7 +131,8 @@ Create these in `libs/frontend/ui` first (each with a spec), then compose them:
 | `/sign-in` | Sign in | 3 |
 | `/onboarding` | Onboarding steps | 4 |
 | `/verification` | Verification status | 4 |
-| `/` | Dashboard: today's sessions, requests, quick stats | 7 |
+| `/` | Trainer home: pending booking requests and today's and tomorrow's sessions; no stats ([design](../designs/trainer-home.md)) | 7 |
+| `/setup` | Read-only verification status for trainers who are not approved yet; covers the status display only until `/onboarding` and `/verification` exist ([design](../designs/trainer-home.md)) | 4 |
 | `/profile` | Profile and preview | 5 |
 | `/venues` | Venues and service area | 5 |
 | `/availability` | Working hours and time off | 6 |

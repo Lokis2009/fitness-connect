@@ -28,6 +28,14 @@ export class ApiError extends Error {
     super(problem.detail ?? problem.title, options);
   }
 
+  /**
+   * Machine-readable reason from the problem's `code` member (for example `booking-expired`), or
+   * `undefined` when the problem has none.
+   */
+  get code(): string | undefined {
+    return this.problem.code;
+  }
+
   /** Converts anything thrown by `HttpClient` into an `ApiError`. */
   static from(error: unknown): ApiError {
     if (error instanceof ApiError) return error;
