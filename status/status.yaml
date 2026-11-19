@@ -27,6 +27,14 @@ workstreams:
       - .claude/rules/design-system.md
       - libs/frontend/ui/src/styles/tokens.css
 
+  - id: home-pages
+    name: Client and admin home pages
+    state: in-progress
+    summary: Backlog for a minimal client home and an admin home that lists users and trainers by role.
+    next: Review the backlog and answer its open questions, then start with the contract entry and shared UI components.
+    links:
+      - docs/backlog/home-pages.md
+
   - id: first-release-prd
     name: First-release PRD review
     state: in-progress
