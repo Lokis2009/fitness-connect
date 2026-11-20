@@ -1,6 +1,6 @@
 # Backlog: client home and admin home
 
-Status: draft for review. Scope is the signed-in landing page of `client-web` (minimal) and of `admin-web` (list of trainers and users). Trainer-web keeps the shared placeholder `SignedInHome` until its own backlog.
+Status: ready to start. The owner has answered the open questions (see Owner decisions). Scope is the signed-in landing page of `client-web` (minimal) and of `admin-web` (list of trainers and users). Trainer-web keeps the shared placeholder `SignedInHome` until its own backlog.
 
 Every item follows `.claude/rules/workflow.md`: skeleton, then a failing test, then implementation, in separate commits on a `<type>/<topic>` branch.
 
@@ -117,14 +117,14 @@ Projects: `database`, `e2e`. Depends on HP-5 and HP-6. Size: S.
 - Extend dev seed with a few extra clients and trainers so the list shows more than one page at a small page size. Seeding stays dev and test only.
 - E2E: client signs in and sees the greeting and empty state; admin signs in and sees the seeded users and can filter by role; a client cannot open the admin API path (403).
 
-## Open questions for the owner
+## Owner decisions
 
-| # | Question | Default if not answered |
+| # | Question | Decision |
 |---|---|---|
-| Q1 | Does the admin need search by name or email in this slice? | No, filter by role only. |
-| Q2 | Should the list show admins, or only clients and trainers? | Show all three roles; filter hides them. |
-| Q3 | Should admin reads of user data be audit-logged? | No in this slice; revisit with the admin queue. |
-| Q4 | Does trainer-web get a matching minimal home now, or stay on the placeholder? | Stay on the placeholder. |
+| Q1 | Does the admin need search by name or email in this slice? | No. Filter by role only. |
+| Q2 | Should the list show admins, or only clients and trainers? | Show all three roles; the filter has Clients, Trainers and Admins. |
+| Q3 | Should admin reads of user data be audit-logged? | Not in this slice. Revisit with the trainer approval queue. |
+| Q4 | Does trainer-web get a matching minimal home now? | No. Trainer-web already has a home, the shared `SignedInHome`, and keeps it. |
 
 ## Not in this backlog
 

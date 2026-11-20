@@ -31,7 +31,7 @@ workstreams:
     name: Client and admin home pages
     state: in-progress
     summary: Backlog for a minimal client home and an admin home that lists users and trainers by role.
-    next: Review the backlog and answer its open questions, then start with the contract entry and shared UI components.
+    next: Start with the contract entry (HP-1) and the shared UI components (HP-2) in parallel.
     links:
       - docs/backlog/home-pages.md
 
