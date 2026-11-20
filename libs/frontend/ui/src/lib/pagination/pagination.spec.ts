@@ -98,13 +98,15 @@ describe('FcPagination', () => {
 
   it('disables previous on the first page and next on the last page', async () => {
     const { button, update } = await setup();
-    expect(button('previous').disabled).toBe(true);
-    expect(button('next').disabled).toBe(false);
+    // Material keeps disabled buttons focusable (disabledInteractive) and marks them with aria-disabled.
+    const isDisabled = (name: 'next' | 'previous') => button(name).getAttribute('aria-disabled') === 'true';
+    expect(isDisabled('previous')).toBe(true);
+    expect(isDisabled('next')).toBe(false);
 
     await update((host) => host.page.set(5));
 
-    expect(button('previous').disabled).toBe(false);
-    expect(button('next').disabled).toBe(true);
+    expect(isDisabled('previous')).toBe(false);
+    expect(isDisabled('next')).toBe(true);
   });
 
   it('hides the page size selector when there are no size options', async () => {
