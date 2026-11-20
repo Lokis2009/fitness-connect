@@ -19,3 +19,4 @@ export * from './lib/skeleton/skeleton';
 export * from './lib/state/state';
 export * from './lib/scroll-into-view/scroll-into-view';
 export * from './lib/app-shell/app-shell';
+export * from './lib/table/table';
