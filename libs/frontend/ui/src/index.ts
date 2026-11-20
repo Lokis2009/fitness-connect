@@ -21,3 +21,4 @@ export * from './lib/scroll-into-view/scroll-into-view';
 export * from './lib/app-shell/app-shell';
 export * from './lib/table/table';
 export * from './lib/pagination/pagination';
+export * from './lib/select/select';
