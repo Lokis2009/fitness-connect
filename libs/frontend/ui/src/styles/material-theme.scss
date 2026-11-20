@@ -65,4 +65,16 @@
       row-item-outline-color: var(--color-line-card),
     )
   );
+
+  // Paginator: caption step, flat page background. Material's 12 px default is below the 13 px minimum.
+  @include mat.paginator-overrides(
+    (
+      container-background-color: transparent,
+      container-text-color: var(--color-ink-muted),
+      container-text-size: var(--text-caption),
+      container-text-weight: var(--text-caption--font-weight),
+      select-trigger-text-size: var(--text-caption),
+      enabled-icon-color: var(--color-ink),
+    )
+  );
 }

@@ -1,4 +1,5 @@
 import { Component, input, model } from '@angular/core';
+import { MatPaginator, type PageEvent } from '@angular/material/paginator';
 
 /**
  * Previous and next controls with the visible range and the total, on the Material paginator.
@@ -6,7 +7,19 @@ import { Component, input, model } from '@angular/core';
  */
 @Component({
   selector: 'fc-pagination',
-  template: '',
+  imports: [MatPaginator],
+  template: `
+    <mat-paginator
+      [attr.aria-label]="label()"
+      [length]="total()"
+      [pageIndex]="page() - 1"
+      [pageSize]="pageSize()"
+      [pageSizeOptions]="pageSizeOptions()"
+      [hidePageSize]="pageSizeOptions().length === 0"
+      (page)="onPage($event)"
+    />
+  `,
+  host: { class: 'block' },
 })
 export class FcPagination {
   /** Number of items over all pages. */
@@ -19,7 +32,12 @@ export class FcPagination {
   /** Accessible name of the navigation. */
   readonly label = input('Pagination');
 
-  constructor() {
-    throw new Error('not implemented');
+  protected onPage(event: PageEvent): void {
+    if (event.pageSize !== this.pageSize()) {
+      this.pageSize.set(event.pageSize);
+      this.page.set(1);
+      return;
+    }
+    this.page.set(event.pageIndex + 1);
   }
 }
