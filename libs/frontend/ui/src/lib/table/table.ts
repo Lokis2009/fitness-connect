@@ -1,5 +1,20 @@
-import { Component, input, output } from '@angular/core';
-import type { FcBadgeVariant } from '../badge/badge';
+import { Component, computed, input, output } from '@angular/core';
+import {
+  MatCell,
+  MatCellDef,
+  MatColumnDef,
+  MatHeaderCell,
+  MatHeaderCellDef,
+  MatHeaderRow,
+  MatHeaderRowDef,
+  MatRow,
+  MatRowDef,
+  MatTable,
+} from '@angular/material/table';
+import { MatProgressSpinner } from '@angular/material/progress-spinner';
+import { FcAlert } from '../alert/alert';
+import { FcBadge, type FcBadgeVariant } from '../badge/badge';
+import { FcButton } from '../button/button';
 
 export interface FcTableColumn<T> {
   /** Unique within the table. */
@@ -17,7 +32,57 @@ export interface FcTableColumn<T> {
  */
 @Component({
   selector: 'fc-table',
-  template: '',
+  imports: [
+    MatTable,
+    MatColumnDef,
+    MatHeaderCellDef,
+    MatHeaderCell,
+    MatCellDef,
+    MatCell,
+    MatHeaderRowDef,
+    MatHeaderRow,
+    MatRowDef,
+    MatRow,
+    MatProgressSpinner,
+    FcAlert,
+    FcBadge,
+    FcButton,
+  ],
+  template: `
+    @if (loading()) {
+      <div role="status" class="flex items-center gap-text p-4 text-body text-ink-muted">
+        <mat-progress-spinner mode="indeterminate" aria-hidden="true" [diameter]="24" />
+        <span>{{ loadingMessage() }}</span>
+      </div>
+    } @else if (error()) {
+      <div class="flex flex-col items-start gap-4">
+        <fc-alert variant="error" class="w-full">{{ error() }}</fc-alert>
+        <fc-button variant="secondary" (click)="retry.emit()">{{ retryLabel() }}</fc-button>
+      </div>
+    } @else if (rows().length === 0) {
+      <p role="status" class="p-4 text-body text-ink-muted">{{ emptyMessage() }}</p>
+    } @else {
+      <div class="overflow-x-auto rounded-card border border-line-card bg-surface">
+        <table mat-table class="w-full" [dataSource]="rows()" [trackBy]="trackBy()" [attr.aria-label]="label()">
+          @for (column of columns(); track column.key) {
+            <ng-container [matColumnDef]="column.key">
+              <th mat-header-cell *matHeaderCellDef>{{ column.header }}</th>
+              <td mat-cell *matCellDef="let row">
+                @if (column.badge) {
+                  <fc-badge [variant]="column.badge(row)">{{ column.value(row) }}</fc-badge>
+                } @else {
+                  {{ column.value(row) }}
+                }
+              </td>
+            </ng-container>
+          }
+          <tr mat-header-row *matHeaderRowDef="columnKeys()"></tr>
+          <tr mat-row *matRowDef="let row; columns: columnKeys()"></tr>
+        </table>
+      </div>
+    }
+  `,
+  host: { class: 'block' },
 })
 export class FcTable<T> {
   readonly columns = input.required<readonly FcTableColumn<T>[]>();
@@ -35,7 +100,9 @@ export class FcTable<T> {
   /** Emits when the user presses the retry button of the error state. */
   readonly retry = output<void>();
 
-  constructor() {
-    throw new Error('not implemented');
-  }
+  protected readonly columnKeys = computed(() => this.columns().map((column) => column.key));
+  protected readonly trackBy = computed(() => {
+    const rowKey = this.rowKey();
+    return (index: number, row: T) => rowKey(row, index);
+  });
 }

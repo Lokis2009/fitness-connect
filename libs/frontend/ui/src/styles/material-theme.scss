@@ -51,4 +51,18 @@
       text-label-text-weight: var(--text-button--font-weight),
     )
   );
+
+  // Tables: header in the label step, cells in the caption step, flat card colors.
+  @include mat.table-overrides(
+    (
+      background-color: var(--color-surface),
+      header-headline-color: var(--color-ink),
+      header-headline-size: var(--text-label),
+      header-headline-weight: var(--text-label--font-weight),
+      row-item-label-text-color: var(--color-ink),
+      row-item-label-text-size: var(--text-caption),
+      row-item-label-text-weight: var(--text-caption--font-weight),
+      row-item-outline-color: var(--color-line-card),
+    )
+  );
 }
