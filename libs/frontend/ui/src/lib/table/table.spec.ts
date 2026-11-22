@@ -128,6 +128,15 @@ describe('FcTable', () => {
 
       expect((table()?.parentElement as HTMLElement).classList).toContain('overflow-x-auto');
     });
+
+    it('lets a keyboard user reach and scroll the container, named after the table', async () => {
+      const { table } = await setup();
+      const scroller = table()?.parentElement as HTMLElement;
+
+      expect(scroller.getAttribute('tabindex')).toBe('0');
+      expect(scroller.getAttribute('role')).toBe('region');
+      expect(scroller.getAttribute('aria-label')).toBe('People');
+    });
   });
 
   describe('loading', () => {
