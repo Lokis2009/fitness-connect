@@ -83,6 +83,7 @@ Use `border` (1 px) for inputs, pills and cards.
 | `text-caption` | 14 px | 400 | 1.5 | `ink-muted` | Hints, footer text |
 | `text-link` | 14 px | 600 | normal | `accent` | Links, underline on hover |
 | `text-pill` | 13 px | 600 | normal | `ink` | Role pill |
+| `text-wordmark` | 18 px | 700 | 1.4 | `ink` | The wordmark in the app shell header, with `font-brand`. Not in the design file |
 
 `text-heading` and `text-subheading` are derived from the scale because the design has no `h2` or `h3`. Replace their values once the design defines them.
 

@@ -54,10 +54,12 @@ describe('FcAppShell', () => {
     expect(header().textContent).toContain('fit-connect admin');
   });
 
-  it('uses the brand font of the design tokens for the brand name', async () => {
+  it('uses the brand font and the wordmark step of the design tokens for the brand name', async () => {
     const { header } = await setup();
+    const classes = (header().querySelector('[data-fc-brand]') as HTMLElement).classList;
 
-    expect((header().querySelector('[data-fc-brand]') as HTMLElement).classList).toContain('font-brand');
+    expect(classes).toContain('font-brand');
+    expect(classes).toContain('text-wordmark');
   });
 
   it('shows the user label in the header and updates it', async () => {

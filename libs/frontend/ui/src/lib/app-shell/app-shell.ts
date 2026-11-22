@@ -10,7 +10,7 @@ import { Component, input } from '@angular/core';
     <header
       class="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 border-b border-line-card bg-surface px-4 py-2"
     >
-      <span data-fc-brand class="font-brand text-subheading text-ink">{{ brand() }}</span>
+      <span data-fc-brand class="font-brand text-wordmark text-ink">{{ brand() }}</span>
       <div class="flex min-w-0 items-center gap-4">
         @if (userLabel()) {
           <span data-fc-user class="min-w-0 truncate text-caption text-ink-muted">{{ userLabel() }}</span>
