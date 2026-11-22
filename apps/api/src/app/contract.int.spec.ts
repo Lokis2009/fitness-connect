@@ -41,6 +41,7 @@ describe('API conformance to the OpenAPI contract', () => {
   let token: string;
   let trainerToken: string;
   let unapprovedToken: string;
+  let adminToken: string;
 
   beforeAll(async () => {
     // Its own database: the booking cases below change the seeded bookings.
@@ -50,6 +51,7 @@ describe('API conformance to the OpenAPI contract', () => {
     token = await tokenFor(url, 'client@example.com');
     trainerToken = await tokenFor(url, 'trainer@example.com');
     unapprovedToken = await tokenFor(url, 'pat.pending@example.com');
+    adminToken = await tokenFor(url, 'admin@example.com');
   });
 
   afterAll(async () => {
@@ -148,6 +150,49 @@ describe('API conformance to the OpenAPI contract', () => {
 
       expect(response.status).toBe(401);
       expectConforms(response, 'GET', '/me');
+    });
+  });
+
+  describe('GET /admin/users', () => {
+    const path = '/admin/users';
+
+    it('200 returns a UserPage', async () => {
+      const response = await call(url, 'GET', `/v1${path}`, {
+        token: adminToken,
+      });
+
+      expect(response.status).toBe(200);
+      expect(
+        (response.body as { items: unknown[] }).items.length,
+      ).toBeGreaterThan(0);
+      expectConforms(response, 'GET', path);
+    });
+
+    it('400 returns a Problem for a bad page size', async () => {
+      const response = await call(url, 'GET', `/v1${path}?pageSize=101`, {
+        token: adminToken,
+      });
+
+      expect(response.status).toBe(400);
+      expectConforms(response, 'GET', path);
+    });
+
+    it('401 returns a Problem', async () => {
+      const response = await call(url, 'GET', `/v1${path}`);
+
+      expect(response.status).toBe(401);
+      expectConforms(response, 'GET', path);
+    });
+
+    it('403 returns a Problem for a client and for a trainer', async () => {
+      for (const forbidden of [token, trainerToken]) {
+        const response = await call(url, 'GET', `/v1${path}`, {
+          token: forbidden,
+        });
+
+        expect(response.status).toBe(403);
+        expectConforms(response, 'GET', path);
+      }
     });
   });
 
