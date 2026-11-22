@@ -70,7 +70,7 @@ Commits:
 
 Check before committing: Docker is up, `pnpm nx run-many -t lint test build` for `admin`, `identity`, `api`, `api-contract` consumers and `data-access` (types change).
 
-Risk: seeded users are exactly three, and `me.int.spec.ts` relies on them. Insert extra users inside the admin specs against the throwaway test database; do not change the shared seed here.
+Risk: the seed has four users (`client@`, `trainer@`, `pat.pending@` and `admin@example.com`; two of them trainers), and `me.int.spec.ts` relies on them. Derive expected counts from what each spec inserts plus the seed, or assert on specific emails; insert extra users inside the admin specs against the throwaway test database; do not change the shared seed here.
 
 ## 6. PR 3: data access and the admin page (HP-4, HP-5, HP-7)
 
@@ -88,7 +88,7 @@ Start after PRs 1 and 2 are merged, from the updated `main`.
 - Red commit first: store spec (initial load, filter resets page, page change, stale response ignored, error then retry, 403) and component spec (rows, empty, loading, error, forbidden, sign out returns to `/login`). Then the green commit.
 
 **E2E (HP-7)**
-- `apps/e2e/src/admin-users.e2e.ts`, in the style of `trainer-home.e2e.ts`: admin signs in, sees the three seeded users, filters to Trainers and sees one, and a client token gets 403 from the API path. Do not add seed users unless a pagination scenario needs them; if so, check specs that count seeded users first.
+- `apps/e2e/src/admin-users.e2e.ts`, in the style of `trainer-home.e2e.ts`: admin signs in, sees the four seeded emails, filters to Trainers and sees only trainers (`trainer@` and `pat.pending@example.com` among them), and a client token gets 403 from the API path. Do not assert an exact total: `apps/e2e/src/db.ts` adds an `e2e-<uuid>@example.com` client on every booking it creates and never removes it, so the dev database grows with each run. Do not add seed users unless a pagination scenario needs them; if so, check specs that count seeded users first.
 
 ## 7. Finish line
 
