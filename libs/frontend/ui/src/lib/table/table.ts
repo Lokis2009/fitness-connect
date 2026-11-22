@@ -62,7 +62,13 @@ export interface FcTableColumn<T> {
     } @else if (rows().length === 0) {
       <p role="status" class="p-4 text-body text-ink-muted">{{ emptyMessage() }}</p>
     } @else {
-      <div class="overflow-x-auto rounded-card border border-line-card bg-surface">
+      <!-- Focusable and named so a keyboard user can scroll a table wider than the screen. -->
+      <div
+        class="overflow-x-auto rounded-card border border-line-card bg-surface"
+        tabindex="0"
+        role="region"
+        [attr.aria-label]="label()"
+      >
         <table mat-table class="w-full" [dataSource]="rows()" [trackBy]="trackBy()" [attr.aria-label]="label()">
           @for (column of columns(); track column.key) {
             <ng-container [matColumnDef]="column.key">
