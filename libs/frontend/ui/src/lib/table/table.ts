@@ -13,7 +13,7 @@ import {
 } from '@angular/material/table';
 import { MatProgressSpinner } from '@angular/material/progress-spinner';
 import { FcAlert } from '../alert/alert';
-import { FcBadge, type FcBadgeVariant } from '../badge/badge';
+import { FcBadge } from '../badge/badge';
 import { FcButton } from '../button/button';
 
 export interface FcTableColumn<T> {
@@ -22,8 +22,8 @@ export interface FcTableColumn<T> {
   readonly header: string;
   /** Text of the cell. Format dates and numbers here. */
   readonly value: (row: T) => string;
-  /** When set, the cell text is shown as a badge with this variant. */
-  readonly badge?: (row: T) => FcBadgeVariant;
+  /** When true, the cell text is shown as a badge. */
+  readonly badge?: boolean;
 }
 
 /**
@@ -69,7 +69,7 @@ export interface FcTableColumn<T> {
               <th mat-header-cell *matHeaderCellDef>{{ column.header }}</th>
               <td mat-cell *matCellDef="let row">
                 @if (column.badge) {
-                  <fc-badge [variant]="column.badge(row)">{{ column.value(row) }}</fc-badge>
+                  <fc-badge>{{ column.value(row) }}</fc-badge>
                 } @else {
                   {{ column.value(row) }}
                 }
