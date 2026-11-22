@@ -7,7 +7,7 @@ import {
   type Database,
   type UserRow,
 } from '@fitness-connect/database';
-import { eq, sql } from 'drizzle-orm';
+import { count, desc, eq, sql } from 'drizzle-orm';
 
 export interface UserWithPasswordHash {
   user: UserRow;
@@ -44,10 +44,21 @@ export class UsersRepository {
   }
 
   /** One page of users, newest first (`created_at` descending, then `id` descending), optionally of one role. */
-  async listPage(options: ListUsersOptions): Promise<UserPage> {
-    void options;
-    void this.db;
-    throw new Error('not implemented');
+  async listPage({ role, page, pageSize }: ListUsersOptions): Promise<UserPage> {
+    const where = role ? eq(users.role, role) : undefined;
+    // Two queries, not one transaction: a write in between may shift a page by a row, which is fine here.
+    const rows = await this.db
+      .select()
+      .from(users)
+      .where(where)
+      .orderBy(desc(users.createdAt), desc(users.id))
+      .limit(pageSize)
+      .offset((page - 1) * pageSize);
+    const [{ total }] = await this.db
+      .select({ total: count() })
+      .from(users)
+      .where(where);
+    return { rows, total };
   }
 
   /** The user and their dev password hash, or null when either is missing. The email match ignores case. */

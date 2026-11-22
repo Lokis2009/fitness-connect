@@ -9,6 +9,11 @@ export type UserPageDto = components['schemas']['UserPage'];
 
 /** Maps a stored user to the contract shape, leaving out internal columns. */
 export function toAdminUserDto(user: UserRow): AdminUserDto {
-  void user;
-  throw new Error('not implemented');
+  return {
+    id: user.id,
+    email: user.email,
+    displayName: user.displayName,
+    role: user.role,
+    createdAt: user.createdAt.toISOString(),
+  };
 }
