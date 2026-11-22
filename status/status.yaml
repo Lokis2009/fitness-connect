@@ -31,9 +31,10 @@ workstreams:
     name: Client and admin home pages
     state: in-progress
     summary: Backlog for a minimal client home and an admin home that lists users and trainers by role.
-    next: Start with the contract entry (HP-1) and the shared UI components (HP-2) in parallel.
+    next: Rebase the shared UI components (HP-2) onto main, and build the admin users contract and API (HP-1, HP-3) in parallel.
     links:
       - docs/backlog/home-pages.md
+      - docs/plans/admin-users-list.md
 
   - id: first-release-prd
     name: First-release PRD review
