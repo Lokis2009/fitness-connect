@@ -72,6 +72,15 @@ describe('validateSchema', () => {
     expect(validateSchema(schema, 'abc')).toEqual([]);
   });
 
+  it('checks number bounds', () => {
+    const schema: Schema = { type: 'integer', minimum: 1, maximum: 100 };
+
+    expect(validateSchema(schema, 0)).toEqual(['$: less than 1']);
+    expect(validateSchema(schema, 101)).toEqual(['$: greater than 100']);
+    expect(validateSchema(schema, 1)).toEqual([]);
+    expect(validateSchema(schema, 100)).toEqual([]);
+  });
+
   it('supports type unions and numbers', () => {
     const schema: Schema = { type: ['number', 'null'] };
 
