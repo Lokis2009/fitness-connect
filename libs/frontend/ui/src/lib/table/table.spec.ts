@@ -14,7 +14,7 @@ const COLUMNS: readonly FcTableColumn<Person>[] = [
     key: 'role',
     header: 'Role',
     value: (p) => p.role,
-    badge: (p) => (p.role === 'trainer' ? 'accent' : 'neutral'),
+    badge: true,
   },
 ];
 
@@ -90,16 +90,15 @@ describe('FcTable', () => {
       expect(cells(bodyRows()[1])).toEqual(['Taylor Trainer', 'trainer']);
     });
 
-    it('shows a column as a badge when it has a badge variant', async () => {
+    it('shows a column as a badge when it is marked as a badge', async () => {
       const { bodyRows } = await setup();
       const badges = bodyRows().map((row) => row.querySelector('fc-badge > span') as HTMLElement | null);
 
       expect(badges[0]?.textContent?.trim()).toBe('client');
-      expect(badges[0]?.classList).toContain('border-line-card');
-      expect(badges[1]?.classList).toContain('border-accent');
+      expect(badges[1]?.textContent?.trim()).toBe('trainer');
     });
 
-    it('renders plain text, not a badge, for columns without a badge variant', async () => {
+    it('renders plain text, not a badge, for columns that are not marked as a badge', async () => {
       const { bodyRows } = await setup();
 
       expect(bodyRows()[0].querySelector('td:first-child fc-badge')).toBeNull();
