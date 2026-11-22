@@ -1,4 +1,5 @@
 import { DynamicModule, Module } from '@nestjs/common';
+import { AdminModule } from '@fitness-connect/admin';
 import { AppConfigModule, AuthModule, type Env } from '@fitness-connect/common';
 import { DatabaseModule } from '@fitness-connect/database';
 import { BookingModule } from '@fitness-connect/booking';
@@ -22,6 +23,7 @@ export class AppModule {
         IdentityModule,
         TrainersModule,
         BookingModule,
+        AdminModule,
         ...(env.NODE_ENV === 'production' ? [] : [DevAuthModule]),
       ],
       controllers: [HealthController],

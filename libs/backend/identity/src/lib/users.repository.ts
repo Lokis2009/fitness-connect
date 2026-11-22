@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { isUuid } from '@fitness-connect/common';
+import { isUuid, type Role } from '@fitness-connect/common';
 import {
   DATABASE,
   devCredentials,
@@ -14,6 +14,18 @@ export interface UserWithPasswordHash {
   passwordHash: string;
 }
 
+export interface ListUsersOptions {
+  role?: Role;
+  /** One-based page number. */
+  page: number;
+  pageSize: number;
+}
+
+export interface UserPage {
+  rows: UserRow[];
+  /** Number of users matching the role filter across all pages. */
+  total: number;
+}
 
 @Injectable()
 export class UsersRepository {
@@ -29,6 +41,13 @@ export class UsersRepository {
       .where(eq(users.id, id))
       .limit(1);
     return user ?? null;
+  }
+
+  /** One page of users, newest first (`created_at` descending, then `id` descending), optionally of one role. */
+  async listPage(options: ListUsersOptions): Promise<UserPage> {
+    void options;
+    void this.db;
+    throw new Error('not implemented');
   }
 
   /** The user and their dev password hash, or null when either is missing. The email match ignores case. */

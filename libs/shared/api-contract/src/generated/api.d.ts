@@ -118,6 +118,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/admin/users": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List users, newest first
+         * @description Admin only. Optionally filtered by role. Ordered by created time descending, then id descending.
+         */
+        get: operations["listUsers"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/dev/login": {
         parameters: {
             query?: never;
@@ -254,6 +274,23 @@ export interface components {
             startsAt: string;
             /** Format: date-time */
             decidedAt: string | null;
+        };
+        AdminUser: {
+            /** Format: uuid */
+            id: string;
+            /** Format: email */
+            email: string;
+            displayName: string;
+            role: components["schemas"]["Role"];
+            /** Format: date-time */
+            createdAt: string;
+        };
+        UserPage: {
+            items: components["schemas"]["AdminUser"][];
+            /** @description Number of users matching the filter across all pages. */
+            total: number;
+            page: number;
+            pageSize: number;
         };
     };
     responses: {
@@ -467,6 +504,35 @@ export interface operations {
             403: components["responses"]["Forbidden"];
             404: components["responses"]["NotFound"];
             409: components["responses"]["Conflict"];
+            500: components["responses"]["InternalError"];
+        };
+    };
+    listUsers: {
+        parameters: {
+            query?: {
+                role?: components["schemas"]["Role"];
+                /** @description One-based page number. */
+                page?: number;
+                pageSize?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description One page of users */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UserPage"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
             500: components["responses"]["InternalError"];
         };
     };
