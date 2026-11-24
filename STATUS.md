@@ -18,7 +18,7 @@ Edit `status/status.yaml` to change the workstreams. Run `pnpm status:generate` 
 | Trainer home screen | in-progress | - | Open the pull request, confirm the 960 px desktop column width with the design owner, and run the manual browser check. | The approved trainer's home (pending booking requests and today's and tomorrow's sessions) and the read-only /setup page are implemented on feat/trainer-home, from the contract to the e2e tests. | [trainer-home](docs/designs/trainer-home.md) |
 | First booking journey | planned | - | Plan it once the feature breakdown exists. | One approved trainer publishes availability and one client requests a scheduled in-person booking that the trainer approves within 24 hours; no platform payments. | [scheduled-in-person-sessions](docs/prd/scheduled-in-person-sessions.md) |
 | Cognito hosted login | planned | - | Plan alongside the first booking journey. | Replace development auth with hosted login (OIDC) and JWT verification before a real-user launch. | [Architecture](Architecture.md#6-key-design-areas) |
-| Phase 1 follow-ups | planned | - | - | Bundle budgets, sign-out flash, contract-versus-Nest check, axe-core, shared commit guard and Prettier consistency. | [Architecture](Architecture.md#12-known-follow-ups-from-phase-1) |
+| Phase 1 follow-ups | planned | - | - | Bundle budgets, contract-versus-Nest check, axe-core, shared commit guard and Prettier consistency. | [Architecture](Architecture.md#12-known-follow-ups-from-phase-1) |
 | On-demand dispatch, online sessions and platform payments | deferred | - | - | Kept in the long-term vision and out of first-release scope until separately prioritized. | [first-release](docs/decisions/first-release.md) |
 
 ## Open questions

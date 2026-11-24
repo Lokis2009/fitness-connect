@@ -80,7 +80,7 @@ workstreams:
   - id: phase-1-follow-ups
     name: Phase 1 follow-ups
     state: planned
-    summary: Bundle budgets, sign-out flash, contract-versus-Nest check, axe-core, shared commit guard and Prettier consistency.
+    summary: Bundle budgets, contract-versus-Nest check, axe-core, shared commit guard and Prettier consistency.
     links:
       - Architecture.md#12-known-follow-ups-from-phase-1
 
