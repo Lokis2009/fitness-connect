@@ -2,7 +2,7 @@ import { Component, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Router } from '@angular/router';
 import { AuthService } from '@fitness-connect/auth';
-import { ApiClient } from '@fitness-connect/data-access';
+import { ApiClient, type User } from '@fitness-connect/data-access';
 import {
   FcAlert,
   FcButton,
@@ -52,11 +52,19 @@ export class SignedInHome {
   private readonly router = inject(Router);
 
   protected readonly check = signal<SessionCheck>('loading');
+  /**
+   * The user captured when sign-out starts. Sign out clears the auth user before navigation to
+   * `/login` finishes, so the page keeps showing this user instead of an empty greeting.
+   */
+  private readonly signingOutUser = signal<User | null>(null);
+  private readonly shownUser = computed(
+    () => this.signingOutUser() ?? this.auth.user(),
+  );
   protected readonly displayName = computed(
-    () => this.auth.user()?.displayName ?? '',
+    () => this.shownUser()?.displayName ?? '',
   );
   protected readonly summary = computed(() => {
-    const user = this.auth.user();
+    const user = this.shownUser();
     return user ? `${user.email} · ${user.role}` : '';
   });
 
@@ -71,6 +79,7 @@ export class SignedInHome {
   }
 
   protected async signOut(): Promise<void> {
+    this.signingOutUser.set(this.auth.user());
     this.auth.signOut();
     await this.router.navigateByUrl('/login');
   }
