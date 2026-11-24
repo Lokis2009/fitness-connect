@@ -123,6 +123,27 @@ describe('SignedInHome', () => {
     expect(root.textContent).not.toContain('casey@example.com');
   });
 
+  it('keeps the greeting and details while sign-out navigation is pending', () => {
+    const response = new Subject<User>();
+    getMe.mockReturnValue(response);
+    signOut.mockImplementation(() => user.set(null));
+    const { fixture, root, router } = setup();
+    vi.spyOn(router, 'navigateByUrl').mockReturnValue(
+      new Promise<boolean>(() => undefined),
+    );
+    response.next(client);
+    fixture.detectChanges();
+
+    root.querySelector<HTMLButtonElement>('fc-button button')?.click();
+    fixture.detectChanges();
+
+    expect(signOut).toHaveBeenCalledTimes(1);
+    expect(root.querySelector('h1')?.textContent).toContain(
+      'Welcome, Casey Client',
+    );
+    expect(root.textContent).toContain('casey@example.com · client');
+  });
+
   it('signs out and goes to the login page', async () => {
     getMe.mockReturnValue(new Subject<User>());
     const { fixture, root, router } = setup();
