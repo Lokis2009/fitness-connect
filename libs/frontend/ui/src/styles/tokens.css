@@ -111,6 +111,11 @@
   --text-pill: 0.8125rem;
   --text-pill--line-height: normal;
   --text-pill--font-weight: 600;
+
+  /* The wordmark in the app shell header. Use with font-brand (Space Grotesk 700, rule 10). */
+  --text-wordmark: 1.125rem;
+  --text-wordmark--line-height: 1.4;
+  --text-wordmark--font-weight: 700;
 }
 
 /* Semantic aliases that follow the role accent at runtime, so they must be `inline`. */
