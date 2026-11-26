@@ -1,6 +1,6 @@
 import { computed, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { provideRouter, Router } from '@angular/router';
+import { type Navigation, provideRouter, Router } from '@angular/router';
 import { AuthService } from '@fitness-connect/auth';
 import { ApiClient, ApiError, type User } from '@fitness-connect/data-access';
 import { Subject, throwError } from 'rxjs';
@@ -158,6 +158,43 @@ describe('SignedInHome', () => {
     const button = root.querySelector<HTMLButtonElement>('fc-button button');
     button?.click();
     button?.click();
+    fixture.detectChanges();
+
+    expect(root.querySelector('h1')?.textContent).toContain(
+      'Welcome, Casey Client',
+    );
+    expect(root.textContent).toContain('casey@example.com · client');
+  });
+
+  it('starts only one sign-out when the button is clicked twice', () => {
+    getMe.mockReturnValue(new Subject<User>());
+    signOut.mockImplementation(() => user.set(null));
+    const { fixture, root, router } = setup();
+    const navigate = vi
+      .spyOn(router, 'navigateByUrl')
+      .mockReturnValue(new Promise<boolean>(() => undefined));
+
+    const button = root.querySelector<HTMLButtonElement>('fc-button button');
+    button?.click();
+    button?.click();
+    fixture.detectChanges();
+
+    expect(signOut).toHaveBeenCalledTimes(1);
+    expect(navigate).toHaveBeenCalledTimes(1);
+  });
+
+  it('keeps the greeting when another navigation cancels the sign-out navigation', async () => {
+    const response = new Subject<User>();
+    getMe.mockReturnValue(response);
+    signOut.mockImplementation(() => user.set(null));
+    const { fixture, root, router } = setup();
+    vi.spyOn(router, 'navigateByUrl').mockResolvedValue(false);
+    vi.spyOn(router, 'currentNavigation').mockReturnValue({} as Navigation);
+    response.next(client);
+    fixture.detectChanges();
+
+    root.querySelector<HTMLButtonElement>('fc-button button')?.click();
+    await fixture.whenStable();
     fixture.detectChanges();
 
     expect(root.querySelector('h1')?.textContent).toContain(
