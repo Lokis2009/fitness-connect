@@ -57,6 +57,7 @@ export class SignedInHome {
    * `/login` finishes, so the page keeps showing this user instead of an empty greeting.
    */
   private readonly signingOutUser = signal<User | null>(null);
+  private signingOut = false;
   private readonly shownUser = computed(
     () => this.signingOutUser() ?? this.auth.user(),
   );
@@ -79,16 +80,22 @@ export class SignedInHome {
   }
 
   protected async signOut(): Promise<void> {
-    // Keep the first captured user: on a repeated click the auth user is already null.
-    this.signingOutUser.update((saved) => saved ?? this.auth.user());
+    // A repeated click would start a second navigation that cancels the first.
+    if (this.signingOut) {
+      return;
+    }
+    this.signingOut = true;
+    this.signingOutUser.set(this.auth.user());
     this.auth.signOut();
     let navigated = false;
     try {
       navigated = await this.router.navigateByUrl('/login');
     } finally {
-      // The page stays when navigation is cancelled or fails, so stop showing the old user.
-      if (!navigated) {
+      // The page stays when navigation fails, so stop showing the old user. A navigation that
+      // was cancelled by a newer one (such as the 401 redirect) is still leaving the page.
+      if (!navigated && !this.router.currentNavigation()) {
         this.signingOutUser.set(null);
+        this.signingOut = false;
       }
     }
   }
