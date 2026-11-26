@@ -144,6 +144,45 @@ describe('SignedInHome', () => {
     expect(root.textContent).toContain('casey@example.com · client');
   });
 
+  it('keeps the greeting when sign out is clicked twice while navigation is pending', () => {
+    const response = new Subject<User>();
+    getMe.mockReturnValue(response);
+    signOut.mockImplementation(() => user.set(null));
+    const { fixture, root, router } = setup();
+    vi.spyOn(router, 'navigateByUrl').mockReturnValue(
+      new Promise<boolean>(() => undefined),
+    );
+    response.next(client);
+    fixture.detectChanges();
+
+    const button = root.querySelector<HTMLButtonElement>('fc-button button');
+    button?.click();
+    button?.click();
+    fixture.detectChanges();
+
+    expect(root.querySelector('h1')?.textContent).toContain(
+      'Welcome, Casey Client',
+    );
+    expect(root.textContent).toContain('casey@example.com · client');
+  });
+
+  it('drops the personal details when sign-out navigation does not complete', async () => {
+    const response = new Subject<User>();
+    getMe.mockReturnValue(response);
+    signOut.mockImplementation(() => user.set(null));
+    const { fixture, root, router } = setup();
+    vi.spyOn(router, 'navigateByUrl').mockResolvedValue(false);
+    response.next(client);
+    fixture.detectChanges();
+
+    root.querySelector<HTMLButtonElement>('fc-button button')?.click();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect(root.querySelector('h1')?.textContent).not.toContain('Casey Client');
+    expect(root.textContent).not.toContain('casey@example.com');
+  });
+
   it('signs out and goes to the login page', async () => {
     getMe.mockReturnValue(new Subject<User>());
     const { fixture, root, router } = setup();
