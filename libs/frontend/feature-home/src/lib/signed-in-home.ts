@@ -79,8 +79,17 @@ export class SignedInHome {
   }
 
   protected async signOut(): Promise<void> {
-    this.signingOutUser.set(this.auth.user());
+    // Keep the first captured user: on a repeated click the auth user is already null.
+    this.signingOutUser.update((saved) => saved ?? this.auth.user());
     this.auth.signOut();
-    await this.router.navigateByUrl('/login');
+    let navigated = false;
+    try {
+      navigated = await this.router.navigateByUrl('/login');
+    } finally {
+      // The page stays when navigation is cancelled or fails, so stop showing the old user.
+      if (!navigated) {
+        this.signingOutUser.set(null);
+      }
+    }
   }
 }
