@@ -32,3 +32,6 @@ vitest.config.*.timestamp*
 # Playwright output
 test-results
 playwright-report
+
+# Local CodeMie analytics exports
+docs/codemie/

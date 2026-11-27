@@ -2,7 +2,7 @@ import { Component, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Router } from '@angular/router';
 import { AuthService } from '@fitness-connect/auth';
-import { ApiClient } from '@fitness-connect/data-access';
+import { ApiClient, type User } from '@fitness-connect/data-access';
 import {
   FcAlert,
   FcButton,
@@ -52,11 +52,20 @@ export class SignedInHome {
   private readonly router = inject(Router);
 
   protected readonly check = signal<SessionCheck>('loading');
+  /**
+   * The user captured when sign-out starts. Sign out clears the auth user before navigation to
+   * `/login` finishes, so the page keeps showing this user instead of an empty greeting.
+   */
+  private readonly signingOutUser = signal<User | null>(null);
+  private signingOut = false;
+  private readonly shownUser = computed(
+    () => this.signingOutUser() ?? this.auth.user(),
+  );
   protected readonly displayName = computed(
-    () => this.auth.user()?.displayName ?? '',
+    () => this.shownUser()?.displayName ?? '',
   );
   protected readonly summary = computed(() => {
-    const user = this.auth.user();
+    const user = this.shownUser();
     return user ? `${user.email} · ${user.role}` : '';
   });
 
@@ -71,7 +80,23 @@ export class SignedInHome {
   }
 
   protected async signOut(): Promise<void> {
+    // A repeated click would start a second navigation that cancels the first.
+    if (this.signingOut) {
+      return;
+    }
+    this.signingOut = true;
+    this.signingOutUser.set(this.auth.user());
     this.auth.signOut();
-    await this.router.navigateByUrl('/login');
+    let navigated = false;
+    try {
+      navigated = await this.router.navigateByUrl('/login');
+    } finally {
+      // The page stays when navigation fails, so stop showing the old user. A navigation that
+      // was cancelled by a newer one (such as the 401 redirect) is still leaving the page.
+      if (!navigated && !this.router.currentNavigation()) {
+        this.signingOutUser.set(null);
+        this.signingOut = false;
+      }
+    }
   }
 }

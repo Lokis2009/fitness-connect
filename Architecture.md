@@ -248,7 +248,6 @@ Phase 1 (foundation and login) is done: the Nx workspace, the three Angular apps
 ## 12. Known follow-ups from Phase 1
 
 - **Bundle budgets.** The three apps warn that the initial bundle is about 510 kB against a 500 kB budget (shared UI and Material). Raise the budget or trim the bundle.
-- **Sign-out flash.** In `client-web` the heading briefly reads "Welcome, " after sign-out because the user is cleared before navigation finishes.
 - **Contract versus Nest.** The contract is checked against real responses by schema-validation tests, but the CI comparison of a Nest-generated spec to the hand-written one (D17) is not built because `@nestjs/swagger` is not installed.
 - **Accessibility checks.** `axe-core` is not installed, so accessibility is covered by explicit assertions, not an AXE run. The Material outline, spinner and theme have been exercised by e2e but not reviewed visually.
 - **Commit guard.** The hook that enforces commit format and green checks is in the gitignored `.claude/settings.local.json`, so it protects only this machine.
