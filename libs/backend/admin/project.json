@@ -5,11 +5,5 @@
   "projectType": "library",
   "tags": ["scope:api", "type:api-lib"],
   "// targets": "to see all targets run: nx show project admin --web",
-  "targets": {
-    "test": {
-      "options": {
-        "passWithNoTests": true
-      }
-    }
-  }
+  "targets": {}
 }
