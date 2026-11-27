@@ -12,7 +12,7 @@ Edit `status/status.yaml` to change the workstreams. Run `pnpm status:generate` 
 |---|---|---|---|---|---|
 | Phase 1 foundation | done | - | - | Nx workspace, three Angular apps, NestJS API, Postgres with PostGIS, OpenAPI contract and a login page per app against the real API (development auth). | [phase-1-repo-foundation](docs/plans/phase-1-repo-foundation.md) |
 | Design tokens and type scale | done | - | - | Shared UI library uses one set of design tokens, Material is mapped to them, and Inter and Space Grotesk are loaded. | [design-system](.claude/rules/design-system.md), [tokens.css](libs/frontend/ui/src/styles/tokens.css) |
-| Client and admin home pages | in-progress | - | Rebase the shared UI components (HP-2) onto main, and build the admin users contract and API (HP-1, HP-3) in parallel. | Backlog for a minimal client home and an admin home that lists users and trainers by role. | [home-pages](docs/backlog/home-pages.md), [admin-users-list](docs/plans/admin-users-list.md) |
+| Client and admin home pages | in-progress | - | GET /admin/users (HP-1, HP-3) is done; once the shared UI components (HP-2) merge, build the admin page (HP-4, HP-5, HP-7). | Backlog for a minimal client home and an admin home that lists users and trainers by role. | [home-pages](docs/backlog/home-pages.md), [admin-users-list](docs/plans/admin-users-list.md) |
 | First-release PRD review | in-progress | - | Decide minimum booking notice, pending-slot holds, trainer verification and cancellation rules (PRD section 10). | PRD and confirmed product decisions are drafted; several booking rules are still proposals. | [scheduled-in-person-sessions](docs/prd/scheduled-in-person-sessions.md), [first-release](docs/decisions/first-release.md) |
 | Feature breakdown | planned | - | Starts after PRD review. | Split the agreed journey into features with acceptance criteria and contract entries. | [scheduled-in-person-sessions](docs/prd/scheduled-in-person-sessions.md) |
 | Trainer home screen | in-progress | - | Open the pull request, confirm the 960 px desktop column width with the design owner, and run the manual browser check. | The approved trainer's home (pending booking requests and today's and tomorrow's sessions) and the read-only /setup page are implemented on feat/trainer-home, from the contract to the e2e tests. | [trainer-home](docs/designs/trainer-home.md) |
@@ -71,6 +71,7 @@ Technical decisions: see the Decisions section of [Architecture.md](Architecture
 | client-web | application | scope:client, type:app | `apps/client-web` |
 | e2e | application | scope:shared, type:util | `apps/e2e` |
 | trainer-web | application | scope:trainer, type:app | `apps/trainer-web` |
+| admin | library | scope:api, type:api-lib | `libs/backend/admin` |
 | booking | library | scope:api, type:api-lib | `libs/backend/booking` |
 | common | library | scope:api, type:api-lib | `libs/backend/common` |
 | database | library | scope:api, type:api-lib | `libs/backend/database` |

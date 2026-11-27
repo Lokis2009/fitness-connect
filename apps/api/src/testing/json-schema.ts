@@ -14,6 +14,8 @@ export interface Schema {
   additionalProperties?: boolean;
   minLength?: number;
   maxLength?: number;
+  minimum?: number;
+  maximum?: number;
   // Annotations without any effect on validation.
   title?: string;
   description?: string;
@@ -32,6 +34,8 @@ const KEYWORDS = new Set([
   'additionalProperties',
   'minLength',
   'maxLength',
+  'minimum',
+  'maximum',
   ...ANNOTATIONS,
 ]);
 
@@ -101,6 +105,15 @@ export function validateSchema(
     }
     if (schema.maxLength !== undefined && value.length > schema.maxLength) {
       errors.push(`${path}: longer than ${schema.maxLength}`);
+    }
+  }
+
+  if (typeof value === 'number') {
+    if (schema.minimum !== undefined && value < schema.minimum) {
+      errors.push(`${path}: less than ${schema.minimum}`);
+    }
+    if (schema.maximum !== undefined && value > schema.maximum) {
+      errors.push(`${path}: greater than ${schema.maximum}`);
     }
   }
 

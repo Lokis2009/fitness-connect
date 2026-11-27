@@ -19,6 +19,8 @@ tags:
     description: Trainer home, the lists a signed-in trainer works from.
   - name: booking
     description: Answering booking requests.
+  - name: admin
+    description: Admin-only reads such as the list of users.
   - name: dev
     description: Development only. Not available in production.
 security:
@@ -36,6 +38,8 @@ paths:
     $ref: './paths/booking-accept.yaml'
   /bookings/{id}/decline:
     $ref: './paths/booking-decline.yaml'
+  /admin/users:
+    $ref: './paths/admin-users.yaml'
   /dev/login:
     $ref: './paths/dev-login.yaml'
 components:
@@ -73,3 +77,7 @@ components:
       $ref: './schemas/SessionList.yaml'
     Booking:
       $ref: './schemas/Booking.yaml'
+    AdminUser:
+      $ref: './schemas/AdminUser.yaml'
+    UserPage:
+      $ref: './schemas/UserPage.yaml'
