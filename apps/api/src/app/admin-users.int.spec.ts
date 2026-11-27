@@ -180,6 +180,7 @@ describe('GET /v1/admin/users', () => {
     ['pageSize over 100', '?pageSize=101'],
     ['pageSize 0', '?pageSize=0'],
     ['page 0', '?page=0'],
+    ['a page beyond the supported maximum', '?page=100000000000000000'],
     ['a page that is not a number', '?page=abc'],
     ['an unknown role', '?role=superuser'],
     ['an unknown parameter', '?search=casey'],
