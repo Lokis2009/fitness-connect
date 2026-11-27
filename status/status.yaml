@@ -34,6 +34,7 @@ workstreams:
     next: GET /admin/users (HP-1, HP-3) is implemented on feat/admin-users-api; once it and the shared UI components (HP-2) merge, build the admin page (HP-4, HP-5, HP-7).
     links:
       - docs/backlog/home-pages.md
+      - docs/plans/admin-users-list.md
 
   - id: first-release-prd
     name: First-release PRD review
