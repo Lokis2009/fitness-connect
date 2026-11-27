@@ -1,6 +1,7 @@
 import { spawnSync } from 'node:child_process';
-import { readFileSync } from 'node:fs';
-import { resolve } from 'node:path';
+import { existsSync, readFileSync } from 'node:fs';
+import { delimiter, dirname, join, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 const TYPES = ['build', 'ci', 'docs', 'feat', 'fix', 'perf', 'refactor', 'test'];
 const LINT_ONLY = new Set(['test', 'docs', 'ci']);
@@ -158,13 +159,28 @@ function headerOf(parsed, tokens, bodies, cwd) {
   return message.split('\n').find((line) => line.trim()) ?? '';
 }
 
+// Runs the workspace's own Nx entry point with the Node that runs this hook. The hook does not
+// inherit the shell PATH, so `pnpm` may not be found there. Falls back to `pnpm nx` when the
+// workspace has no local Nx.
 function run(args, cwd) {
-  const result = spawnSync('pnpm', ['nx', ...args], {
+  const localNx = join(cwd, 'node_modules', 'nx', 'dist', 'bin', 'nx.js');
+  const [command, commandArgs] = existsSync(localNx)
+    ? [process.execPath, [localNx, ...args]]
+    : ['pnpm', ['nx', ...args]];
+  const result = spawnSync(command, commandArgs, {
     cwd,
     encoding: 'utf8',
     maxBuffer: 256 * 1024 * 1024,
-    env: { ...process.env, CI: 'true', NX_DAEMON: 'false' },
+    env: {
+      ...process.env,
+      PATH: [dirname(process.execPath), process.env.PATH].filter(Boolean).join(delimiter),
+      CI: 'true',
+      NX_DAEMON: 'false',
+    },
   });
+  if (result.error) {
+    return { ok: false, output: `could not start ${command}: ${result.error.message}` };
+  }
   return { ok: result.status === 0, output: `${result.stdout ?? ''}${result.stderr ?? ''}` };
 }
 
@@ -191,6 +207,12 @@ function validateHeader(header) {
 const input = JSON.parse((await readStdin()) || '{}');
 const command = input.tool_input?.command ?? '';
 const cwd = input.cwd ?? process.cwd();
+// Nx must run in a directory that exists. The hook's cwd may not (for example a removed worktree),
+// so fall back to the project directory and then to the repository that contains this hook.
+const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
+const workspace = [cwd, process.env.CLAUDE_PROJECT_DIR, repoRoot].find(
+  (dir) => dir && existsSync(dir),
+);
 
 const { masked, bodies } = maskHeredocs(command);
 const types = [];
@@ -209,11 +231,11 @@ for (const tokens of tokenize(masked)) {
 
 if (types.length === 0 || process.env.COMMIT_GUARD_DRY_RUN) process.exit(0);
 
-const lint = run(['affected', '--base=HEAD', '-t', 'lint'], cwd);
+const lint = run(['affected', '--base=HEAD', '-t', 'lint'], workspace);
 if (!lint.ok) block(`lint failed for affected projects.\n${tail(lint.output)}`);
 
 if (types.some((type) => !LINT_ONLY.has(type))) {
-  const tests = run(['affected', '--base=HEAD', '-t', 'test', '--coverage'], cwd);
+  const tests = run(['affected', '--base=HEAD', '-t', 'test', '--coverage'], workspace);
   if (!tests.ok) {
     block(
       `tests or coverage failed for affected projects. Only "test", "docs" and "ci" commits may be red. Write the failing test as a separate "test" commit first.\n${tail(tests.output)}`,
