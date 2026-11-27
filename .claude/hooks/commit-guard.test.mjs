@@ -1,6 +1,9 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
+import { mkdtempSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const script = fileURLToPath(new URL('./commit-guard.mjs', import.meta.url));
@@ -152,4 +155,47 @@ test('rejects amending a commit', () => {
   const result = guard('git commit --amend -m "feat(ui): add x"');
   assert.equal(result.status, 2);
   assert.match(result.stderr, /amend/);
+});
+
+// The hook can run with a PATH that has no pnpm (Cursor does not inherit the shell PATH).
+const MINIMAL_PATH = '/usr/bin:/bin:/usr/sbin:/sbin';
+const repoRoot = fileURLToPath(new URL('../../', import.meta.url));
+
+function guardWithPath(command, { cwd, path }) {
+  const result = spawnSync(process.execPath, [script], {
+    input: JSON.stringify({ tool_name: 'Bash', tool_input: { command }, cwd }),
+    encoding: 'utf8',
+    env: { ...process.env, PATH: path, COMMIT_GUARD_DRY_RUN: '' },
+  });
+  return { status: result.status, stdout: result.stdout, stderr: result.stderr };
+}
+
+test('runs lint without pnpm on PATH', () => {
+  const result = guardWithPath('git commit -m "docs(repo): add guide"', {
+    cwd: repoRoot,
+    path: MINIMAL_PATH,
+  });
+  assert.equal(result.status, 0, result.stderr);
+});
+
+test('says why lint could not start', () => {
+  const cwd = mkdtempSync(join(tmpdir(), 'commit-guard-'));
+  try {
+    const result = guardWithPath('git commit -m "feat(ui): add x"', {
+      cwd,
+      path: MINIMAL_PATH,
+    });
+    assert.equal(result.status, 2);
+    assert.match(result.stderr, /could not start pnpm/);
+  } finally {
+    rmSync(cwd, { recursive: true, force: true });
+  }
+});
+
+test('lints the workspace when the hook cwd does not exist', () => {
+  const result = guardWithPath('git commit -m "docs(repo): add guide"', {
+    cwd: join(repoRoot, 'no-such-worktree'),
+    path: MINIMAL_PATH,
+  });
+  assert.equal(result.status, 0, result.stderr);
 });
